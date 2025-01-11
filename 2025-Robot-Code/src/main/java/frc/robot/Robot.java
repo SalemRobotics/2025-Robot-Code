@@ -4,6 +4,12 @@
 
 package frc.robot;
 
+import org.littletonrobotics.urcl.URCL;
+
+import com.ctre.phoenix6.SignalLogger;
+
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -25,6 +31,17 @@ public class Robot extends TimedRobot {
   public Robot() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
+    
+    DataLogManager.start("/logs/datalogs/"); // separate data and signal logs
+    DataLogManager.log("Joe is epic");
+    // add drivestation logs (e.g. joystick data)
+    DriverStation.startDataLog(DataLogManager.getLog(), true);
+    // add signal logging for CTRE
+    SignalLogger.start();
+    SignalLogger.setPath("/logs/signallogs/");
+    // add logging for revrobotics (SparkMAX)
+    URCL.start(DataLogManager.getLog());
+
     m_robotContainer = new RobotContainer();
   }
 
@@ -46,7 +63,10 @@ public class Robot extends TimedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    DataLogManager.stop();
+    SignalLogger.stop();
+  }
 
   @Override
   public void disabledPeriodic() {}
