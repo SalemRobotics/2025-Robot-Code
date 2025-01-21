@@ -4,8 +4,9 @@
 
 package frc.robot;
 
+import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.Elevator;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.ExampleSubsystem;
@@ -27,13 +28,13 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final ElevatorSubsystem kElevatorSubsystem = new ElevatorSubsystem();
+  private final Elevator mElevator = new Elevator();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   @SuppressWarnings("unused")
-  private final CommandXboxController m_driverController = new CommandXboxController(
+  private final CommandXboxController mDriverController = new CommandXboxController(
       OperatorConstants.kDriverControllerPort);
-  private final CommandXboxController m_operatorController = new CommandXboxController(
+  private final CommandXboxController mOperatorController = new CommandXboxController(
       OperatorConstants.kOperatorControllerPort);
 
   /**
@@ -60,10 +61,10 @@ public class RobotContainer {
    */
   private void configureBindings() {
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    Trigger xButton = m_operatorController.x();
+    Trigger xButton = mOperatorController.x();
     xButton
-        .onTrue(kElevatorSubsystem.setElevatorTarget(ElevatorSubsystem.ElevatorHeights.Coral_L4))
-        .onFalse(kElevatorSubsystem.setElevatorTarget(ElevatorSubsystem.ElevatorHeights.Stowed));
+        .onTrue(mElevator.setElevatorTarget(ElevatorConstants.kL4Height))
+        .onFalse(mElevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
   }
 
   /**
