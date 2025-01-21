@@ -19,14 +19,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorConstants;
 
-public class ElevatorSubsystem extends SubsystemBase {
-    public static class ElevatorHeights {
-        public static double Stowed = 0;
-        public static double Coral_L1 = 1.0;
-        public static double Coral_L2 = 2.0;
-        public static double Coral_L3 = 3.0;
-        public static double Coral_L4 = 4.0;
-    }
+public class Elevator extends SubsystemBase {
 
     private final TalonFXConfiguration kConfig = new TalonFXConfiguration();
     private final TalonFX kElevatorMotorA = new TalonFX(ElevatorConstants.kElevatorMotorAPort,
@@ -35,7 +28,7 @@ public class ElevatorSubsystem extends SubsystemBase {
             ElevatorConstants.kElevatorMotorBus);
     private final MotionMagicVoltage kVoltage = new MotionMagicVoltage(0);
 
-    public ElevatorSubsystem() {
+    public Elevator() {
         FeedbackConfigs fbcfg = kConfig.Feedback;
         fbcfg.SensorToMechanismRatio = ElevatorConstants.kSensorToMechanismRatio;
 

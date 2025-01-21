@@ -25,6 +25,11 @@ public final class Constants {
   }
 
   public static class ElevatorConstants {
+    public static final double kStowedHeight = 0;
+    public static final double kL1Height = 1.0;
+    public static final double kL2Height = 2.0;
+    public static final double kL3Height = 3.0;
+    public static final double kL4Height = 4.0;
     public static final CANBus kElevatorMotorBus = new CANBus("canivore");
     public static final int kElevatorMotorAPort = 13;
     public static final int kElevatorMotorBPort = 14;
