@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import org.littletonrobotics.urcl.URCL;
-
 import com.ctre.phoenix6.SignalLogger;
 
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -43,8 +41,6 @@ public class Robot extends TimedRobot {
     // add signal logging for CTRE
     SignalLogger.start();
     SignalLogger.setPath("/logs/signallogs/");
-    // add logging for revrobotics (SparkMAX)
-    URCL.start(DataLogManager.getLog());
 
     m_robotContainer = new RobotContainer();
 
