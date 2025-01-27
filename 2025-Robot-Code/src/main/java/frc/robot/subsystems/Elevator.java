@@ -21,23 +21,23 @@ import frc.robot.Constants.ElevatorConstants;
 
 public class Elevator extends SubsystemBase {
 
-    private final TalonFXConfiguration kConfig = new TalonFXConfiguration();
-    private final TalonFX kElevatorMotorA = new TalonFX(ElevatorConstants.kElevatorMotorAPort,
+    private final TalonFXConfiguration mConfig = new TalonFXConfiguration();
+    private final TalonFX mElevatorMotorA = new TalonFX(ElevatorConstants.kElevatorMotorAPort,
             ElevatorConstants.kElevatorMotorBus);
-    private final TalonFX kElevatorMotorB = new TalonFX(ElevatorConstants.kElevatorMotorBPort,
+    private final TalonFX mElevatorMotorB = new TalonFX(ElevatorConstants.kElevatorMotorBPort,
             ElevatorConstants.kElevatorMotorBus);
-    private final MotionMagicVoltage kVoltage = new MotionMagicVoltage(0);
+    private final MotionMagicVoltage mVoltage = new MotionMagicVoltage(0);
 
     public Elevator() {
-        FeedbackConfigs fbcfg = kConfig.Feedback;
+        FeedbackConfigs fbcfg = mConfig.Feedback;
         fbcfg.SensorToMechanismRatio = ElevatorConstants.kSensorToMechanismRatio;
 
-        MotionMagicConfigs mmcfg = kConfig.MotionMagic;
+        MotionMagicConfigs mmcfg = mConfig.MotionMagic;
         mmcfg.withMotionMagicCruiseVelocity(RotationsPerSecond.of(ElevatorConstants.kElevatorMaxSpeed))
                 .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(ElevatorConstants.kElevatorMaxAcceleration))
                 .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(ElevatorConstants.kElevatorMaxJerk));
 
-        Slot0Configs slot0 = kConfig.Slot0;
+        Slot0Configs slot0 = mConfig.Slot0;
         slot0.kS = ElevatorConstants.kElevatorS;
         slot0.kV = ElevatorConstants.kElevatorV;
         slot0.kA = ElevatorConstants.kElevatorA;
@@ -49,7 +49,7 @@ public class Elevator extends SubsystemBase {
         StatusCode status = StatusCode.StatusCodeNotInitialized;
 
         for (int i = 0; i < 5; i++) {
-            status = kElevatorMotorA.getConfigurator().apply(kConfig);
+            status = mElevatorMotorA.getConfigurator().apply(mConfig);
 
             if (status.isOK())
                 break;
@@ -58,11 +58,11 @@ public class Elevator extends SubsystemBase {
         if (!status.isOK())
             DataLogManager.log("Failed to configure elevator motors: " + status.toString());
 
-        kElevatorMotorB.setControl(new Follower(kElevatorMotorA.getDeviceID(), true));
+        mElevatorMotorB.setControl(new Follower(mElevatorMotorA.getDeviceID(), true));
     }
 
     public Command setElevatorTarget(double height) {
         DataLogManager.log("Setting elevator height to " + height);
-        return Commands.run(() -> kElevatorMotorA.setControl(kVoltage.withPosition(height).withSlot(0)));
+        return Commands.run(() -> mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0)));
     }
 }

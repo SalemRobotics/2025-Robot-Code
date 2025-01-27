@@ -45,4 +45,15 @@ public final class Constants {
     public static final double kElevatorI = 0.0;
     public static final double kElevatorD = 0.5;
   }
+
+  public static class VisionConstants {
+    public static String kCamera1Name = "";
+    public static String kCamera2Name = "";
+  }
+
+  public static class AlgaeConstants {
+    public static final int kAlgaeMotorPort = 20;
+    public static final CANBus kAlgaeMotorBus = new CANBus("canivore");
+    public static final double kAlgaeMotorSpeed = 1.0;
+  }
 }
