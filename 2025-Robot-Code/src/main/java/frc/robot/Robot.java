@@ -23,7 +23,7 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
 
     DataLogManager.start("/logs/datalogs/"); // separate data and signal logs
-    DataLogManager.log("Joe is epic");
+    
     // add drivestation logs (e.g. joystick data)
     DriverStation.startDataLog(DataLogManager.getLog(), true);
     // add signal logging for CTRE

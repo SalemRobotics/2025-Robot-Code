@@ -6,6 +6,8 @@ package frc.robot;
 
 import com.ctre.phoenix6.CANBus;
 
+import edu.wpi.first.math.util.Units;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
  * numerical or boolean
@@ -44,6 +46,14 @@ public final class Constants {
     public static final double kElevatorP = 60.0;
     public static final double kElevatorI = 0.0;
     public static final double kElevatorD = 0.5;
+  }
+
+  public static class DriveConstants {
+    // Distance between centers of right and left wheels on robot
+    public static final double kTrackWidthMeters = Units.inchesToMeters(23.72921);
+    // Distance between front and back wheels on robot
+    public static final double kWheelBaseMeters = Units.inchesToMeters(23.72921);
+    
   }
 
   public static class VisionConstants {
