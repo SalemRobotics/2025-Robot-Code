@@ -67,6 +67,17 @@ public final class Constants {
   }
 
   public static class EndEffectorConstants {
-    public static final double kEndEffectorMotorSpeed = 0.7;
+    public static final int kEntranceLineBreakerPort = 1;
+    public static final int kExitLineBreakerPort = 0;
+    public static final double kEndEffectorFastSpeed = 0.7;
+    public static final double kEndEffectorSlowSpeed = kEndEffectorFastSpeed / 2;
+    public static final double kSensorToMechanismRatio = 25.0;
+    public static final double kAlgaeRemoverG = 0.25;
+    public static final double kAlgaeRemoverS = 0.25;
+    public static final double kAlgaeRemoverV = 0.12;
+    public static final double kAlgaeRemoverA = 0.01;
+    public static final double kAlgaeRemoverP = 60.0;
+    public static final double kAlgaeRemoverI = 0.0;
+    public static final double kAlgaeRemoverD = 0.5;
   }
 }

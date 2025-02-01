@@ -55,7 +55,7 @@ public class Elevator extends SubsystemBase {
                 break;
         }
 
-        if (!status.isOK())
+        if (status.isError())
             DataLogManager.log("Failed to configure elevator motors: " + status.toString());
 
         mElevatorMotorB.setControl(new Follower(mElevatorMotorA.getDeviceID(), true));
