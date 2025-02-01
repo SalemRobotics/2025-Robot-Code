@@ -53,7 +53,6 @@ public final class Constants {
     public static final double kTrackWidthMeters = Units.inchesToMeters(23.72921);
     // Distance between front and back wheels on robot
     public static final double kWheelBaseMeters = Units.inchesToMeters(23.72921);
-    
   }
 
   public static class VisionConstants {
@@ -65,5 +64,9 @@ public final class Constants {
     public static final int kAlgaeMotorPort = 20;
     public static final CANBus kAlgaeMotorBus = new CANBus("canivore");
     public static final double kAlgaeMotorSpeed = 1.0;
+  }
+
+  public static class EndEffectorConstants {
+    public static final double kEndEffectorMotorSpeed = 0.7;
   }
 }

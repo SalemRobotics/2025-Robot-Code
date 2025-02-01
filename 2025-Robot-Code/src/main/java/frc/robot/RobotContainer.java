@@ -7,6 +7,8 @@ package frc.robot;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.EndEffector;
+
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -37,8 +39,10 @@ public class RobotContainer {
     private final CommandXboxController joystick = new CommandXboxController(0);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    public final EndEffector endEffector = new EndEffector();
 
     public RobotContainer() {
+        endEffector.setDefaultCommand(endEffector.centerCoral(endEffector));
         configureBindings();
     }
 
