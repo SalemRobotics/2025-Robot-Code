@@ -38,6 +38,8 @@ public class RobotContainer {
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
+    private final AutoPicker mAutoPicker = new AutoPicker();
+
     public RobotContainer() {
         configureBindings();
     }
@@ -73,6 +75,6 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        return mAutoPicker.getSelected();
     }
 }

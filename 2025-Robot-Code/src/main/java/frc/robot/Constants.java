@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import java.util.HashMap;
+import java.util.List;
+
 import com.ctre.phoenix6.CANBus;
 
 import edu.wpi.first.math.util.Units;
@@ -54,6 +57,28 @@ public final class Constants {
     // Distance between front and back wheels on robot
     public static final double kWheelBaseMeters = Units.inchesToMeters(23.72921);
     
+  }
+
+  public static class AutoConstants {
+    public static final double kTranslationP = 10;
+    public static final double kTranslationI = 0;
+    public static final double kTranslationD = 0;
+
+    public static final double kRotationP = 7;
+    public static final double kRotationI = 0;
+    public static final double kRotationD = 0;
+
+    /** Map of folder names to lists of auto command names */
+    public static final HashMap<String, List<String>> kAutoFolders = new HashMap<>() {{
+         put("Test Autos", List.of(
+             "Test Auto"
+             ));
+
+        put("Basic Autos", List.of(
+          "Do Nothing",
+          "Mobility"
+        ));
+    }};
   }
 
   public static class VisionConstants {
