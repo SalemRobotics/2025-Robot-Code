@@ -59,7 +59,7 @@ public class EndEffector extends SubsystemBase {
 
     // Could we reverse the break beam value to have it set to true if the object is
     // in the way rather than the vice versa
-    public Command centerCoral(EndEffector endEffector) {
+    public Command centerCoral() {
         return new RunCommand(() -> {
             if (mExitLineBreaker.get() && !mEntranceLineBreaker.get()) {
                 mHasCoral = true;
@@ -72,7 +72,7 @@ public class EndEffector extends SubsystemBase {
                 }
                 mEffectorMotor.set(EndEffectorConstants.kEndEffectorFastSpeed);
             }
-        }, endEffector);
+        }, this);
 
     }
 

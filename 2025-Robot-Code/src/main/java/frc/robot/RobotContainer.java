@@ -45,7 +45,7 @@ public class RobotContainer {
     private final AutoPicker mAutoPicker = new AutoPicker();
 
     public RobotContainer() {
-        endEffector.setDefaultCommand(endEffector.centerCoral(endEffector));
+        endEffector.setDefaultCommand(endEffector.centerCoral());
         configureBindings();
     }
 
