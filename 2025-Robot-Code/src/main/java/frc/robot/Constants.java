@@ -70,7 +70,9 @@ public final class Constants {
     /** Map of folder names to lists of auto command names */
     public static final HashMap<String, List<String>> kAutoFolders = new HashMap<>() {{
         put("Test Autos", List.of(
-          "Test Auto"
+          "Test Auto",
+          "Test Auto 2",
+          "Test Auto 3"
           ));
 
         put("Basic Autos", List.of(

@@ -84,11 +84,4 @@ public class EndEffector extends SubsystemBase {
         return Commands.run(() -> mEffectorMotor.set(EndEffectorConstants.kEndEffectorFastSpeed));
     }
 
-    /*
-     * Pivots algae arm to a given angle
-     */
-    public Command pivotAlgaeArm(double angle) {
-        double angleToRot = angle / 360.0;
-        return Commands.run(() -> mAlgaeRemoverMotor.setControl(mPositionVoltage.withPosition(angleToRot)));
-    }
 }
