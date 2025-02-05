@@ -26,7 +26,6 @@ public class EndEffector extends SubsystemBase {
     private final TalonFXConfiguration mConfig = new TalonFXConfiguration();
     private final TalonFX mEffectorMotor = new TalonFX(0, "rio");
     private final TalonFX mAlgaeRemoverMotor = new TalonFX(1, "rio");
-    private final PositionVoltage mPositionVoltage;
 
     public EndEffector() {  
         FeedbackConfigs fbcfg = mConfig.Feedback;
@@ -40,8 +39,6 @@ public class EndEffector extends SubsystemBase {
         slot0.kI = EndEffectorConstants.kAlgaeRemoverI;
         slot0.kD = EndEffectorConstants.kAlgaeRemoverD;
         slot0.kG = EndEffectorConstants.kAlgaeRemoverG;
-
-        mPositionVoltage = new PositionVoltage(0).withSlot(0);
 
         StatusCode status = StatusCode.StatusCodeNotInitialized;
         for (int i = 0; i < 5; i++) {

@@ -91,6 +91,8 @@ public final class Constants {
     public static final int kAlgaeMotorPort = 20;
     public static final CANBus kAlgaeMotorBus = new CANBus("canivore");
     public static final double kAlgaeMotorSpeed = 1.0;
+    public static final double kAlgaeExtendedRotation = 0.25;
+    public static final double kAlgaeStowedRotation = 0;
   }
 
   public static class EndEffectorConstants {
