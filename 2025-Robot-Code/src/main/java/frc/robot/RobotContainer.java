@@ -43,6 +43,7 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final EndEffector endEffector = new EndEffector();
     public final Vision vision = new Vision();
+    public final Elevator elevator = new Elevator();
 
     private final AutoPicker mAutoPicker = new AutoPicker();
 
@@ -75,10 +76,15 @@ public class RobotContainer {
             )
         );
 
-        driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        driverController.b().whileTrue(drivetrain.applyRequest(() ->
+        driverController.povDown().whileTrue(drivetrain.applyRequest(() -> brake));
+        driverController.povRight().whileTrue(drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))
         ));
+
+        driverController.b().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+        driverController.a().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+        driverController.x().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL3Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+        driverController.y().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
