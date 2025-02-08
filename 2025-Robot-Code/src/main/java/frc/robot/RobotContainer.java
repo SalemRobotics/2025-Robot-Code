@@ -8,6 +8,7 @@ import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
+import frc.robot.subsystems.Vision;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -41,12 +42,23 @@ public class RobotContainer {
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final EndEffector endEffector = new EndEffector();
+    public final Vision vision = new Vision();
 
     private final AutoPicker mAutoPicker = new AutoPicker();
 
     public RobotContainer() {
         endEffector.setDefaultCommand(endEffector.centerCoral());
         configureBindings();
+    }
+
+    public void periodic(){
+        if(vision.getCurrentPositionCam1().getPose().isPresent()){
+            drivetrain.addVisionMeasurement(vision.getCurrentPositionCam1().getPose().get(), vision.getCurrentPositionCam1().getTime());
+        }
+        if(vision.getCurrentPositionCam2().getPose().isPresent()){
+            drivetrain.addVisionMeasurement(vision.getCurrentPositionCam2().getPose().get(), vision.getCurrentPositionCam2().getTime());
+        }
+            
     }
 
     private void configureBindings() {
