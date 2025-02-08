@@ -17,6 +17,8 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -63,6 +65,21 @@ public final class Constants {
     public static final double kTrackWidthMeters = Units.inchesToMeters(23.72921);
     // Distance between front and back wheels on robot
     public static final double kWheelBaseMeters = Units.inchesToMeters(23.72921);
+
+    public static final Pose2d kALPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final Pose2d kARPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final Pose2d kBLPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final Pose2d kBRPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final Pose2d kCLPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final Pose2d kCRPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final Pose2d kDLPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final Pose2d kDRPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final Pose2d kELPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final Pose2d kERPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final Pose2d kFLPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final Pose2d kFRPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final Pose2d kCoral1Pose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final Pose2d kCoral2Pose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
   }
 
   public static class AutoConstants {
