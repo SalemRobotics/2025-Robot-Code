@@ -92,29 +92,29 @@ public final class Constants {
     public static final double kRotationD = 0;
 
     /** Map of folder names to lists of auto command names */
-    public static final HashMap<String, List<String>> kAutoFolders = new HashMap<>() {{
+    public static final HashMap<String, List<String>> kAutoFolders = new HashMap<>() {
+      {
         put("Test Autos", List.of(
-          "Test Auto",
-          "Test Auto 2",
-          "Test Auto 3"
-          ));
+            "Test Auto",
+            "Test Auto 2",
+            "Test Auto 3"));
 
         put("Basic Autos", List.of(
-          "Do Nothing",
-          "Mobility Auto"
-        ));
-    }};
+            "Do Nothing",
+            "Mobility Auto"));
+      }
+    };
   }
 
   public static class VisionConstants {
     public static String kCamera1Name = "";
     public static String kCamera2Name = "";
 
-    public static final Transform3d kRobotToCam1 =
-      new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0));
+    public static final Transform3d kRobotToCam1 = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
+        new Rotation3d(0, 0, 0));
 
-    public static final Transform3d kRobotToCam2 =
-      new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0));
+    public static final Transform3d kRobotToCam2 = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
+        new Rotation3d(0, 0, 0));
   }
 
   public static class AlgaeConstants {
@@ -131,12 +131,11 @@ public final class Constants {
     public static final double kEndEffectorFastSpeed = 0.7;
     public static final double kEndEffectorSlowSpeed = kEndEffectorFastSpeed / 2;
     public static final double kSensorToMechanismRatio = 25.0;
-    public static final double kAlgaeRemoverG = 0.25;
-    public static final double kAlgaeRemoverS = 0.25;
-    public static final double kAlgaeRemoverV = 0.12;
-    public static final double kAlgaeRemoverA = 0.01;
-    public static final double kAlgaeRemoverP = 60.0;
-    public static final double kAlgaeRemoverI = 0.0;
-    public static final double kAlgaeRemoverD = 0.5;
+  }
+
+  public static class LEDConstants {
+    public static final int kLEDPort = 0;
+    public static final int kLength = 128;
+    public static final int kLEDSplitPosition = kLength / 2;
   }
 }

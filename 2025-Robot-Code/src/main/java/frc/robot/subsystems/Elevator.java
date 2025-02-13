@@ -14,6 +14,7 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -27,6 +28,7 @@ public class Elevator extends SubsystemBase {
     private final TalonFX mElevatorMotorB = new TalonFX(ElevatorConstants.kElevatorMotorBPort,
             ElevatorConstants.kElevatorMotorBus);
     private final MotionMagicVoltage mVoltage = new MotionMagicVoltage(0);
+    private double mSetHeight = 0;
 
     public Elevator() {
         FeedbackConfigs fbcfg = mConfig.Feedback;
@@ -62,7 +64,13 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command setElevatorTarget(double height) {
+        mSetHeight = height;
         DataLogManager.log("Setting elevator height to " + height);
         return Commands.run(() -> mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0)));
+    }
+
+    @Override
+    public void periodic() {
+        SmartDashboard.putNumber("Elevator Height", mSetHeight);
     }
 }
