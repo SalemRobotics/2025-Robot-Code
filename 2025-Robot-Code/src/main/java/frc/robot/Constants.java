@@ -33,6 +33,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+  public static class BatteryScannerConstants {
+    public static final String kBatteryFile = "/logs/battery.txt";
+  }
+
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
     public static final int kOperatorControllerPort = 1;
@@ -58,6 +62,7 @@ public final class Constants {
     public static final double kElevatorP = 60.0;
     public static final double kElevatorI = 0.0;
     public static final double kElevatorD = 0.5;
+    public static final double kElevatorSprocketCircumference = 6.00044196836;
   }
 
   public static class DriveConstants {

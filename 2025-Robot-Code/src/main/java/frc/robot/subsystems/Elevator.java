@@ -13,6 +13,7 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -66,7 +67,21 @@ public class Elevator extends SubsystemBase {
     public Command setElevatorTarget(double height) {
         mSetHeight = height;
         DataLogManager.log("Setting elevator height to " + height);
-        return Commands.run(() -> mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0)));
+        return Commands
+                .run(() -> mElevatorMotorA.setControl(mVoltage.withPosition(inchesToRotations(height)).withSlot(0)));
+
+    }
+
+    public double inchesToRotations(double inches) {
+        return inches / ElevatorConstants.kElevatorSprocketCircumference;
+    }
+
+    public double rotationsToInches(double rotations) {
+        return rotations * ElevatorConstants.kElevatorSprocketCircumference;
+    }
+
+    public double getCurrentHeight() {
+        return rotationsToInches(mElevatorMotorA.getPosition().getValueAsDouble());
     }
 
     @Override
