@@ -1,7 +1,10 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Volts;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -13,6 +16,10 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -24,9 +31,13 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.AllianceFlipUtil;
 import frc.robot.Constants.AutoConstants;
+import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.FieldConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -324,5 +335,38 @@ private void ConfigureAutoBuilder(){
         Matrix<N3, N1> visionMeasurementStdDevs
     ) {
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+    }
+
+    private Pose2d getScoringPose(boolean isRight){
+        Pose2d currentPose = getState().Pose;
+        AllianceFlipUtil.apply(currentPose);
+        Pose2d closestFace = currentPose.nearest(Arrays.asList(FieldConstants.centerFaces));
+        int face = Arrays.asList(FieldConstants.centerFaces).indexOf(closestFace);
+
+        return FieldConstants.kScoringPoses.get(face).get(isRight);
+    }
+
+    public Command getScoringPath(boolean isRight){
+        try {
+            Pose2d goalPose = getScoringPose(isRight);
+            List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
+                new Pose2d(getState().Pose.getX(), getState().Pose.getY(), Rotation2d.fromDegrees(Math.atan(getState().Speeds.vyMetersPerSecond/getState().Speeds.vyMetersPerSecond))),
+                new Pose2d(goalPose.getX(), goalPose.getY(), Rotation2d.fromDegrees(Math.atan(getState().Speeds.vyMetersPerSecond/getState().Speeds.vyMetersPerSecond)))
+            );
+
+            PathConstraints constraints = DriveConstants.kScoringConstraints;
+
+            PathPlannerPath path = new PathPlannerPath(
+                waypoints,
+                constraints,
+                null,
+                new GoalEndState(0.0, Rotation2d.fromDegrees(Math.atan(getState().Speeds.vyMetersPerSecond/getState().Speeds.vyMetersPerSecond)))
+            );
+            
+            return AutoBuilder.followPath(path);
+        } catch (Exception e) {
+            DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+            return Commands.none();
+        }
     }
 }

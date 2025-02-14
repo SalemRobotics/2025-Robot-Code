@@ -6,19 +6,19 @@ package frc.robot;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.ctre.phoenix6.CANBus;
+import com.pathplanner.lib.path.PathConstraints;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -33,6 +33,75 @@ import edu.wpi.first.math.geometry.Rotation2d;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+  public static class FieldConstants {
+    public static final double kFieldLength = 17.5482504;
+    public static final double kFieldWidth = 8.0518;
+
+    public static final Pose2d[] centerFaces =
+      new Pose2d[6]; // Starting facing away from the driver station in clockwise order
+
+    static {
+      // Initialize faces
+      centerFaces[3] =
+          new Pose2d(
+              Units.inchesToMeters(144.003),
+              Units.inchesToMeters(158.500),
+              Rotation2d.fromDegrees(180));
+      centerFaces[4] =
+          new Pose2d(
+              Units.inchesToMeters(160.373),
+              Units.inchesToMeters(186.857),
+              Rotation2d.fromDegrees(120));
+      centerFaces[5] =
+          new Pose2d(
+              Units.inchesToMeters(193.116),
+              Units.inchesToMeters(186.858),
+              Rotation2d.fromDegrees(60));
+      centerFaces[0] =
+          new Pose2d(
+              Units.inchesToMeters(209.489),
+              Units.inchesToMeters(158.502),
+              Rotation2d.fromDegrees(0));
+      centerFaces[1] =
+          new Pose2d(
+              Units.inchesToMeters(193.118),
+              Units.inchesToMeters(130.145),
+              Rotation2d.fromDegrees(-60));
+      centerFaces[2] =
+          new Pose2d(
+              Units.inchesToMeters(160.375),
+              Units.inchesToMeters(130.144),
+              Rotation2d.fromDegrees(-120));
+    }
+    public static Map<Integer, Map<Boolean, Pose2d>> kScoringPoses = new HashMap<Integer, Map<Boolean, Pose2d>>();
+
+    static{
+      kScoringPoses.put(0, new HashMap<Boolean, Pose2d>());
+      kScoringPoses.get(0).put(false, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //AL
+      kScoringPoses.get(0).put(true, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //AR
+      kScoringPoses.put(1, new HashMap<Boolean, Pose2d>());
+      kScoringPoses.get(1).put(false, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //BL
+      kScoringPoses.get(1).put(true, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //BR
+      kScoringPoses.put(2, new HashMap<Boolean, Pose2d>());
+      kScoringPoses.get(2).put(false, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //CL
+      kScoringPoses.get(2).put(true, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //CR
+      kScoringPoses.put(3, new HashMap<Boolean, Pose2d>());
+      kScoringPoses.get(3).put(false, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //DL
+      kScoringPoses.get(3).put(true, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //DR
+      kScoringPoses.put(4, new HashMap<Boolean, Pose2d>());
+      kScoringPoses.get(4).put(false, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //EL
+      kScoringPoses.get(4).put(true, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //ER
+      kScoringPoses.put(5, new HashMap<Boolean, Pose2d>());
+      kScoringPoses.get(5).put(false, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //FL
+      kScoringPoses.get(5).put(true, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //FR
+    }
+    public static final Pose2d kCoral1Pose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final Pose2d kCoral2Pose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    
+
+  }
+
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
     public static final int kOperatorControllerPort = 1;
@@ -66,20 +135,8 @@ public final class Constants {
     // Distance between front and back wheels on robot
     public static final double kWheelBaseMeters = Units.inchesToMeters(23.72921);
 
-    public static final Pose2d kALPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
-    public static final Pose2d kARPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
-    public static final Pose2d kBLPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
-    public static final Pose2d kBRPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
-    public static final Pose2d kCLPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
-    public static final Pose2d kCRPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
-    public static final Pose2d kDLPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
-    public static final Pose2d kDRPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
-    public static final Pose2d kELPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
-    public static final Pose2d kERPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
-    public static final Pose2d kFLPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
-    public static final Pose2d kFRPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
-    public static final Pose2d kCoral1Pose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
-    public static final Pose2d kCoral2Pose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
+    public static final PathConstraints kScoringConstraints = new PathConstraints(3.0, 3.0, 2 * Math.PI, 4 * Math.PI);
+
   }
 
   public static class AutoConstants {
