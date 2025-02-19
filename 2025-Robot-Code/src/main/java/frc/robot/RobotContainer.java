@@ -46,6 +46,7 @@ public class RobotContainer {
     public final Elevator elevator = new Elevator();
 
     private final AutoPicker mAutoPicker = new AutoPicker();
+    mAutoPicker.initializeCommands("Basic Autos", new MobilityAuto(drivetrain));
 
     public RobotContainer() {
         endEffector.setDefaultCommand(endEffector.centerCoral());

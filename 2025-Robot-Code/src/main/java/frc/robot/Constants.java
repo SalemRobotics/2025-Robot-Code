@@ -137,6 +137,7 @@ public final class Constants {
 
     public static final PathConstraints kScoringConstraints = new PathConstraints(3.0, 3.0, 2 * Math.PI, 4 * Math.PI);
 
+    public static final PathConstraints kMobilityConstraints = new PathConstraints(3.0, 3.0, 2 * Math.PI, 4 * Math.PI);
   }
 
   public static class AutoConstants {
