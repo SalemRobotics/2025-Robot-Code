@@ -58,9 +58,9 @@ public class RobotContainer {
         mAutoPicker.initializeCommands("Basic Autos", new MobilityAuto(drivetrain));
 
         WebServer.start(
-        5801,
-        Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(), "hud")
-            .toString());
+            5801,
+            Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(), "hud")
+                .toString());
 
     }
 
