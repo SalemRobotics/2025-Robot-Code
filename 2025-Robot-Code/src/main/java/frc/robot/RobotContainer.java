@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.MobilityAuto;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
 import frc.robot.subsystems.Vision;
@@ -46,11 +47,12 @@ public class RobotContainer {
     public final Elevator elevator = new Elevator();
 
     private final AutoPicker mAutoPicker = new AutoPicker();
-    mAutoPicker.initializeCommands("Basic Autos", new MobilityAuto(drivetrain));
+    
 
     public RobotContainer() {
         endEffector.setDefaultCommand(endEffector.centerCoral());
         configureBindings();
+        mAutoPicker.initializeCommands("Basic Autos", new MobilityAuto(drivetrain));
     }
 
     public void periodic(){

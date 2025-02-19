@@ -52,6 +52,7 @@ public class MobilityAuto extends ParallelCommandGroup{
             addCommands(Commands.none());
         }
         
+        addRequirements(mDrivetrain);
 
 
     }
