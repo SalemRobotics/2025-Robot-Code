@@ -21,6 +21,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.net.WebServer;
+import java.nio.file.Paths;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -53,6 +56,12 @@ public class RobotContainer {
         endEffector.setDefaultCommand(endEffector.centerCoral());
         configureBindings();
         mAutoPicker.initializeCommands("Basic Autos", new MobilityAuto(drivetrain));
+
+        WebServer.start(
+        5801,
+        Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(), "hud")
+            .toString());
+
     }
 
     public void periodic(){
