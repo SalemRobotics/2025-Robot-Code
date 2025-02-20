@@ -84,9 +84,9 @@ public class RobotContainer {
             point.withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))
         ));
 
-        driverController.b().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-        driverController.a().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-        driverController.x().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL3Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+        driverController.a().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+        driverController.x().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+        driverController.b().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL3Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
         driverController.y().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
 
         // Run SysId routines when holding back/start and X/Y.

@@ -24,8 +24,8 @@ public class EndEffector extends SubsystemBase {
     private boolean mHasCoral = false;
 
     private final TalonFXConfiguration mConfig = new TalonFXConfiguration();
-    private final TalonFX mEffectorMotor = new TalonFX(0, "rio");
-    private final TalonFX mAlgaeRemoverMotor = new TalonFX(1, "rio");
+    private final TalonFX mEffectorMotor = new TalonFX(0, "rio0");
+    private final TalonFX mAlgaeRemoverMotor = new TalonFX(1, "rio0");
 
     public EndEffector() {  
         FeedbackConfigs fbcfg = mConfig.Feedback;
