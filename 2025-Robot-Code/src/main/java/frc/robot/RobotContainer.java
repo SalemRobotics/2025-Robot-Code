@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.MobilityAuto;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
 import frc.robot.subsystems.Vision;
@@ -46,10 +47,12 @@ public class RobotContainer {
     public final Elevator elevator = new Elevator();
 
     private final AutoPicker mAutoPicker = new AutoPicker();
+    
 
     public RobotContainer() {
         endEffector.setDefaultCommand(endEffector.centerCoral());
         configureBindings();
+        mAutoPicker.initializeCommands("Basic Autos", new MobilityAuto(drivetrain));
     }
 
     public void periodic(){
@@ -81,9 +84,9 @@ public class RobotContainer {
             point.withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))
         ));
 
-        driverController.b().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-        driverController.a().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-        driverController.x().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL3Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+        driverController.a().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+        driverController.x().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+        driverController.b().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL3Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
         driverController.y().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
 
         // Run SysId routines when holding back/start and X/Y.
