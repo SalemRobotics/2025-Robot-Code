@@ -1,0 +1,71 @@
+html, body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #36454F;
+    position: relative;
+}
+  
+.hexagon {
+    height: calc(40vmin); /* height = width * sqrt(3)/2 */
+    aspect-ratio: 1/cos(30deg);
+    background-color: dodgerblue;
+    clip-path: polygon(50% -50%,100% 50%,50% 150%,0 50%);
+}
+
+.triangle {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+.triangle.top {
+    border-width: 0 10vmin 10vmin 10vmin;
+    border-color: transparent transparent gray transparent;
+    left: 50%;
+    transform: translateX(-50%) rotate(180deg);
+    top: calc(50% - 35vmin); /* Adjust the distance from the hexagon */
+}
+
+.triangle.top-right {
+    border-width: 0 10vmin 10vmin 10vmin;
+    border-color: transparent transparent gray transparent;
+    left: calc(100% - 5vmin);
+    top: calc(25% + 5vmin);
+    transform: rotate(-120deg);
+}
+
+.triangle.top-left {
+    border-width: 0 10vmin 10vmin 10vmin;
+    border-color: transparent transparent gray transparent;
+    left: calc(0% - 15vmin);
+    top: calc(25% + 5vmin);
+    transform: rotate(120deg);
+}
+
+.triangle.bottom {
+    border-width: 0 10vmin 10vmin 10vmin;
+    border-color: transparent transparent gray transparent;
+    left: 50%;
+    transform: translateX(-50%);
+    top: calc(50% + 25vmin)
+}
+
+.triangle.bottom-left {
+    border-width: 0 10vmin 10vmin 10vmin;
+    border-color: transparent transparent gray transparent;
+    left: calc(0% - 15vmin);
+    top: calc(75% - 15vmin);
+    transform: rotate(60deg);
+}
+
+.triangle.bottom-right {
+    border-width: 0 10vmin 10vmin 10vmin;
+    border-color: transparent transparent gray transparent;
+    left: calc(100% - 5vmin);
+    top: calc(75% - 15vmin);
+    transform: rotate(-60deg);
+}
