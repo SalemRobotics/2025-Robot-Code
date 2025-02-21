@@ -109,11 +109,11 @@ public final class Constants {
 
   public static class ElevatorConstants {
     public static final double kStowedHeight = 0;
-    public static final double kL1Height = 5.9;
-    public static final double kL2Height = 12.2;
-    public static final double kL3Height = 21.2;
-    public static final double kL4Height = 51.7;
-    public static final CANBus kElevatorMotorBus = new CANBus("canivore");
+    public static final double kL1Height = .744;
+    public static final double kL2Height = 1.620;
+    public static final double kL3Height = 2.82;
+    public static final double kL4Height = 4.52;
+    public static final CANBus kElevatorMotorBus = new CANBus("canivore0");
     public static final int kElevatorMotorAPort = 13;
     public static final int kElevatorMotorBPort = 14;
     public static final double kSensorToMechanismRatio = 9.0;
@@ -177,7 +177,7 @@ public final class Constants {
 
   public static class AlgaeConstants {
     public static final int kAlgaeMotorPort = 20;
-    public static final CANBus kAlgaeMotorBus = new CANBus("canivore");
+    public static final CANBus kAlgaeMotorBus = new CANBus("canivore0");
     public static final double kAlgaeMotorSpeed = 1.0;
     public static final double kAlgaeExtendedRotation = 0.25;
     public static final double kAlgaeStowedRotation = 0;

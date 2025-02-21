@@ -13,10 +13,13 @@ import frc.robot.subsystems.Vision;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.ArrayList;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -56,20 +59,29 @@ public class RobotContainer {
         endEffector.setDefaultCommand(endEffector.centerCoral());
         configureBindings();
         mAutoPicker.initializeCommands("Basic Autos", new MobilityAuto(drivetrain));
-
         WebServer.start(
             5801,
             Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(), "hud")
                 .toString());
-
     }
 
     public void periodic(){
-        if(vision.getCurrentPositionCam1().getPose().isPresent()){
-            drivetrain.addVisionMeasurement(vision.getCurrentPositionCam1().getPose().get(), vision.getCurrentPositionCam1().getTime());
+        ArrayList<VisionHelper> cam1Results = vision.getCurrentPositionCam1();
+        ArrayList<VisionHelper> cam2Results = vision.getCurrentPositionCam2();
+        for(int i = 0; i < cam1Results.size(); i++){
+            VisionHelper cam1Result = cam1Results.get(i);
+            if(cam1Result.getPose().isPresent()){
+                drivetrain.addVisionMeasurement(cam1Result.getPose().get(), cam1Result.getTime());
+                SmartDashboard.putString("Cam1 Pose", "X: " + cam1Result.getPose().get().getX() + ", Y: " + cam1Result.getPose().get().getY() + ", Heading: " + cam1Result.getPose().get().getRotation());
+            }
         }
-        if(vision.getCurrentPositionCam2().getPose().isPresent()){
-            drivetrain.addVisionMeasurement(vision.getCurrentPositionCam2().getPose().get(), vision.getCurrentPositionCam2().getTime());
+        
+        for(int i = 0; i < cam2Results.size(); i++){
+            VisionHelper cam2Result = cam2Results.get(i);
+            if(cam2Result.getPose().isPresent()){
+                drivetrain.addVisionMeasurement(cam2Result.getPose().get(), cam2Result.getTime());
+                SmartDashboard.putString("Cam1 Pose", "X: " + cam2Result.getPose().get().getX() + ", Y: " + cam2Result.getPose().get().getY() + ", Heading: " + cam2Result.getPose().get().getRotation());
+            }
         }
             
     }
@@ -93,9 +105,9 @@ public class RobotContainer {
             point.withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))
         ));
 
-        driverController.b().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-        driverController.a().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-        driverController.x().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL3Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+        driverController.a().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+        driverController.x().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+        driverController.b().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL3Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
         driverController.y().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height)).onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
 
         // Run SysId routines when holding back/start and X/Y.

@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.photonvision.PhotonCamera;
@@ -23,65 +24,70 @@ public class Vision extends SubsystemBase{
         mFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
     }
 
-    public VisionHelper getCurrentPositionCam1(){
-        var result = mCamera1.getLatestResult();
-        if (result.multitagResult.isPresent()) {
-            Transform3d fieldToCamera = result.multitagResult.get().estimatedPose.best;
-            Transform3d fieldToRobot = fieldToCamera.plus(VisionConstants.kRobotToCam1.inverse());
-            return new VisionHelper(
-                Optional.of(new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation()).toPose2d()),
-                result.getTimestampSeconds()
-            );
-        }
-        else if(!result.targets.isEmpty()){
-            var target = result.targets.get(0);
-            
-            // Calculate robot pose
-            var tagPose = mFieldLayout.getTagPose(target.fiducialId);
-            if (tagPose.isPresent()) {
-                Transform3d fieldToTarget =
-                    new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
-                Transform3d cameraToTarget = target.bestCameraToTarget;
-                Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
+    public ArrayList<VisionHelper> getCurrentPositionCam1(){
+        var results = mCamera1.getAllUnreadResults();
+        ArrayList<VisionHelper> returnPoses = new ArrayList<VisionHelper>();
+        for(int i = 0; i < results.size(); i++){
+            if (results.get(i).multitagResult.isPresent()) {
+                Transform3d fieldToCamera = results.get(i).multitagResult.get().estimatedPose.best;
                 Transform3d fieldToRobot = fieldToCamera.plus(VisionConstants.kRobotToCam1.inverse());
-                return new VisionHelper(
+                returnPoses.add(new VisionHelper(
                     Optional.of(new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation()).toPose2d()),
-                    result.getTimestampSeconds()
-                );
+                    results.get(i).getTimestampSeconds()
+                ));
+            }
+            else if(!results.get(i).targets.isEmpty()){
+                var target = results.get(i).targets.get(0);
+                
+                // Calculate robot pose
+                var tagPose = mFieldLayout.getTagPose(target.fiducialId);
+                if (tagPose.isPresent()) {
+                    Transform3d fieldToTarget =
+                        new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
+                    Transform3d cameraToTarget = target.bestCameraToTarget;
+                    Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
+                    Transform3d fieldToRobot = fieldToCamera.plus(VisionConstants.kRobotToCam1.inverse());
+                    returnPoses.add( new VisionHelper(
+                        Optional.of(new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation()).toPose2d()),
+                        results.get(i).getTimestampSeconds()
+                    ));
+                }
             }
         }
-        return new VisionHelper(Optional.empty(), 0.0);
-        
+        return returnPoses;
     }
 
-    public VisionHelper getCurrentPositionCam2(){
-        var result = mCamera2.getLatestResult();
-        if (result.multitagResult.isPresent()) {
-            Transform3d fieldToCamera = result.multitagResult.get().estimatedPose.best;
-            Transform3d fieldToRobot = fieldToCamera.plus(VisionConstants.kRobotToCam2.inverse());
-            return new VisionHelper(
-                Optional.of(new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation()).toPose2d()),
-                result.getTimestampSeconds()
-            );
-        }
-        else if(!result.targets.isEmpty()){
-            var target = result.targets.get(0);
-            
-            // Calculate robot pose
-            var tagPose = mFieldLayout.getTagPose(target.fiducialId);
-            if (tagPose.isPresent()) {
-                Transform3d fieldToTarget =
-                    new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
-                Transform3d cameraToTarget = target.bestCameraToTarget;
-                Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
+    public ArrayList<VisionHelper> getCurrentPositionCam2(){
+        var results = mCamera2.getAllUnreadResults();
+        ArrayList<VisionHelper> returnPoses = new ArrayList<VisionHelper>();
+        for(int i = 0; i < results.size(); i++){
+            if (results.get(i).multitagResult.isPresent()) {
+                Transform3d fieldToCamera = results.get(i).multitagResult.get().estimatedPose.best;
                 Transform3d fieldToRobot = fieldToCamera.plus(VisionConstants.kRobotToCam2.inverse());
-                return new VisionHelper(
+                returnPoses.add(new VisionHelper(
                     Optional.of(new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation()).toPose2d()),
-                    result.getTimestampSeconds()
-                );
+                    results.get(i).getTimestampSeconds()
+                ));
+            }
+            else if(!results.get(i).targets.isEmpty()){
+                var target = results.get(i).targets.get(0);
+                
+                // Calculate robot pose
+                var tagPose = mFieldLayout.getTagPose(target.fiducialId);
+                if (tagPose.isPresent()) {
+                    Transform3d fieldToTarget =
+                        new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
+                    Transform3d cameraToTarget = target.bestCameraToTarget;
+                    Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
+                    Transform3d fieldToRobot = fieldToCamera.plus(VisionConstants.kRobotToCam2.inverse());
+                    returnPoses.add( new VisionHelper(
+                        Optional.of(new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation()).toPose2d()),
+                        results.get(i).getTimestampSeconds()
+                    ));
+                }
             }
         }
-        return new VisionHelper(Optional.empty(), 0.0);
+        return returnPoses;
     }
 
 }
