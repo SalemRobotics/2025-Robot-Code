@@ -8,14 +8,17 @@ import frc.robot.Constants.EndEffectorConstants;
 import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 public class EndEffector extends SubsystemBase {
@@ -24,8 +27,8 @@ public class EndEffector extends SubsystemBase {
     private boolean mHasCoral = false;
 
     private final TalonFXConfiguration mConfig = new TalonFXConfiguration();
-    private final TalonFX mEffectorMotor = new TalonFX(0, "rio0");
-    private final TalonFX mAlgaeRemoverMotor = new TalonFX(1, "rio0");
+    private final TalonFX mEffectorMotor = new TalonFX(20, "rio");
+    private final TalonFX mAlgaeRemoverMotor = new TalonFX(21, "rio");
 
     public EndEffector() {  
         FeedbackConfigs fbcfg = mConfig.Feedback;
@@ -54,21 +57,31 @@ public class EndEffector extends SubsystemBase {
         mAlgaeRemoverMotor.setPosition(0);
     }
 
+    @Override
+    public void periodic() {
+        SmartDashboard.putBoolean("entrance", mEntranceLineBreaker.get());
+        SmartDashboard.putBoolean("exit", mExitLineBreaker.get());
+    }
+
     // Could we reverse the break beam value to have it set to true if the object is
     // in the way rather than the vice versa
     public Command centerCoral() {
         return new RunCommand(() -> {
-            if (mExitLineBreaker.get() && !mEntranceLineBreaker.get()) {
+            if (!mExitLineBreaker.get() && !mEntranceLineBreaker.get()) {
                 mHasCoral = true;
                 mEffectorMotor.stopMotor();
-            } else if (mExitLineBreaker.get()) {
+            }else if(!mExitLineBreaker.get() && mEntranceLineBreaker.get()){
+                mEffectorMotor.set(-EndEffectorConstants.kEndEffectorSlowSpeed);
+            } else if (!mEntranceLineBreaker.get()) {
                 mEffectorMotor.set(EndEffectorConstants.kEndEffectorSlowSpeed);
             } else {
-                if (!mEntranceLineBreaker.get()) {
+                if (mEntranceLineBreaker.get()) {
                     mHasCoral = false;
                 }
                 mEffectorMotor.set(EndEffectorConstants.kEndEffectorFastSpeed);
+                //mEffectorMotor.setControl(new VelocityVoltage(20.0));
             }
+
         }, this);
 
     }
@@ -78,7 +91,7 @@ public class EndEffector extends SubsystemBase {
     }
 
     public Command ejectCoral() {
-        return Commands.run(() -> mEffectorMotor.set(EndEffectorConstants.kEndEffectorFastSpeed));
+        return Commands.run(() -> mEffectorMotor.set(EndEffectorConstants.kEndEffectorEjectSpeed));
     }
 
 }
