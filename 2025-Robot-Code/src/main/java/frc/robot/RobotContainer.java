@@ -13,14 +13,20 @@ import frc.robot.subsystems.Vision;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.ArrayList;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.net.WebServer;
+import java.nio.file.Paths;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -53,14 +59,29 @@ public class RobotContainer {
         endEffector.setDefaultCommand(endEffector.centerCoral());
         configureBindings();
         mAutoPicker.initializeCommands("Basic Autos", new MobilityAuto(drivetrain));
+        WebServer.start(
+            5801,
+            Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(), "hud")
+                .toString());
     }
 
     public void periodic(){
-        if(vision.getCurrentPositionCam1().getPose().isPresent()){
-            drivetrain.addVisionMeasurement(vision.getCurrentPositionCam1().getPose().get(), vision.getCurrentPositionCam1().getTime());
+        ArrayList<VisionHelper> cam1Results = vision.getCurrentPositionCam1();
+        ArrayList<VisionHelper> cam2Results = vision.getCurrentPositionCam2();
+        for(int i = 0; i < cam1Results.size(); i++){
+            VisionHelper cam1Result = cam1Results.get(i);
+            if(cam1Result.getPose().isPresent()){
+                drivetrain.addVisionMeasurement(cam1Result.getPose().get(), cam1Result.getTime());
+                SmartDashboard.putString("Cam1 Pose", "X: " + cam1Result.getPose().get().getX() + ", Y: " + cam1Result.getPose().get().getY() + ", Heading: " + cam1Result.getPose().get().getRotation());
+            }
         }
-        if(vision.getCurrentPositionCam2().getPose().isPresent()){
-            drivetrain.addVisionMeasurement(vision.getCurrentPositionCam2().getPose().get(), vision.getCurrentPositionCam2().getTime());
+        
+        for(int i = 0; i < cam2Results.size(); i++){
+            VisionHelper cam2Result = cam2Results.get(i);
+            if(cam2Result.getPose().isPresent()){
+                drivetrain.addVisionMeasurement(cam2Result.getPose().get(), cam2Result.getTime());
+                SmartDashboard.putString("Cam1 Pose", "X: " + cam2Result.getPose().get().getX() + ", Y: " + cam2Result.getPose().get().getY() + ", Heading: " + cam2Result.getPose().get().getRotation());
+            }
         }
             
     }
