@@ -105,20 +105,29 @@ public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
     public static final int kOperatorControllerPort = 1;
+    public static final double kRumbleStrength = 0.5;
   }
 
   public static class ElevatorConstants {
+    /*
+     * 1 rotation = ~6.426 in of carriage travel
+     * more precise: 1 rotation = ~6.425574853 inches, obtained by CAD & 2πr with 
+     *  r = 1.022662 and r is the radius of the sprocket
+     * 
+     * Our current positions *work*, but finding exact heights in inches and getting rotations with this rot:in ratio 
+     * may be more precise
+     */
     public static final double kStowedHeight = 0;
-    public static final double kL1Height = .744;
-    public static final double kL2Height = 1.620;
+    public static final double kL1Height = 1.1;
+    public static final double kL2Height = 1.536;
     public static final double kL3Height = 2.82;
-    public static final double kL4Height = 4.52;
+    public static final double kL4Height = 4.69;
     public static final CANBus kElevatorMotorBus = new CANBus("canivore0");
     public static final int kElevatorMotorAPort = 13;
     public static final int kElevatorMotorBPort = 14;
     public static final double kSensorToMechanismRatio = 9.0;
-    public static final double kElevatorMaxSpeed = 5.0;
-    public static final double kElevatorMaxAcceleration = 10.0;
+    public static final double kElevatorMaxSpeed = 9.0;
+    public static final double kElevatorMaxAcceleration = 13.0;
     public static final double kElevatorMaxJerk = 100.0;
     public static final double kElevatorG = 0.25;
     public static final double kElevatorS = 0.25;
@@ -165,37 +174,41 @@ public final class Constants {
   }
 
   public static class VisionConstants {
-    public static String kCamera1Name = "";
-    public static String kCamera2Name = "";
+    public static String kCamera1Name = "Left";
+    public static String kCamera2Name = "Right";
 
     public static final Transform3d kRobotToCam1 =
-      new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0));
+      new Transform3d(
+        new Translation3d(Units.inchesToMeters(11.58), Units.inchesToMeters(11.189), Units.inchesToMeters(8.25)), 
+        new Rotation3d(0, Units.degreesToRadians(-15), Units.degreesToRadians(-20.0)));
 
     public static final Transform3d kRobotToCam2 =
-      new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0));
+      new Transform3d(
+        new Translation3d(Units.inchesToMeters(11.58), Units.inchesToMeters(-11.189), Units.inchesToMeters(8.25)), 
+        new Rotation3d(0, Units.degreesToRadians(-15), Units.degreesToRadians(20.0)));
   }
 
   public static class AlgaeConstants {
-    public static final int kAlgaeMotorPort = 20;
-    public static final CANBus kAlgaeMotorBus = new CANBus("canivore0");
+    public static final int kAlgaeMotorPort = 21;
     public static final double kAlgaeMotorSpeed = 1.0;
     public static final double kAlgaeExtendedRotation = 0.25;
     public static final double kAlgaeStowedRotation = 0;
+    public static final double kSensorToMechanismRatio = 25.0;
   }
 
   public static class EndEffectorConstants {
-    public static final int kEntranceLineBreakerPort = 1;
-    public static final int kExitLineBreakerPort = 0;
-    public static final double kEndEffectorEjectSpeed = 0.9;
-    public static final double kEndEffectorFastSpeed = 0.2;
-    public static final double kEndEffectorSlowSpeed = 0.08;
+    public static final int kMotorPort = 20;
+    public static final int kEntranceBreakerPort = 1;
+    public static final int kExitBreakerPort = 0;
+
+    public static final double kFastEjectSpeed = 0.9;
+    public static final double kDefaultEjectSpeed = 0.6;
+    public static final double kSlowEjectSpeed = 0.3;
+
+    public static final double kIdleSpeed = 0.2;
+    public static final double kAdjustSpeed = 0.08;
+    
     public static final double kSensorToMechanismRatio = 25.0;
-    public static final double kAlgaeRemoverG = 0.25;
-    public static final double kAlgaeRemoverS = 0.25;
-    public static final double kAlgaeRemoverV = 0.12;
-    public static final double kAlgaeRemoverA = 0.01;
-    public static final double kAlgaeRemoverP = 60.0;
-    public static final double kAlgaeRemoverI = 0.0;
-    public static final double kAlgaeRemoverD = 0.5;
+    public static final double kDelayPeriod = 0.20;
   }
 }

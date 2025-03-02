@@ -1,10 +1,12 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Second;
 
 import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -27,10 +29,11 @@ public class Elevator extends SubsystemBase {
     private final TalonFX mElevatorMotorB = new TalonFX(ElevatorConstants.kElevatorMotorBPort,
             ElevatorConstants.kElevatorMotorBus);
     private final MotionMagicVoltage mVoltage = new MotionMagicVoltage(0);
+    private int periodicIteration = 0;
 
     public Elevator() {
-        FeedbackConfigs fbcfg = mConfig.Feedback;
-        fbcfg.SensorToMechanismRatio = ElevatorConstants.kSensorToMechanismRatio;
+        mConfig.Feedback.SensorToMechanismRatio = ElevatorConstants.kSensorToMechanismRatio;
+        CurrentLimitsConfigs clcfg = mConfig.CurrentLimits;
 
         MotionMagicConfigs mmcfg = mConfig.MotionMagic;
         mmcfg.withMotionMagicCruiseVelocity(RotationsPerSecond.of(ElevatorConstants.kElevatorMaxSpeed))
@@ -47,6 +50,8 @@ public class Elevator extends SubsystemBase {
         slot0.kG = ElevatorConstants.kElevatorG;
 
         StatusCode status = StatusCode.StatusCodeNotInitialized;
+        clcfg.withStatorCurrentLimit(40.00);
+        mConfig.withCurrentLimits(clcfg);
 
         for (int i = 0; i < 5; i++) {
             status = mElevatorMotorA.getConfigurator().apply(mConfig);
@@ -59,6 +64,16 @@ public class Elevator extends SubsystemBase {
             DataLogManager.log("Failed to configure elevator motors: " + status.toString());
 
         mElevatorMotorB.setControl(new Follower(mElevatorMotorA.getDeviceID(), true));
+        mElevatorMotorA.setPosition(0);
+        mElevatorMotorB.setPosition(0);
+    }
+
+    @Override
+    public void periodic() {
+        if (periodicIteration < 100) {
+            periodicIteration = 0;
+            DataLogManager.log("Current elevator motor position is: " + mElevatorMotorA.getPosition().getValue().in(Rotations));
+        } else periodicIteration++;
     }
 
     public Command setElevatorTarget(double height) {

@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -337,7 +338,7 @@ private void ConfigureAutoBuilder(){
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
     }
 
-    private Pose2d getScoringPose(boolean isRight){
+    public Pose2d getScoringPose(boolean isRight){
         Pose2d currentPose = getState().Pose;
         AllianceFlipUtil.apply(currentPose);
         Pose2d closestFace = currentPose.nearest(Arrays.asList(FieldConstants.centerFaces));
