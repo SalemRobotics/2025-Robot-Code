@@ -21,6 +21,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 public class EndEffector extends SubsystemBase {
     private enum EndEffectorPhase {
@@ -41,18 +42,23 @@ public class EndEffector extends SubsystemBase {
 
     private final TalonFX mEffectorMotor = new TalonFX(EndEffectorConstants.kMotorPort, "rio");
 
+    public EndEffector() {
+        mEffectorMotor.setNeutralMode(NeutralModeValue.Brake);
+    }
+
     @Override
     public void periodic() {
         SmartDashboard.putBoolean("Entrance", mEntranceLineBreaker.get());
         SmartDashboard.putBoolean("Exit", mExitLineBreaker.get());
         SmartDashboard.putString("End Effector State", mCurrentPhase.toString().substring(1));
+        SmartDashboard.putBoolean("Awaiting Delay", mCurrentPhase == EndEffectorPhase.kAwaitingDelay);
     }
 
     // OLD IMPLEMENTATION - DO NOT DELETE
     // Could we reverse the break beam value to have it set to true if the object is
     // in the way rather than the vice versa
 
-    public Command oldCenterCoral() {
+    public Command centerCoral() {
         return new RunCommand(() -> {
             if (!mExitLineBreaker.get() && !mEntranceLineBreaker.get()) {
                 mHasCoral = true;
@@ -67,60 +73,6 @@ public class EndEffector extends SubsystemBase {
                 }
                 mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
                 // mEffectorMotor.setControl(new VelocityVoltage(20.0));
-            }
-        }, this);
-    }
-
-    public Command centerCoral() {
-        return Commands.run(() -> {
-            // turn them into variables so that we don't have to make as many
-            // function calls.
-            // NOTE: true = no coral, false = sees coral
-            boolean entranceBroken = mEntranceLineBreaker.get();
-            boolean exitBroken = mExitLineBreaker.get();
-
-            if (entranceBroken && exitBroken) {
-                // neither has a coral
-                mCurrentPhase = EndEffectorPhase.kNoCoral;
-                mHasCoral = false;
-                mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
-            }
-            else if (mCurrentPhase == EndEffectorPhase.kAwaitingDelay) {
-                // immediately stop if the delay hasn't finished
-                if (!mIntakeDelay.hasElapsed(EndEffectorConstants.kDelayPeriod))
-                    return;
-
-                mCurrentPhase = EndEffectorPhase.kRepositioningCoral;
-                if (!entranceBroken && exitBroken) {
-                    mEffectorMotor.set(-EndEffectorConstants.kAdjustSpeed);
-                } else if (entranceBroken && !exitBroken) {
-                    mEffectorMotor.set(EndEffectorConstants.kAdjustSpeed);
-                } else if (!entranceBroken && !exitBroken) {
-                    mCurrentPhase = EndEffectorPhase.kInPosition;
-                    mEffectorMotor.stopMotor();
-                } else {
-                    DataLogManager.log("Invalid end effector state: [Current phase is repositioning] Left: "
-                            + entranceBroken + ", Right: " + exitBroken);
-                }
-            } else if (mCurrentPhase == EndEffectorPhase.kIntakingCoral) {
-                if (!entranceBroken && !exitBroken) {
-                    mCurrentPhase = EndEffectorPhase.kAwaitingDelay;
-                    mEffectorMotor.stopMotor();
-                    mIntakeDelay = new Timer();
-                } else
-                    return;
-            } else if (!entranceBroken && exitBroken) {
-                // just intaking a coral
-                mHasCoral = true;
-                mCurrentPhase = EndEffectorPhase.kIntakingCoral;
-                mEffectorMotor.set(EndEffectorConstants.kAdjustSpeed);
-            } else {
-                if (entranceBroken && exitBroken) {
-                    // neither has a coral
-                    mCurrentPhase = EndEffectorPhase.kNoCoral;
-                    mHasCoral = false;
-                }
-                mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
             }
         }, this);
     }

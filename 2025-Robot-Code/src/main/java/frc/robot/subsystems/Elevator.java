@@ -72,7 +72,7 @@ public class Elevator extends SubsystemBase {
     public void periodic() {
         if (periodicIteration < 100) {
             periodicIteration = 0;
-            DataLogManager.log("Current elevator motor position is: " + mElevatorMotorA.getPosition().getValue().in(Rotations));
+            // DataLogManager.log("Current elevator motor position is: " + mElevatorMotorA.getPosition().getValue().in(Rotations));
         } else periodicIteration++;
     }
 
