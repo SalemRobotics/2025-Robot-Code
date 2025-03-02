@@ -180,12 +180,12 @@ public final class Constants {
     public static final Transform3d kRobotToCam1 =
       new Transform3d(
         new Translation3d(Units.inchesToMeters(11.58), Units.inchesToMeters(11.189), Units.inchesToMeters(8.25)), 
-        new Rotation3d(0, Units.degreesToRadians(-15), Units.degreesToRadians(-20.0)));
+        new Rotation3d(0, Units.degreesToRadians(-15.0), Units.degreesToRadians(-20.0)));
 
     public static final Transform3d kRobotToCam2 =
       new Transform3d(
         new Translation3d(Units.inchesToMeters(11.58), Units.inchesToMeters(-11.189), Units.inchesToMeters(8.25)), 
-        new Rotation3d(0, Units.degreesToRadians(-15), Units.degreesToRadians(20.0)));
+        new Rotation3d(0, Units.degreesToRadians(-15.0), Units.degreesToRadians(15.0)));
   }
 
   public static class AlgaeConstants {
