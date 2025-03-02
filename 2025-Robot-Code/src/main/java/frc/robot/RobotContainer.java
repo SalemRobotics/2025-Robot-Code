@@ -12,6 +12,7 @@ import frc.robot.commands.MobilityAuto;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
 import frc.robot.subsystems.Vision;
+import frc.robot.util.AllianceFlipUtil;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -162,9 +163,9 @@ public class RobotContainer {
                                 .withModuleDirection(new Rotation2d(-driverController.getLeftY(),
                                                 -driverController.getLeftX()))));
 
-                driverController.a().onTrue(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kSlowEjectSpeed)))
-                                .onFalse(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kDefaultEjectSpeed)));
-                driverController.y().onTrue(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kFastEjectSpeed)))
+                driverController.a().onTrue(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kSlowEjectSpeed), endEffector))
+                                .onFalse(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kDefaultEjectSpeed), endEffector));
+                driverController.y().onTrue(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kFastEjectSpeed), endEffector))
                                 .onFalse(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kDefaultEjectSpeed), endEffector));
 
                 driverController.a().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height))
@@ -187,8 +188,11 @@ public class RobotContainer {
                 driverController.start().and(driverController.x())
                                 .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-                // reset the field-centric heading on left bumper press
+                // reset the field-centric heading on start button press
                 driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+
+                driverController.leftBumper().onTrue(drivetrain.getScoringPath(false));
+                driverController.rightBumper().onTrue(drivetrain.getScoringPath(true));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }

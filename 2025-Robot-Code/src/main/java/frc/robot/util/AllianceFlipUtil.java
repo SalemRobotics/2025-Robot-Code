@@ -1,7 +1,7 @@
 // Copyright (c) 2025 FRC 6328
 // http://github.com/Mechanical-Advantage
 
-package frc.robot;
+package frc.robot.util;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
