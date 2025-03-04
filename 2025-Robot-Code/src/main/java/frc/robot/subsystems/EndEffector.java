@@ -2,43 +2,23 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.EndEffectorConstants;
-import edu.wpi.first.units.AngleUnit;
-import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import com.ctre.phoenix6.StatusCode;
-import com.ctre.phoenix6.configs.FeedbackConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 public class EndEffector extends SubsystemBase {
-    private enum EndEffectorPhase {
-        kNoCoral,
-        kIntakingCoral,
-        kAwaitingDelay,
-        kRepositioningCoral,
-        kInPosition,
-    }
-
-    private EndEffectorPhase mCurrentPhase = EndEffectorPhase.kNoCoral;
-    // timer to represent the delay we use to stop the momentum of the coral
-    private Timer mIntakeDelay = new Timer();
-    private boolean mHasCoral = false;
-    private double mEjectSpeed = EndEffectorConstants.kDefaultEjectSpeed;
     private final DigitalInput mEntranceLineBreaker = new DigitalInput(EndEffectorConstants.kEntranceBreakerPort);
     private final DigitalInput mExitLineBreaker = new DigitalInput(EndEffectorConstants.kExitBreakerPort);
+
+    private boolean mCoralInPosition = false;
+    private boolean mAlreadyStopped = false;
+    private boolean mRepositioningCoral = false;
+    private boolean mHasCoral = false;
+    private double mEjectSpeed = EndEffectorConstants.kDefaultEjectSpeed;
 
     private final TalonFX mEffectorMotor = new TalonFX(EndEffectorConstants.kMotorPort, "rio");
 
@@ -50,30 +30,87 @@ public class EndEffector extends SubsystemBase {
     public void periodic() {
         SmartDashboard.putBoolean("Entrance", mEntranceLineBreaker.get());
         SmartDashboard.putBoolean("Exit", mExitLineBreaker.get());
-        SmartDashboard.putString("End Effector State", mCurrentPhase.toString().substring(1));
-        SmartDashboard.putBoolean("Awaiting Delay", mCurrentPhase == EndEffectorPhase.kAwaitingDelay);
+        SmartDashboard.putBoolean("Has Coral", mHasCoral);
+        SmartDashboard.putBoolean("Coral In Position", mCoralInPosition);
     }
 
-    // OLD IMPLEMENTATION - DO NOT DELETE
-    // Could we reverse the break beam value to have it set to true if the object is
-    // in the way rather than the vice versa
-
     public Command centerCoral() {
-        return new RunCommand(() -> {
-            if (!mExitLineBreaker.get() && !mEntranceLineBreaker.get()) {
+        /*
+         * Process:
+         * 1. Detect a coral at entrance
+         * 2. Slow down motors & wait until it is only seen at exit
+         * 3. Brake the motors
+         * 4. Reverse the motors until the coral is seen at both the exit and the
+         * entrance
+         * 5. Stop & set the inPosition flag(for AJ controller rumbling when it is safe
+         * to raise elevator)
+         * 
+         * Considerations:
+         * - Making this process quicker(adjusting speeds) while not affecting coral's
+         * end position
+         * - Improving the speed of this command, however it shoudln't be performance
+         * intensive already.
+         */
+        return Commands.run(() -> {
+            // false = found coral, true = no coral
+            boolean entrance = mEntranceLineBreaker.get();
+            boolean exit = mExitLineBreaker.get();
+
+            if (mCoralInPosition) {
+                // if the coral is in position, we can skip the rest of the loop.
+                // TODO: find out if we need to add an extra stopMotor call here
+                return;
+            } else if (!entrance && exit) {
+                // we're just detecting a coral, and slow down the motor
                 mHasCoral = true;
-                mEffectorMotor.stopMotor();
-            } else if (!mExitLineBreaker.get() && mEntranceLineBreaker.get()) {
-                mEffectorMotor.set(-EndEffectorConstants.kAdjustSpeed);
-            } else if (!mEntranceLineBreaker.get()) {
-                mEffectorMotor.set(EndEffectorConstants.kAdjustSpeed);
+                mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed);
+            } else if (mRepositioningCoral) {
+                if (entrance)
+                    // we continue reversing the coral
+                    mEffectorMotor.set(-EndEffectorConstants.kAdjustSpeed);
+                else {
+                    // we stop the motor and unset flags
+                    mEffectorMotor.stopMotor();
+                    mCoralInPosition = true;
+                    mRepositioningCoral = false;
+                }
+            } else if (entrance && !exit) {
+                if (mAlreadyStopped) {
+                    // if we've already stopped, we set the respective flags so we can start
+                    // retracting the coral
+                    mRepositioningCoral = true;
+                    mAlreadyStopped = false;
+                } else {
+                    // temporarily stop the motor to invoke braking and get rid of the momentum
+                    mEffectorMotor.stopMotor();
+                    mAlreadyStopped = true;
+                }
             } else {
-                if (mEntranceLineBreaker.get()) {
+                // if neither breaker sees it we don't have a coral anymore
+                if (entrance && exit) {
+                    mCoralInPosition = false;
                     mHasCoral = false;
                 }
                 mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
-                // mEffectorMotor.setControl(new VelocityVoltage(20.0));
             }
+
+            // OLD IMPLEMENTATION
+            // DO NOT DELETE
+
+            // if (!mExitLineBreaker.get() && !mEntranceLineBreaker.get()) {
+            // mHasCoral = true;
+            // mEffectorMotor.stopMotor();
+            // } else if (!mExitLineBreaker.get() && mEntranceLineBreaker.get()) {
+            // mEffectorMotor.set(-EndEffectorConstants.kAdjustSpeed);
+            // } else if (!mEntranceLineBreaker.get()) {
+            // mEffectorMotor.set(EndEffectorConstants.kAdjustSpeed);
+            // } else {
+            // if (mEntranceLineBreaker.get()) {
+            // mHasCoral = false;
+            // }
+            // mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
+            // // mEffectorMotor.setControl(new VelocityVoltage(20.0));
+            // }
         }, this);
     }
 
@@ -82,14 +119,14 @@ public class EndEffector extends SubsystemBase {
         return mHasCoral;
     }
 
+    // getter for mCoralInPosition
+    public boolean coralInPosition() {
+        return mCoralInPosition;
+    }
+
     // setter for mEjectSpeed
     public void setEjectSpeed(double speed) {
         mEjectSpeed = speed;
-    }
-
-    // checker for controller rumbling
-    public boolean isInPosition() {
-        return hasCoral() && mCurrentPhase == EndEffectorPhase.kInPosition;
     }
 
     public Command ejectCoral() {

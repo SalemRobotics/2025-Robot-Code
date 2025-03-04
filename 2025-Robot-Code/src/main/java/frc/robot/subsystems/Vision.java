@@ -4,27 +4,19 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import org.photonvision.PhotonCamera;
-import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.VisionHelper;
 
 public class Vision extends SubsystemBase{
-    final AprilTagFieldLayout mFieldLayout;
-    final PhotonCamera mCamera1;
-    final PhotonCamera mCamera2;
-
-    public Vision() {
-        mCamera1 = new PhotonCamera(VisionConstants.kCamera1Name);
-        mCamera2 = new PhotonCamera(VisionConstants.kCamera2Name);
-        mFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
-    }
+    final AprilTagFieldLayout mFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+    final PhotonCamera mCamera1 = new PhotonCamera(VisionConstants.kCamera1Name);
+    final PhotonCamera mCamera2 = new PhotonCamera(VisionConstants.kCamera2Name);
 
     public ArrayList<VisionHelper> getCurrentPositionCam1(){
         var results = mCamera1.getAllUnreadResults();

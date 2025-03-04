@@ -33,7 +33,6 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-
   public static class FieldConstants {
     public static final double kFieldLength = 17.5482504;
     public static final double kFieldWidth = 8.0518;
@@ -206,9 +205,9 @@ public final class Constants {
     public static final double kSlowEjectSpeed = 0.3;
 
     public static final double kIdleSpeed = 0.2;
+    public static final double kIntakeSpeed = 0.1;
     public static final double kAdjustSpeed = 0.08;
     
     public static final double kSensorToMechanismRatio = 25.0;
-    public static final double kDelayPeriod = 0.20;
   }
 }
