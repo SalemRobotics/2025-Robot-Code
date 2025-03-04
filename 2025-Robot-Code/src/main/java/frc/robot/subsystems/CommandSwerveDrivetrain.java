@@ -367,7 +367,6 @@ private void ConfigureAutoBuilder(){
         if (destinationPoseOptional.isEmpty()) {
             return Commands.none();
         }
-
         Pose2d destinationPose = destinationPoseOptional.get();
         // TODO: Tune these values!
         PIDController xPidController = new PIDController(5, 0, 0);
@@ -377,34 +376,35 @@ private void ConfigureAutoBuilder(){
         
         SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
 
-        return Commands.sequence(
-            Commands.run(
-                () -> {
-                    Pose2d currentPose = getState().Pose;
-                    Transform2d error = destinationPose.minus(currentPose);
-                    double xSpeed = xPidController.calculate(error.getX());
-                    double ySpeed = yPidController.calculate(error.getY());
-                    double thetaSpeed = thetaPidController.calculate(error.getRotation().getDegrees());
+        return Commands.runEnd(
+            () -> {
+                // Run
+                Pose2d currentPose = getState().Pose;
+                Transform2d error = destinationPose.minus(currentPose);
+                double xSpeed = xPidController.calculate(error.getX());
+                double ySpeed = yPidController.calculate(error.getY());
+                double thetaSpeed = thetaPidController.calculate(error.getRotation().getDegrees());
 
-                    setControl(drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalVelocity(thetaSpeed));
-                }
-            ).until(
-                () -> {
-                    double xTol = 0.1;
-                    double yTol = 0.1;
-                    double thetaTol = 1;
-                    // TODO: tune these values!
-
-                    Pose2d currentPose = getState().Pose; 
-                    Transform2d error = destinationPose.minus(currentPose);
-                    return MathUtil.isNear(0, error.getX(), xTol) && MathUtil.isNear(0, error.getY(), yTol) && MathUtil.isNear(0, error.getRotation().getDegrees(), thetaTol);
-                }
-            ),
-            Commands.runOnce(() -> {
+                setControl(drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalVelocity(thetaSpeed));
+            },
+            () -> {
+                // End (cleanup)
                 xPidController.close();
                 yPidController.close();
                 thetaPidController.close();
-            })
+            }, this
+        ).until(
+            () -> {
+                // Exit when close enough
+                double xTol = 0.1;
+                double yTol = 0.1;
+                double thetaTol = 1;
+                // TODO: tune these values!
+
+                Pose2d currentPose = getState().Pose; 
+                Transform2d error = destinationPose.minus(currentPose);
+                return MathUtil.isNear(0, error.getX(), xTol) && MathUtil.isNear(0, error.getY(), yTol) && MathUtil.isNear(0, error.getRotation().getDegrees(), thetaTol);
+            }
         );
     }
 
