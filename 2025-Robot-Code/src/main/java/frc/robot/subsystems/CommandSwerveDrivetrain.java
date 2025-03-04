@@ -20,7 +20,9 @@ import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
-
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -40,6 +42,8 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+
+
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -338,6 +342,11 @@ private void ConfigureAutoBuilder(){
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
     }
 
+    /***
+     * Based on the vehicles current location, return a scoring pose.
+     * @param isRight True if the right pole is selected.
+     * @return Pose2d of the scoring location.
+     */
     public Pose2d getScoringPose(boolean isRight){
         Pose2d currentPose = getState().Pose;
         AllianceFlipUtil.apply(currentPose);
@@ -346,28 +355,68 @@ private void ConfigureAutoBuilder(){
 
         return FieldConstants.kScoringPoses.get(face).get(isRight);
     }
-
-    public Command getScoringPath(boolean isRight){
-        try {
-            Pose2d goalPose = getScoringPose(isRight);
-            List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
-                new Pose2d(getState().Pose.getX(), getState().Pose.getY(), Rotation2d.fromDegrees(Math.atan(getState().Speeds.vyMetersPerSecond/getState().Speeds.vyMetersPerSecond))),
-                new Pose2d(goalPose.getX(), goalPose.getY(), Rotation2d.fromDegrees(Math.atan(getState().Speeds.vyMetersPerSecond/getState().Speeds.vyMetersPerSecond)))
-            );
-
-            PathConstraints constraints = DriveConstants.kScoringConstraints;
-
-            PathPlannerPath path = new PathPlannerPath(
-                waypoints,
-                constraints,
-                null,
-                new GoalEndState(0.0, Rotation2d.fromDegrees(Math.atan(getState().Speeds.vyMetersPerSecond/getState().Speeds.vyMetersPerSecond)))
-            );
-            
-            return AutoBuilder.followPath(path);
-        } catch (Exception e) {
-            DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+    
+    /***
+     * Given a destination pose, use PID to move the robot to that pose.
+     * This is optimized for short distances and small rotations,
+     * and relies on the operator getting most of the way there.
+     * @param destinationPoseOptional The destination pose to move to
+     * @return Command which exits when it is near the desired pose
+     */
+    public Command moveToPose(Optional<Pose2d> destinationPoseOptional) {
+        if (destinationPoseOptional.isEmpty()) {
             return Commands.none();
         }
+
+        Pose2d destinationPose = destinationPoseOptional.get();
+        // TODO: Tune these values!
+        PIDController xPidController = new PIDController(5, 0, 0);
+        PIDController yPidController = new PIDController(5, 0, 0);
+        PIDController thetaPidController = new PIDController(7, 0, 0);
+        thetaPidController.enableContinuousInput(-Math.PI, Math.PI);
+        
+        SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
+
+        return Commands.sequence(
+            Commands.run(
+                () -> {
+                    Pose2d currentPose = getState().Pose;
+                    Transform2d error = destinationPose.minus(currentPose);
+                    double xSpeed = xPidController.calculate(error.getX());
+                    double ySpeed = yPidController.calculate(error.getY());
+                    double thetaSpeed = thetaPidController.calculate(error.getRotation().getDegrees());
+
+                    setControl(drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalVelocity(thetaSpeed));
+                }
+            ).until(
+                () -> {
+                    double xTol = 0.1;
+                    double yTol = 0.1;
+                    double thetaTol = 1;
+                    // TODO: tune these values!
+
+                    Pose2d currentPose = getState().Pose; 
+                    Transform2d error = destinationPose.minus(currentPose);
+                    return MathUtil.isNear(0, error.getX(), xTol) && MathUtil.isNear(0, error.getY(), yTol) && MathUtil.isNear(0, error.getRotation().getDegrees(), thetaTol);
+                }
+            ),
+            Commands.runOnce(() -> {
+                xPidController.close();
+                yPidController.close();
+                thetaPidController.close();
+            })
+        );
+    }
+
+    /***
+     * Find the closest reef face, and drive to the selected scoring
+     * pose for that reef face.
+     * @param isRight True if the right pole is selected.
+     * @return Command which exits when it is near the desired pose
+     */
+    public Command driveToReef(boolean isRight) {
+        Pose2d goalPose = getScoringPose(isRight);
+
+        return moveToPose(optional.of(goalPose))
     }
 }
