@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -26,6 +27,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -385,7 +387,7 @@ private void ConfigureAutoBuilder(){
                 double ySpeed = yPidController.calculate(error.getY());
                 double thetaSpeed = thetaPidController.calculate(error.getRotation().getDegrees());
 
-                setControl(drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalVelocity(thetaSpeed));
+                setControl(drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
             },
             () -> {
                 // End (cleanup)
@@ -417,6 +419,6 @@ private void ConfigureAutoBuilder(){
     public Command driveToReef(boolean isRight) {
         Pose2d goalPose = getScoringPose(isRight);
 
-        return moveToPose(optional.of(goalPose))
+        return moveToPose(Optional.of(goalPose));
     }
 }
