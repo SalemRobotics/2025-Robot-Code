@@ -72,12 +72,12 @@ public class Elevator extends SubsystemBase {
     public void periodic() {
         if (periodicIteration < 100) {
             periodicIteration = 0;
-            // DataLogManager.log("Current elevator motor position is: " + mElevatorMotorA.getPosition().getValue().in(Rotations));
+            // .log("Current elevator motor position is: " + mElevatorMotorA.getPosition().getValue().in(Rotations));
         } else periodicIteration++;
     }
 
     public Command setElevatorTarget(double height) {
-        DataLogManager.log("Setting elevator height to " + height);
+        // DataLogManager.log("Setting elevator height to " + height);
         return Commands.run(() -> mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0)));
     }
 }

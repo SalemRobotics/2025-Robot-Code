@@ -86,7 +86,7 @@ public final class Constants {
       kScoringPoses.get(2).put(false, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //CL
       kScoringPoses.get(2).put(true, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //CR
       kScoringPoses.put(3, new HashMap<Boolean, Pose2d>());
-      kScoringPoses.get(3).put(false, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //DL
+      kScoringPoses.get(3).put(false, new Pose2d(3.098, 4.201, Rotation2d.fromDegrees(-0.15))); //DL
       kScoringPoses.get(3).put(true, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //DR
       kScoringPoses.put(4, new HashMap<Boolean, Pose2d>());
       kScoringPoses.get(4).put(false, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //EL
