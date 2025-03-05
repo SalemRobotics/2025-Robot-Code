@@ -130,6 +130,9 @@ public class EndEffector extends SubsystemBase {
     }
 
     public Command ejectCoral() {
-        return Commands.run(() -> mEffectorMotor.set(mEjectSpeed), this);
+        return Commands.run(() -> {
+            mCoralInPosition = false;
+            mEffectorMotor.set(mEjectSpeed);
+        }, this);
     }
 }
