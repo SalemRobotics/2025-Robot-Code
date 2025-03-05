@@ -83,11 +83,11 @@ public final class Constants {
       kScoringPoses.get(1).put(false, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //BL
       kScoringPoses.get(1).put(true, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //BR
       kScoringPoses.put(2, new HashMap<Boolean, Pose2d>());
-      kScoringPoses.get(2).put(false, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //CL
-      kScoringPoses.get(2).put(true, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //CR
+      kScoringPoses.get(2).put(false, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(300))); //CL
+      kScoringPoses.get(2).put(true, new Pose2d(3.921, 4.659, Rotation2d.fromDegrees(300))); //CR x is wrong currently
       kScoringPoses.put(3, new HashMap<Boolean, Pose2d>());
       kScoringPoses.get(3).put(false, new Pose2d(3.098, 4.201, Rotation2d.fromDegrees(-0.15))); //DL
-      kScoringPoses.get(3).put(true, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //DR
+      kScoringPoses.get(3).put(true, new Pose2d(3.098, 3.851, Rotation2d.fromDegrees(0))); //DR
       kScoringPoses.put(4, new HashMap<Boolean, Pose2d>());
       kScoringPoses.get(4).put(false, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //EL
       kScoringPoses.get(4).put(true, new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0))); //ER

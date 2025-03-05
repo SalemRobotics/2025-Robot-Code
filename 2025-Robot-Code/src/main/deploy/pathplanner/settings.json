@@ -2,7 +2,11 @@
   "robotWidth": 0.9,
   "robotLength": 0.9,
   "holonomicMode": true,
-  "pathFolders": [],
+  "pathFolders": [
+    "Bottom Coral Paths",
+    "Starting Paths",
+    "Top Coral Paths "
+  ],
   "autoFolders": [
     "Test Autos"
   ],
@@ -11,7 +15,7 @@
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,
   "defaultNominalVoltage": 12.0,
-  "robotMass": 13.6,
+  "robotMass": 58.967,
   "robotMOI": 6.883,
   "robotTrackwidth": 0.546,
   "driveWheelRadius": 0.051,

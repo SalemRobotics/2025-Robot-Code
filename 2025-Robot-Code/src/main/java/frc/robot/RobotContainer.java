@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -81,6 +82,7 @@ public class RobotContainer {
         private final AutoPicker mAutoPicker = new AutoPicker();
 
         public RobotContainer() {
+                ConfigureNamedCommands();
                 endEffector.setDefaultCommand(endEffector.centerCoral());
                 algaeRemover.setDefaultCommand(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
                 configureBindings();
@@ -196,6 +198,13 @@ public class RobotContainer {
                 driverController.rightBumper().onTrue(drivetrain.driveToReef(true));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
+        }
+
+        public void ConfigureNamedCommands() {
+                NamedCommands.registerCommand("score", Commands.run(() -> endEffector.ejectCoral()));
+                NamedCommands.registerCommand("elevator stow", Commands.run(() -> elevator.setElevatorTarget(ElevatorConstants.kStowedHeight)));
+                NamedCommands.registerCommand("elevator L3", Commands.run(() -> elevator.setElevatorTarget(ElevatorConstants.kL3Height)));
+                NamedCommands.registerCommand("elevator L4", Commands.run(() -> elevator.setElevatorTarget(ElevatorConstants.kL4Height)));
         }
 
         public Command getAutonomousCommand() {
