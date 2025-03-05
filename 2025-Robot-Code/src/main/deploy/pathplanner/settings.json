@@ -3,9 +3,12 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "Bottom Coral Paths",
+    "Bottom Coral From Reef Paths",
+    "Bottom Coral to Reef Paths",
+    "Test Paths",
     "Starting Paths",
-    "Top Coral Paths "
+    "Top Coral From Reef Paths",
+    "Top Coral to Reef Paths "
   ],
   "autoFolders": [
     "Test Autos"
