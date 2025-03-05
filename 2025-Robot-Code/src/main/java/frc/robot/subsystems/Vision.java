@@ -14,7 +14,7 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.VisionHelper;
 
 public class Vision extends SubsystemBase{
-    final AprilTagFieldLayout mFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+    final AprilTagFieldLayout mFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
     final PhotonCamera mCamera1 = new PhotonCamera(VisionConstants.kCamera1Name);
     final PhotonCamera mCamera2 = new PhotonCamera(VisionConstants.kCamera2Name);
 

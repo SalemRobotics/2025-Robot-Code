@@ -355,7 +355,7 @@ private void ConfigureAutoBuilder(){
         Pose2d closestFace = currentPose.nearest(Arrays.asList(FieldConstants.centerFaces));
         int face = Arrays.asList(FieldConstants.centerFaces).indexOf(closestFace);
 
-        return FieldConstants.kScoringPoses.get(face).get(isRight);
+        return AllianceFlipUtil.apply(FieldConstants.kScoringPoses.get(face).get(isRight));
     }
     
     /***
