@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -9,14 +10,29 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.VisionHelper;
 
 public class Vision extends SubsystemBase{
-    final AprilTagFieldLayout mFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+    static AprilTagFieldLayout mFieldLayout;
+    static boolean useCustomField = false;
+    static{
+        try {
+            mFieldLayout = new AprilTagFieldLayout(Path.of(Filesystem.getDeployDirectory().getAbsolutePath() + "/weldedlayout.json"));
+            useCustomField = true;
+        } catch (Exception e) {
+            // TODO: handle exception
+            mFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+        }
+        SmartDashboard.putBoolean("Field Config", useCustomField);
+    }
     final PhotonCamera mCamera1 = new PhotonCamera(VisionConstants.kCamera1Name);
     final PhotonCamera mCamera2 = new PhotonCamera(VisionConstants.kCamera2Name);
+
+
 
     public ArrayList<VisionHelper> getCurrentPositionCam1(){
         var results = mCamera1.getAllUnreadResults();

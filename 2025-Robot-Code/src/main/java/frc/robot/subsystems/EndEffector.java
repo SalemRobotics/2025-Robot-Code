@@ -15,7 +15,6 @@ public class EndEffector extends SubsystemBase {
     private final DigitalInput mExitLineBreaker = new DigitalInput(EndEffectorConstants.kExitBreakerPort);
 
     private boolean mCoralInPosition = false;
-    private boolean mAlreadyStopped = false;
     private boolean mRepositioningCoral = false;
     private boolean mHasCoral = false;
     private double mEjectSpeed = EndEffectorConstants.kDefaultEjectSpeed;
@@ -32,6 +31,7 @@ public class EndEffector extends SubsystemBase {
         SmartDashboard.putBoolean("Exit", mExitLineBreaker.get());
         SmartDashboard.putBoolean("Has Coral", mHasCoral);
         SmartDashboard.putBoolean("Coral In Position", mCoralInPosition);
+        SmartDashboard.putNumber("End Effector Speed", mEffectorMotor.get());
     }
 
     public Command centerCoral() {
@@ -56,41 +56,41 @@ public class EndEffector extends SubsystemBase {
             boolean entrance = mEntranceLineBreaker.get();
             boolean exit = mExitLineBreaker.get();
 
-            if (mCoralInPosition) {
+            if (entrance && exit) {
+                // if neither breaker sees it we don't have a coral anymore
+                SmartDashboard.putString("End Effector Branch", "No coral");
+                mCoralInPosition = false;
+                mHasCoral = false;
+                mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
+            } else if (mCoralInPosition) {
+                SmartDashboard.putString("End Effector Branch", "Skip branch");
                 // if the coral is in position, we can skip the rest of the loop.
                 // TODO: find out if we need to add an extra stopMotor call here
                 return;
-            } else if (!entrance && exit) {
+            } else  if (!entrance && exit) {
+                SmartDashboard.putString("End Effector Branch", "Just found");
                 // we're just detecting a coral, and slow down the motor
                 mHasCoral = true;
                 mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed);
-            } else if (mRepositioningCoral) {
-                if (entrance)
+            } else if (entrance && !exit) {
+                SmartDashboard.putString("End Effector Branch", "Stopping momentum");
+                // temporarily stop the motor to invoke braking and get rid of the momentum
+                mEffectorMotor.stopMotor();
+                mRepositioningCoral = true;
+            } if (mRepositioningCoral) {
+                if (entrance) {
                     // we continue reversing the coral
+                    SmartDashboard.putString("End Effector Branch", "Repositioning");
                     mEffectorMotor.set(-EndEffectorConstants.kAdjustSpeed);
-                else {
+                } else {
+                    SmartDashboard.putString("End Effector Branch", "Just in position");
                     // we stop the motor and unset flags
                     mEffectorMotor.stopMotor();
                     mCoralInPosition = true;
                     mRepositioningCoral = false;
                 }
-            } else if (entrance && !exit) {
-                if (mAlreadyStopped) {
-                    // if we've already stopped, we set the respective flags so we can start
-                    // retracting the coral
-                    mRepositioningCoral = true;
-                    mAlreadyStopped = false;
-                } else {
-                    // temporarily stop the motor to invoke braking and get rid of the momentum
-                    mEffectorMotor.stopMotor();
-                    mAlreadyStopped = true;
-                }
             } else {
-                // if neither breaker sees it we don't have a coral anymore
-                if (entrance && exit) {
-                    mCoralInPosition = false;
-                    mHasCoral = false;
-                }
+                SmartDashboard.putString("End Effector Branch", "Else branch");
                 mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
             }
 
@@ -132,6 +132,8 @@ public class EndEffector extends SubsystemBase {
     public Command ejectCoral() {
         return Commands.run(() -> {
             mCoralInPosition = false;
+            mHasCoral = false;
+            mRepositioningCoral = false;
             mEffectorMotor.set(mEjectSpeed);
         }, this);
     }

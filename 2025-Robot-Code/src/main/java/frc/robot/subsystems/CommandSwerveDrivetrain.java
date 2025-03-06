@@ -30,6 +30,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -66,6 +67,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     /** Swerve request to apply during robot-centric path following */
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
 
+    /** Pose2d representing the nearest pose */
+    private Pose2d m_scoringPose;
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -212,7 +215,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
         ConfigureAutoBuilder();
     }
-
+    
 private void ConfigureAutoBuilder(){
     try {
         var config = RobotConfig.fromGUISettings();
@@ -352,12 +355,18 @@ private void ConfigureAutoBuilder(){
     public Pose2d getScoringPose(boolean isRight){
         Pose2d currentPose = getState().Pose;
         AllianceFlipUtil.apply(currentPose);
-        Pose2d closestFace = currentPose.nearest(Arrays.asList(FieldConstants.centerFaces));
-        int face = Arrays.asList(FieldConstants.centerFaces).indexOf(closestFace);
 
+        int face;
+        if (AllianceFlipUtil.shouldFlip()) {
+            var closestFace = currentPose.nearest(Arrays.asList(FieldConstants.redCenterFaces));
+            face = Arrays.asList(FieldConstants.redCenterFaces).indexOf(closestFace);
+        } else {
+            var closestFace = currentPose.nearest(Arrays.asList(FieldConstants.blueCenterFaces));
+            face = Arrays.asList(FieldConstants.blueCenterFaces).indexOf(closestFace);
+        }
         return AllianceFlipUtil.apply(FieldConstants.kScoringPoses.get(face).get(isRight));
     }
-    
+
     /***
      * Given a destination pose, use PID to move the robot to that pose.
      * This is optimized for short distances and small rotations,
@@ -365,60 +374,21 @@ private void ConfigureAutoBuilder(){
      * @param destinationPoseOptional The destination pose to move to
      * @return Command which exits when it is near the desired pose
      */
-    public Command moveToPose(Optional<Pose2d> destinationPoseOptional) {
-        if (destinationPoseOptional.isEmpty()) {
-            return Commands.none();
-        }
-        Pose2d destinationPose = destinationPoseOptional.get();
-        // TODO: Tune these values!
-        PIDController xPidController = new PIDController(5, 0, 0);
-        PIDController yPidController = new PIDController(5, 0, 0);
-        PIDController thetaPidController = new PIDController(7, 0, 0);
-        thetaPidController.enableContinuousInput(-Math.PI, Math.PI);
-        
-        SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
-
-        return Commands.runEnd(
-            () -> {
-                // Run
-                Pose2d currentPose = getState().Pose;
-                Transform2d error = destinationPose.minus(currentPose);
-                double xSpeed = xPidController.calculate(error.getX());
-                double ySpeed = yPidController.calculate(error.getY());
-                double thetaSpeed = thetaPidController.calculate(error.getRotation().getDegrees());
-
-                setControl(drive.withVelocityX(xSpeed).withVelocityY(ySpeed).withRotationalRate(thetaSpeed));
-            },
-            () -> {
-                // End (cleanup)
-                xPidController.close();
-                yPidController.close();
-                thetaPidController.close();
-            }, this
-        ).until(
-            () -> {
-                // Exit when close enough
-                double xTol = 0.1;
-                double yTol = 0.1;
-                double thetaTol = 1;
-                // TODO: tune these values!
-
-                Pose2d currentPose = getState().Pose; 
-                Transform2d error = destinationPose.minus(currentPose);
-                return MathUtil.isNear(0, error.getX(), xTol) && MathUtil.isNear(0, error.getY(), yTol) && MathUtil.isNear(0, error.getRotation().getDegrees(), thetaTol);
-            }
-        );
-    }
-
-    /***
-     * Find the closest reef face, and drive to the selected scoring
-     * pose for that reef face.
-     * @param isRight True if the right pole is selected.
-     * @return Command which exits when it is near the desired pose
-     */
-    public Command driveToReef(boolean isRight) {
-        Pose2d goalPose = getScoringPose(isRight);
-
-        return moveToPose(Optional.of(goalPose));
+    public Command moveToScorePose(Supplier<Boolean> isRight) {
+        return defer(() -> {
+            var pose = getScoringPose(isRight.get());
+            System.out.println("----- PATHFINDING TO POSE -----\n\t" + pose.toString());
+            PathConstraints constraints = new PathConstraints(
+                3.0, 
+                4.0, 
+                Units.degreesToRadians(540), 
+                Units.degreesToRadians(720)
+            );
+            return AutoBuilder.pathfindToPose(
+                pose,
+                constraints, 
+                0.0
+            );
+        });
     }
 }

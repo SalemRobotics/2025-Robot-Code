@@ -32,6 +32,22 @@ public class AllianceFlipUtil {
         : pose;
   }
 
+  public static double applyXUnchecked(double x) {
+    return FieldConstants.kFieldLength - x;
+  }
+  public static double applyYUnchecked(double y) {
+    return FieldConstants.kFieldWidth - y;
+  }
+  public static Translation2d applyUnchecked(Translation2d translation) {
+    return new Translation2d(applyXUnchecked(translation.getX()), applyYUnchecked(translation.getY()));
+  }
+  public static Rotation2d applyUnchecked(Rotation2d rotation) {
+    return rotation.rotateBy(Rotation2d.kPi);
+  }
+  public static Pose2d applyUnchecked(Pose2d pose) {
+    return new Pose2d(applyUnchecked(pose.getTranslation()), applyUnchecked(pose.getRotation()));
+  }
+
   public static Translation3d apply(Translation3d translation) {
     return new Translation3d(
         applyX(translation.getX()), applyY(translation.getY()), translation.getZ());

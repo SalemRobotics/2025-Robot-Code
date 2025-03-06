@@ -19,6 +19,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import frc.robot.util.AllianceFlipUtil;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -37,41 +38,47 @@ public final class Constants {
     public static final double kFieldLength = 17.5482504;
     public static final double kFieldWidth = 8.0518;
 
-    public static final Pose2d[] centerFaces =
+    public static Pose2d[] blueCenterFaces =
       new Pose2d[6]; // Starting facing away from the driver station in clockwise order
+    public static Pose2d[] redCenterFaces = 
+      new Pose2d[6];
 
     static {
       // Initialize faces
-      centerFaces[3] =
+      blueCenterFaces[3] =
           new Pose2d(
               Units.inchesToMeters(144.003),
               Units.inchesToMeters(158.500),
               Rotation2d.fromDegrees(180));
-      centerFaces[4] =
+      blueCenterFaces[4] =
           new Pose2d(
               Units.inchesToMeters(160.373),
               Units.inchesToMeters(186.857),
               Rotation2d.fromDegrees(120));
-      centerFaces[5] =
+      blueCenterFaces[5] =
           new Pose2d(
               Units.inchesToMeters(193.116),
               Units.inchesToMeters(186.858),
               Rotation2d.fromDegrees(60));
-      centerFaces[0] =
+      blueCenterFaces[0] =
           new Pose2d(
               Units.inchesToMeters(209.489),
               Units.inchesToMeters(158.502),
               Rotation2d.fromDegrees(0));
-      centerFaces[1] =
+      blueCenterFaces[1] =
           new Pose2d(
               Units.inchesToMeters(193.118),
               Units.inchesToMeters(130.145),
               Rotation2d.fromDegrees(-60));
-      centerFaces[2] =
+      blueCenterFaces[2] =
           new Pose2d(
               Units.inchesToMeters(160.375),
               Units.inchesToMeters(130.144),
               Rotation2d.fromDegrees(-120));
+      
+      for (int i = 0; i < 6; i++) {
+        redCenterFaces[i] = AllianceFlipUtil.applyUnchecked(blueCenterFaces[i]);
+      }
     }
     public static Map<Integer, Map<Boolean, Pose2d>> kScoringPoses = new HashMap<Integer, Map<Boolean, Pose2d>>();
 
@@ -204,7 +211,7 @@ public final class Constants {
     public static final double kDefaultEjectSpeed = 0.6;
     public static final double kSlowEjectSpeed = 0.3;
 
-    public static final double kIdleSpeed = 0.2;
+    public static final double kIdleSpeed = 0.175;
     public static final double kIntakeSpeed = 0.1;
     public static final double kAdjustSpeed = 0.08;
     

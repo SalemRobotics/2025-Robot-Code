@@ -21,6 +21,7 @@ import java.util.Arrays;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathfindingCommand;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -32,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.net.WebServer;
 import java.nio.file.Paths;
 
@@ -77,7 +79,6 @@ public class RobotContainer {
         public final Elevator elevator = new Elevator();
         public final AlgaeRemover algaeRemover = new AlgaeRemover();
         public final Field2d field = new Field2d();
-        public final Field2d field1 = new Field2d();
 
         private final AutoPicker mAutoPicker = new AutoPicker();
 
@@ -93,7 +94,8 @@ public class RobotContainer {
                                                 .toString());
 
                 SmartDashboard.putData(field);
-                SmartDashboard.putData(field1);
+
+                PathfindingCommand.warmupCommand().schedule();
         }
 
         public void periodic() {
@@ -104,30 +106,47 @@ public class RobotContainer {
                         VisionHelper cam1Result = cam1Results.get(i);
                         if (cam1Result.getPose().isPresent()) {
                                 drivetrain.addVisionMeasurement(cam1Result.getPose().get(), cam1Result.getTime());
-                                SmartDashboard.putString("Cam1 Pose",
-                                                "X: " + cam1Result.getPose().get().getX() + ", Y: "
-                                                                + cam1Result.getPose().get().getY() + ", Heading: "
-                                                                + cam1Result.getPose().get().getRotation());
-                                field.setRobotPose(cam1Result.getPose().get());
                         }
                 }
                 for (int i = 0; i < cam2Results.size(); i++) {
                         VisionHelper cam2Result = cam2Results.get(i);
                         if (cam2Result.getPose().isPresent()) {
                                 drivetrain.addVisionMeasurement(cam2Result.getPose().get(), cam2Result.getTime());
-                                SmartDashboard.putString("Cam2 Pose",
-                                                "X: " + cam2Result.getPose().get().getX() + ", Y: "
-                                                                + cam2Result.getPose().get().getY() + ", Heading: "
-                                                                + cam2Result.getPose().get().getRotation());
-                                field1.setRobotPose(cam2Result.getPose().get());
                         }
                 }
 
                 Pose2d currentPose = drivetrain.getState().Pose;
                 AllianceFlipUtil.apply(currentPose);
-                Pose2d closestFace = currentPose.nearest(Arrays.asList(FieldConstants.centerFaces));
-                int face = Arrays.asList(FieldConstants.centerFaces).indexOf(closestFace);
-                SmartDashboard.putString("ReefFace", "" + face);
+                for (int i = 0; i < 6; i++) {
+                        SmartDashboard.putString("Blue Scoring Pose " + i, FieldConstants.blueCenterFaces[i].toString());
+                        SmartDashboard.putString("Red Scoring Pose " + i, FieldConstants.redCenterFaces[i].toString());
+                }
+
+                int face;
+                if (AllianceFlipUtil.shouldFlip()) {
+                        var closestFace = currentPose.nearest(Arrays.asList(FieldConstants.redCenterFaces));
+                        face = Arrays.asList(FieldConstants.redCenterFaces).indexOf(closestFace);
+                } else {
+                        Pose2d closestFace = currentPose.nearest(Arrays.asList(FieldConstants.blueCenterFaces));
+                        face = Arrays.asList(FieldConstants.blueCenterFaces).indexOf(closestFace);
+                }
+
+                field.setRobotPose((AllianceFlipUtil.shouldFlip() 
+                        ? FieldConstants.redCenterFaces 
+                        : FieldConstants.blueCenterFaces)[face]);
+
+                SmartDashboard.putString("Robot Pose", "X: " + drivetrain.getState().Pose.getX() + 
+                        ", Y: " + drivetrain.getState().Pose.getY() + ", Heading: " +
+                        drivetrain.getState().Pose.getRotation());
+
+                Pose2d leftPose = drivetrain.getScoringPose(false);
+                SmartDashboard.putString("Left Score Pose", "X: " + leftPose.getX() + 
+                        ", Y: " + leftPose.getY() + ", Heading: " +
+                        leftPose.getRotation());
+                Pose2d rightPose = drivetrain.getScoringPose(true);
+                SmartDashboard.putString("Right Score Pose", "X: " + rightPose.getX() + 
+                        ", Y: " + rightPose.getY() + ", Heading: " +
+                        rightPose.getRotation());
         }
 
         private void configureBindings() {
@@ -194,8 +213,8 @@ public class RobotContainer {
                 // reset the field-centric heading on start button press
                 driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-                driverController.leftBumper().onTrue(drivetrain.driveToReef(false));
-                driverController.rightBumper().onTrue(drivetrain.driveToReef(true));
+                driverController.leftBumper().onTrue(drivetrain.moveToScorePose(() -> false));
+                driverController.rightBumper().onTrue(drivetrain.moveToScorePose(() -> true));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
