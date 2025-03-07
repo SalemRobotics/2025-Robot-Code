@@ -231,9 +231,8 @@ public final class Constants {
     public static final double kDefaultEjectSpeed = 0.6;
     public static final double kSlowEjectSpeed = 0.3;
 
-    public static final double kIdleSpeed = 0.2;
-    public static final double kIntakeSpeed = 0.12;
-    public static final double kAdjustSpeed = 0.075;
+    public static final double kIdleSpeed = 0.15;
+    public static final double kIntakeSpeed = 0.06;
     
     public static final double kSensorToMechanismRatio = 25.0;
   }

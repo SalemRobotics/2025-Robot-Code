@@ -84,7 +84,7 @@ public class RobotContainer {
 
         public RobotContainer() {
                 new EventTrigger("elevatorl4").whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height));
-				
+                
                 endEffector.setDefaultCommand(endEffector.centerCoral());
                 algaeRemover.setDefaultCommand(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
                 configureBindings();
@@ -156,7 +156,7 @@ public class RobotContainer {
 
         private void configureBindings() {
 
-                driverController.rightTrigger().whileTrue(endEffector.ejectCoral());
+                driverController.rightTrigger().whileTrue(endEffector.ejectCoral()).onFalse(endEffector.centerCoral());
                 driverController.leftTrigger()
                                 .whileTrue(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeExtendedRotation))
                                 .whileFalse(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
@@ -189,10 +189,10 @@ public class RobotContainer {
                                 .withModuleDirection(new Rotation2d(-driverController.getLeftY(),
                                                 -driverController.getLeftX()))));
 
-                driverController.a().onTrue(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kSlowEjectSpeed), endEffector))
-                                .onFalse(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kDefaultEjectSpeed), endEffector));
-                driverController.y().onTrue(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kFastEjectSpeed), endEffector))
-                                .onFalse(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kDefaultEjectSpeed), endEffector));
+                // driverController.a().onTrue(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kSlowEjectSpeed), endEffector))
+                //                 .onFalse(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kDefaultEjectSpeed), endEffector));
+                // driverController.y().onTrue(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kFastEjectSpeed), endEffector))
+                //                 .onFalse(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kDefaultEjectSpeed), endEffector));
 
                 driverController.a().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
@@ -232,6 +232,6 @@ public class RobotContainer {
         }
 
         public Command getAutonomousCommand() {
-                return new PathPlannerAuto("1");
+                return new PathPlannerAuto("Mobility + AL");
         }
 }
