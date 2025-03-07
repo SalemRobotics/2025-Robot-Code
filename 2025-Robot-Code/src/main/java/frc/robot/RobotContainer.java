@@ -21,7 +21,9 @@ import java.util.Arrays;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.events.EventTrigger;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -80,14 +82,12 @@ public class RobotContainer {
         public final AlgaeRemover algaeRemover = new AlgaeRemover();
         public final Field2d field = new Field2d();
 
-        private final AutoPicker mAutoPicker = new AutoPicker();
-
         public RobotContainer() {
-                ConfigureNamedCommands();
+                new EventTrigger("elevatorl4").whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height));
+				
                 endEffector.setDefaultCommand(endEffector.centerCoral());
                 algaeRemover.setDefaultCommand(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
                 configureBindings();
-                mAutoPicker.initializeCommands("Basic Autos", new MobilityAuto(drivetrain));
                 WebServer.start(
                                 5801,
                                 Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(), "hud")
@@ -218,8 +218,8 @@ public class RobotContainer {
                 // reset the field-centric heading on start button press
                 driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-                driverController.leftBumper().onTrue(drivetrain.moveToScorePose(() -> false));
-                driverController.rightBumper().onTrue(drivetrain.moveToScorePose(() -> true));
+                driverController.leftBumper().onTrue(drivetrain.moveToScorePose(false));
+                driverController.rightBumper().onTrue(drivetrain.moveToScorePose(true));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
@@ -232,6 +232,6 @@ public class RobotContainer {
         }
 
         public Command getAutonomousCommand() {
-                return mAutoPicker.getSelected();
+                return new PathPlannerAuto("1");
         }
 }

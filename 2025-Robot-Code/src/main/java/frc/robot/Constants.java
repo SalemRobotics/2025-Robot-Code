@@ -194,7 +194,6 @@ public final class Constants {
 
         put("Basic Autos", List.of(
           "Do Nothing",
-          "Mobility Auto",
           "1"
         ));
     }};

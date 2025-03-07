@@ -59,10 +59,15 @@ public class AutoPicker {
      * @see PathPlannerAuto
      */
     private void createChooserOptions(SendableChooser<Command> chooser, String name) {
-        var command = new PathPlannerAuto(name);
-        command.setName(name);
+        try {
+            var command = new PathPlannerAuto(name);
+            command.setName(name);
+            
+            chooser.addOption(name, command);
+        } catch (Exception e) {
+            System.out.println("------ NULL!! name of path: " + name);
+        }
         
-        chooser.addOption(name, command);
     }
 
     /**
