@@ -122,8 +122,8 @@ public final class Constants {
     }
     public static final Pose2d kCoral1PoseLeft = new Pose2d(1.65, 0.72, Rotation2d.fromDegrees(55));
     public static final Pose2d kCoral1PoseRight = new Pose2d(1.11, 1.10, Rotation2d.fromDegrees(55));
-    public static final Pose2d kCoral2PoseLeft = new Pose2d(1.65, 7.50, Rotation2d.fromDegrees(305));
-    public static final Pose2d kCoral2PoseRight = new Pose2d(1.13, 7.04, Rotation2d.fromDegrees(305));
+    public static final Pose2d kCoral2PoseRight = new Pose2d(1.65, 7.50, Rotation2d.fromDegrees(305));
+    public static final Pose2d kCoral2PoseLeft = new Pose2d(1.13, 7.04, Rotation2d.fromDegrees(305));
     
 
   }

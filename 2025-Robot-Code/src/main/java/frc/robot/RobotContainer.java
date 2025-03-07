@@ -84,6 +84,9 @@ public class RobotContainer {
 
         public RobotContainer() {
                 new EventTrigger("elevatorl4").whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height));
+                new EventTrigger("elevatorstow").whileTrue(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+                new EventTrigger("score").whileTrue(endEffector.ejectCoral());
+
 				
                 endEffector.setDefaultCommand(endEffector.centerCoral());
                 algaeRemover.setDefaultCommand(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
