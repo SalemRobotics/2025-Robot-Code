@@ -138,6 +138,11 @@ public class RobotContainer {
                 SmartDashboard.putString("Robot Pose", "X: " + drivetrain.getState().Pose.getX() + 
                         ", Y: " + drivetrain.getState().Pose.getY() + ", Heading: " +
                         drivetrain.getState().Pose.getRotation());
+                
+                Pose2d flippedPose = AllianceFlipUtil.apply(drivetrain.getState().Pose);
+                SmartDashboard.putString("Flipped Pose", "X: " + flippedPose.getX() + 
+                        ", Y: " + flippedPose.getY() + ", Heading: " +
+                        flippedPose.getRotation());
 
                 Pose2d leftPose = drivetrain.getScoringPose(false);
                 SmartDashboard.putString("Left Score Pose", "X: " + leftPose.getX() + 
@@ -220,10 +225,10 @@ public class RobotContainer {
         }
 
         public void ConfigureNamedCommands() {
-                NamedCommands.registerCommand("score", Commands.run(() -> endEffector.ejectCoral()));
-                NamedCommands.registerCommand("elevator stow", Commands.run(() -> elevator.setElevatorTarget(ElevatorConstants.kStowedHeight)));
-                NamedCommands.registerCommand("elevator L3", Commands.run(() -> elevator.setElevatorTarget(ElevatorConstants.kL3Height)));
-                NamedCommands.registerCommand("elevator L4", Commands.run(() -> elevator.setElevatorTarget(ElevatorConstants.kL4Height)));
+                NamedCommands.registerCommand("score", endEffector.ejectCoral());
+                NamedCommands.registerCommand("elevator stow", elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+                NamedCommands.registerCommand("elevator L3", elevator.setElevatorTarget(ElevatorConstants.kL3Height));
+                NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
         }
 
         public Command getAutonomousCommand() {

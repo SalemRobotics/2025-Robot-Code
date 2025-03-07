@@ -377,6 +377,9 @@ private void ConfigureAutoBuilder(){
     public Command moveToScorePose(Supplier<Boolean> isRight) {
         return defer(() -> {
             var pose = getScoringPose(isRight.get());
+            SmartDashboard.putString("target pose", "X: " + pose.getX() + 
+                        ", Y: " + pose.getY() + ", Heading: " +
+                        pose.getRotation());
             System.out.println("----- PATHFINDING TO POSE -----\n\t" + pose.toString());
             PathConstraints constraints = new PathConstraints(
                 3.0, 
