@@ -53,19 +53,24 @@ public class EndEffector extends SubsystemBase {
          */
         return Commands.run(() -> {
             if (mEntranceLineBreaker.get() && mExitLineBreaker.get()) {
+                SmartDashboard.putString("End Effector 1st Branch", "No coral");
                 // make sure flags are unset
                 mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
                 mCoralInPosition = false;
                 mHasCoral = false;
+                mRepositioningCoral = false;
             } else if (mRepositioningCoral || mCoralInPosition) {
                 // don't do anything if there isn't a coral or the coral is in position
+                SmartDashboard.putString("End Effector 1st Branch", "Skipping - " + (mRepositioningCoral ? "Repositioning" : "In position"));
                 return;
             } else if (!mEntranceLineBreaker.get() && mExitLineBreaker.get()) {
                 // start slowing the motor
+                SmartDashboard.putString("End Effector 1st Branch", "Slowing down");
                 mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed);
                 mHasCoral = true;
             } else if (mEntranceLineBreaker.get() && !mExitLineBreaker.get()) {
                 // stop the motor temporarily to remove coral momentum
+                SmartDashboard.putString("End Effector 1st Branch", "Temporary stop");
                 mEffectorMotor.stopMotor();
                 mRepositioningCoral = true;
             }
@@ -74,15 +79,22 @@ public class EndEffector extends SubsystemBase {
                 .andThen(Commands.run(() -> {
                     if (mCoralInPosition || !mRepositioningCoral) {
                         // don't do anything if the coral is in place or we aren't repositioning it
+                        SmartDashboard.putString("End Effector 2nd Branch", "");
                         return;
                     } else if (!mEntranceLineBreaker.get() && !mExitLineBreaker.get()) {
+                        // stop the motor when the coral is in position
+                        SmartDashboard.putString("End Effector 2nd Branch", "");
                         mEffectorMotor.stopMotor();
                         mCoralInPosition = true;
                         mRepositioningCoral = false;
                     } else {
-                        if (mEntranceLineBreaker.get() && !mExitLineBreaker.get())
+                        if (mEntranceLineBreaker.get() && !mExitLineBreaker.get()) {
+                            // reverse the motor to move it into position
+                            SmartDashboard.putString("End Effector 2nd Branch", "Repositioning - Pulling");
                             mEffectorMotor.set(-EndEffectorConstants.kAdjustSpeed);
-                        else if (!mEntranceLineBreaker.get() && mExitLineBreaker.get()) {
+                        } else if (!mEntranceLineBreaker.get() && mExitLineBreaker.get()) {
+                            // keep the motor forward to move it into position
+                            SmartDashboard.putString("End Effector 2nd Branch", "Repositioning - Pushing");
                             mEffectorMotor.set(EndEffectorConstants.kAdjustSpeed);
                         }
                     }
