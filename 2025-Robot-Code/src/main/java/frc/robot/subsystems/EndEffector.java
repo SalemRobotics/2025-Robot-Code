@@ -52,66 +52,59 @@ public class EndEffector extends SubsystemBase {
          * intensive already.
          */
         return Commands.run(() -> {
-            // false = found coral, true = no coral
-            boolean entrance = mEntranceLineBreaker.get();
-            boolean exit = mExitLineBreaker.get();
-
-            if (entrance && exit) {
-                // if neither breaker sees it we don't have a coral anymore
-                SmartDashboard.putString("End Effector Branch", "No coral");
+            if (mEntranceLineBreaker.get() && mExitLineBreaker.get()) {
+                // make sure flags are unset
+                mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
                 mCoralInPosition = false;
                 mHasCoral = false;
-                mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
-            } else if (mCoralInPosition) {
-                SmartDashboard.putString("End Effector Branch", "Skip branch");
-                // if the coral is in position, we can skip the rest of the loop.
-                // TODO: find out if we need to add an extra stopMotor call here
+            } else if (mRepositioningCoral || mCoralInPosition) {
+                // don't do anything if there isn't a coral or the coral is in position
                 return;
-            } else  if (!entrance && exit) {
-                SmartDashboard.putString("End Effector Branch", "Just found");
-                // we're just detecting a coral, and slow down the motor
-                mHasCoral = true;
+            } else if (!mEntranceLineBreaker.get() && mExitLineBreaker.get()) {
+                // start slowing the motor
                 mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed);
-            } else if (entrance && !exit) {
-                SmartDashboard.putString("End Effector Branch", "Stopping momentum");
-                // temporarily stop the motor to invoke braking and get rid of the momentum
+                mHasCoral = true;
+            } else if (mEntranceLineBreaker.get() && !mExitLineBreaker.get()) {
+                // stop the motor temporarily to remove coral momentum
                 mEffectorMotor.stopMotor();
                 mRepositioningCoral = true;
-            } if (mRepositioningCoral) {
-                if (entrance) {
-                    // we continue reversing the coral
-                    SmartDashboard.putString("End Effector Branch", "Repositioning");
-                    mEffectorMotor.set(-EndEffectorConstants.kAdjustSpeed);
-                } else {
-                    SmartDashboard.putString("End Effector Branch", "Just in position");
-                    // we stop the motor and unset flags
-                    mEffectorMotor.stopMotor();
-                    mCoralInPosition = true;
-                    mRepositioningCoral = false;
-                }
-            } else {
-                SmartDashboard.putString("End Effector Branch", "Else branch");
-                mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
             }
+        }, this)
+                .andThen(Commands.waitSeconds(0.1))
+                .andThen(Commands.run(() -> {
+                    if (mCoralInPosition || !mRepositioningCoral) {
+                        // don't do anything if the coral is in place or we aren't repositioning it
+                        return;
+                    } else if (!mEntranceLineBreaker.get() && !mExitLineBreaker.get()) {
+                        mEffectorMotor.stopMotor();
+                        mCoralInPosition = true;
+                        mRepositioningCoral = false;
+                    } else {
+                        if (mEntranceLineBreaker.get() && !mExitLineBreaker.get())
+                            mEffectorMotor.set(-EndEffectorConstants.kAdjustSpeed);
+                        else if (!mEntranceLineBreaker.get() && mExitLineBreaker.get()) {
+                            mEffectorMotor.set(EndEffectorConstants.kAdjustSpeed);
+                        }
+                    }
+                }, this));
 
-            // OLD IMPLEMENTATION
-            // DO NOT DELETE
+        // OLD IMPLEMENTATION
+        // DO NOT DELETE
 
-            // if (!mExitLineBreaker.get() && !mEntranceLineBreaker.get()) {
-            // mHasCoral = true;
-            // mEffectorMotor.stopMotor();
-            // } else if (!mExitLineBreaker.get() && mEntranceLineBreaker.get()) {
-            // mEffectorMotor.set(-EndEffectorConstants.kAdjustSpeed);
-            // } else if (!mEntranceLineBreaker.get()) {
-            // mEffectorMotor.set(EndEffectorConstants.kAdjustSpeed);
-            // } else {
-            // if (mEntranceLineBreaker.get()) {
-            // mHasCoral = false;
-            // }
-            // mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
-            // // mEffectorMotor.setControl(new VelocityVoltage(20.0));
-            // }
-        }, this);
+        // if (!mExitLineBreaker.get() && !mEntranceLineBreaker.get()) {
+        // mHasCoral = true;
+        // mEffectorMotor.stopMotor();
+        // } else if (!mExitLineBreaker.get() && mEntranceLineBreaker.get()) {
+        // mEffectorMotor.set(-EndEffectorConstants.kAdjustSpeed);
+        // } else if (!mEntranceLineBreaker.get()) {
+        // mEffectorMotor.set(EndEffectorConstants.kAdjustSpeed);
+        // } else {
+        // if (mEntranceLineBreaker.get()) {
+        // mHasCoral = false;
+        // }
+        // mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
+        // // mEffectorMotor.setControl(new VelocityVoltage(20.0));
+        // }
     }
 
     // getter for mHasCoral
