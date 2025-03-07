@@ -21,7 +21,9 @@ import java.util.Arrays;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.events.EventTrigger;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -80,14 +82,12 @@ public class RobotContainer {
         public final AlgaeRemover algaeRemover = new AlgaeRemover();
         public final Field2d field = new Field2d();
 
-        private final AutoPicker mAutoPicker = new AutoPicker();
-
         public RobotContainer() {
-                ConfigureNamedCommands();
+                new EventTrigger("elevatorl4").whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height));
+				
                 endEffector.setDefaultCommand(endEffector.centerCoral());
                 algaeRemover.setDefaultCommand(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
                 configureBindings();
-                mAutoPicker.initializeCommands("Basic Autos", new MobilityAuto(drivetrain));
                 WebServer.start(
                                 5801,
                                 Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(), "hud")
@@ -138,6 +138,11 @@ public class RobotContainer {
                 SmartDashboard.putString("Robot Pose", "X: " + drivetrain.getState().Pose.getX() + 
                         ", Y: " + drivetrain.getState().Pose.getY() + ", Heading: " +
                         drivetrain.getState().Pose.getRotation());
+                
+                Pose2d flippedPose = AllianceFlipUtil.apply(drivetrain.getState().Pose);
+                SmartDashboard.putString("Flipped Pose", "X: " + flippedPose.getX() + 
+                        ", Y: " + flippedPose.getY() + ", Heading: " +
+                        flippedPose.getRotation());
 
                 Pose2d leftPose = drivetrain.getScoringPose(false);
                 SmartDashboard.putString("Left Score Pose", "X: " + leftPose.getX() + 
@@ -213,20 +218,20 @@ public class RobotContainer {
                 // reset the field-centric heading on start button press
                 driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-                driverController.leftBumper().onTrue(drivetrain.moveToScorePose(() -> false));
-                driverController.rightBumper().onTrue(drivetrain.moveToScorePose(() -> true));
+                driverController.leftBumper().onTrue(drivetrain.moveToScorePose(false));
+                driverController.rightBumper().onTrue(drivetrain.moveToScorePose(true));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
 
         public void ConfigureNamedCommands() {
-                NamedCommands.registerCommand("score", Commands.run(() -> endEffector.ejectCoral()));
-                NamedCommands.registerCommand("elevator stow", Commands.run(() -> elevator.setElevatorTarget(ElevatorConstants.kStowedHeight)));
-                NamedCommands.registerCommand("elevator L3", Commands.run(() -> elevator.setElevatorTarget(ElevatorConstants.kL3Height)));
-                NamedCommands.registerCommand("elevator L4", Commands.run(() -> elevator.setElevatorTarget(ElevatorConstants.kL4Height)));
+                NamedCommands.registerCommand("score", endEffector.ejectCoral());
+                NamedCommands.registerCommand("elevator stow", elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+                NamedCommands.registerCommand("elevator L3", elevator.setElevatorTarget(ElevatorConstants.kL3Height));
+                NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
         }
 
         public Command getAutonomousCommand() {
-                return mAutoPicker.getSelected();
+                return new PathPlannerAuto("1");
         }
 }
