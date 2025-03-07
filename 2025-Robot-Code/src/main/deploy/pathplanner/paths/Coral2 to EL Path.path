@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.1,
-        "y": 6.17079918032787
+        "x": 1.65,
+        "y": 7.3
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.015316143384535,
-        "y": 6.119986023885335
+        "x": 2.9955989963860796,
+        "y": 6.097798828769285
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.337,
-        "y": 5.143
+        "x": 3.945,
+        "y": 5.318
       },
       "prevControl": {
-        "x": 5.594996610459299,
-        "y": 5.249460908386525
+        "x": 2.2253378322434036,
+        "y": 6.807066396170038
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,7 +32,7 @@
   "constraintZones": [
     {
       "name": "Slow to Elevator",
-      "minWaypointRelativePos": 0.4026195899772327,
+      "minWaypointRelativePos": 0.45501138952163583,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 2.0,
@@ -48,7 +48,7 @@
   "eventMarkers": [
     {
       "name": "elevatorl4",
-      "waypointRelativePos": 0.5,
+      "waypointRelativePos": 0.7033029612756252,
       "endWaypointRelativePos": null,
       "command": null
     }
@@ -63,13 +63,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -119.99999999999999
+    "rotation": -59.99999999999999
   },
   "reversed": false,
-  "folder": "Starting Paths",
+  "folder": "Top Coral to Reef Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -55.0
   },
   "useDefaultConstraints": true
 }
