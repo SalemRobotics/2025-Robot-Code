@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.51934572788178,
-        "y": 5.68234539309622
+        "x": 3.8497901943909616,
+        "y": 6.030172930433941
       },
       "isLocked": false,
       "linkedName": null
@@ -20,8 +20,8 @@
         "y": 7.3
       },
       "prevControl": {
-        "x": 3.2051489919594713,
-        "y": 6.356958975316007
+        "x": 1.8717072387697054,
+        "y": 7.079731529889148
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,8 +32,8 @@
   "constraintZones": [
     {
       "name": "Slow to intake",
-      "minWaypointRelativePos": 0.6030751708428252,
-      "maxWaypointRelativePos": 1.0,
+      "minWaypointRelativePos": 0.0,
+      "maxWaypointRelativePos": 0.20216400911161553,
       "constraints": {
         "maxVelocity": 2.0,
         "maxAcceleration": 2.0,
@@ -48,7 +48,7 @@
   "eventMarkers": [
     {
       "name": "elevatorstow",
-      "waypointRelativePos": 0.2021640091116144,
+      "waypointRelativePos": 0.049544419134396944,
       "endWaypointRelativePos": null,
       "command": null
     }

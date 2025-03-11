@@ -31,9 +31,9 @@
   "rotationTargets": [],
   "constraintZones": [
     {
-      "name": "Slow to Intake",
-      "minWaypointRelativePos": 0.4982915717539857,
-      "maxWaypointRelativePos": 1.0,
+      "name": "Slow for Elevator",
+      "minWaypointRelativePos": 0.0,
+      "maxWaypointRelativePos": 0.2021640091116238,
       "constraints": {
         "maxVelocity": 2.0,
         "maxAcceleration": 2.0,
@@ -48,7 +48,7 @@
   "eventMarkers": [
     {
       "name": "elevatorstow",
-      "waypointRelativePos": 0.20216400911161686,
+      "waypointRelativePos": 0.049544419134401316,
       "endWaypointRelativePos": null,
       "command": null
     }

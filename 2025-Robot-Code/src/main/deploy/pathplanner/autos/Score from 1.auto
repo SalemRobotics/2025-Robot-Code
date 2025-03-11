@@ -17,7 +17,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "AL 2"
+                  "pathName": "EL 1"
                 }
               }
             ]
@@ -26,7 +26,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Reversing Path for AL 2"
+            "pathName": "Reversing Path for EL 1"
           }
         }
       ]

@@ -15,10 +15,12 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ElevatorConstants;
 
 public class Elevator extends SubsystemBase {
@@ -29,7 +31,9 @@ public class Elevator extends SubsystemBase {
     private final TalonFX mElevatorMotorB = new TalonFX(ElevatorConstants.kElevatorMotorBPort,
             ElevatorConstants.kElevatorMotorBus);
     private final MotionMagicVoltage mVoltage = new MotionMagicVoltage(0);
-    private int periodicIteration = 0;
+    
+    private double mSetHeight = 0;
+    public final Trigger kElevatorAtTarget = new Trigger(this::isAtHeight);
 
     public Elevator() {
         mConfig.Feedback.SensorToMechanismRatio = ElevatorConstants.kSensorToMechanismRatio;
@@ -61,23 +65,19 @@ public class Elevator extends SubsystemBase {
         }
 
         if (status.isError())
-            DataLogManager.log("Failed to configure elevator motors: " + status.toString());
+            System.err.println("Failed to configure elevator motors: " + status.toString());
 
         mElevatorMotorB.setControl(new Follower(mElevatorMotorA.getDeviceID(), true));
         mElevatorMotorA.setPosition(0);
         mElevatorMotorB.setPosition(0);
     }
 
-    @Override
-    public void periodic() {
-        if (periodicIteration < 100) {
-            periodicIteration = 0;
-            // .log("Current elevator motor position is: " + mElevatorMotorA.getPosition().getValue().in(Rotations));
-        } else periodicIteration++;
-    }
-
     public Command setElevatorTarget(double height) {
+        mSetHeight = height;
         // DataLogManager.log("Setting elevator height to " + height);
         return Commands.run(() -> mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0)));
+    }
+    public boolean isAtHeight() {
+        return MathUtil.isNear(mSetHeight, mElevatorMotorA.getPosition().getValueAsDouble(), 0.01);
     }
 }

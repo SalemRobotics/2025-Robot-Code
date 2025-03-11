@@ -4,24 +4,24 @@
     {
       "anchor": {
         "x": 7.1,
-        "y": 6.17079918032787
+        "y": 1.9
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.9450909383781605,
-        "y": 6.1123226221444105
+        "x": 7.403123862717433,
+        "y": 1.962888446941505
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.337,
-        "y": 5.143
+        "x": 3.945,
+        "y": 2.733
       },
       "prevControl": {
-        "x": 5.5615812628223456,
-        "y": 5.2528328566009295
+        "x": 5.3105532786885234,
+        "y": 1.2018954918032796
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,7 +32,7 @@
   "constraintZones": [
     {
       "name": "Slow to Elevator",
-      "minWaypointRelativePos": 0.4026195899772327,
+      "minWaypointRelativePos": 0.6,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 2.0,
@@ -47,14 +47,14 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "score",
-      "waypointRelativePos": 0.4777904328018227,
+      "name": "elevatorl4",
+      "waypointRelativePos": 0.7,
       "endWaypointRelativePos": null,
       "command": null
     },
     {
-      "name": "elevatorl4",
-      "waypointRelativePos": 0.5,
+      "name": "score",
+      "waypointRelativePos": 1.0,
       "endWaypointRelativePos": null,
       "command": null
     }
@@ -69,7 +69,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -119.99999999999999
+    "rotation": 59.99999999999999
   },
   "reversed": false,
   "folder": "Starting Paths",

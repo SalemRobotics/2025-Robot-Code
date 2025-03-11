@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.9450909383781605,
-        "y": 6.1123226221444105
+        "x": 5.4304303278688515,
+        "y": 6.464497950819672
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.337,
-        "y": 5.143
+        "x": 3.945,
+        "y": 5.318
       },
       "prevControl": {
-        "x": 5.5615812628223456,
-        "y": 5.2528328566009295
+        "x": 3.697840917528596,
+        "y": 5.355581750250538
       },
       "nextControl": null,
       "isLocked": false,
@@ -47,14 +47,14 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "score",
-      "waypointRelativePos": 0.4777904328018227,
+      "name": "elevatorl4",
+      "waypointRelativePos": 0.5,
       "endWaypointRelativePos": null,
       "command": null
     },
     {
-      "name": "elevatorl4",
-      "waypointRelativePos": 0.5,
+      "name": "score",
+      "waypointRelativePos": 1.0,
       "endWaypointRelativePos": null,
       "command": null
     }
@@ -69,7 +69,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -119.99999999999999
+    "rotation": -59.99999999999999
   },
   "reversed": false,
   "folder": "Starting Paths",
