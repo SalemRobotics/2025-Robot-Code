@@ -33,6 +33,65 @@ public class Vision extends SubsystemBase{
     final PhotonCamera mCamera2 = new PhotonCamera(VisionConstants.kCamera2Name);
 
 
+    public ArrayList<VisionHelper> getVisionUpdates() {
+        ArrayList<VisionHelper> poses = new ArrayList<>();
+
+        var results = mCamera1.getAllUnreadResults();
+
+        for (var result : results) {
+            var multitag = result.multitagResult;
+            Transform3d fieldToCamera = null;
+
+            if (multitag.isPresent()) {
+                fieldToCamera = multitag.get().estimatedPose.best;
+            } else if (result.targets.isEmpty()) 
+                continue;
+            else {
+                var target = result.targets.get(0);
+                var tagPoseOptional = mFieldLayout.getTagPose(target.fiducialId);
+                if (tagPoseOptional.isEmpty())
+                    continue;
+                
+                Pose3d tagPose = tagPoseOptional.get();
+                Transform3d fieldToTarget = new Transform3d(tagPose.getTranslation(), tagPose.getRotation());
+                Transform3d cameraToTarget = target.bestCameraToTarget;
+                fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
+            }
+
+            Transform3d fieldToRobot = fieldToCamera.plus(VisionConstants.kRobotToCam1.inverse());
+            Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+            poses.add(new VisionHelper(robotPose.toPose2d(), result.getTimestampSeconds()));
+        }
+
+        results = mCamera2.getAllUnreadResults();
+
+        for (var result : results) {
+            var multitag = result.multitagResult;
+            Transform3d fieldToCamera = null;
+
+            if (multitag.isPresent()) {
+                fieldToCamera = multitag.get().estimatedPose.best;
+            } else if (result.targets.isEmpty()) 
+                continue;
+            else {
+                var target = result.targets.get(0);
+                var tagPoseOptional = mFieldLayout.getTagPose(target.fiducialId);
+                if (tagPoseOptional.isEmpty())
+                    continue;
+                
+                Pose3d tagPose = tagPoseOptional.get();
+                Transform3d fieldToTarget = new Transform3d(tagPose.getTranslation(), tagPose.getRotation());
+                Transform3d cameraToTarget = target.bestCameraToTarget;
+                fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
+            }
+
+            Transform3d fieldToRobot = fieldToCamera.plus(VisionConstants.kRobotToCam2.inverse());
+            Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+            poses.add(new VisionHelper(robotPose.toPose2d(), result.getTimestampSeconds()));
+        }
+
+        return poses;
+    }
 
     public ArrayList<VisionHelper> getCurrentPositionCam1(){
         var results = mCamera1.getAllUnreadResults();
@@ -43,7 +102,7 @@ public class Vision extends SubsystemBase{
                 Transform3d fieldToCamera = results.get(i).multitagResult.get().estimatedPose.best;
                 Transform3d fieldToRobot = fieldToCamera.plus(VisionConstants.kRobotToCam1.inverse());
                 returnPoses.add(new VisionHelper(
-                    Optional.of(new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation()).toPose2d()),
+                    (new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation()).toPose2d()),
                     results.get(i).getTimestampSeconds()
                 ));
             } else if (!results.get(i).targets.isEmpty()){
@@ -58,7 +117,7 @@ public class Vision extends SubsystemBase{
                     Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
                     Transform3d fieldToRobot = fieldToCamera.plus(VisionConstants.kRobotToCam1.inverse());
                     returnPoses.add(new VisionHelper(
-                        Optional.of(new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation()).toPose2d()),
+                        new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation()).toPose2d(),
                         results.get(i).getTimestampSeconds()
                     ));
                 }
@@ -75,7 +134,7 @@ public class Vision extends SubsystemBase{
                 Transform3d fieldToCamera = results.get(i).multitagResult.get().estimatedPose.best;
                 Transform3d fieldToRobot = fieldToCamera.plus(VisionConstants.kRobotToCam2.inverse());
                 returnPoses.add(new VisionHelper(
-                    Optional.of(new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation()).toPose2d()),
+                    new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation()).toPose2d(),
                     results.get(i).getTimestampSeconds()
                 ));
             }
@@ -91,7 +150,7 @@ public class Vision extends SubsystemBase{
                     Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
                     Transform3d fieldToRobot = fieldToCamera.plus(VisionConstants.kRobotToCam2.inverse());
                     returnPoses.add( new VisionHelper(
-                        Optional.of(new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation()).toPose2d()),
+                        new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation()).toPose2d(),
                         results.get(i).getTimestampSeconds()
                     ));
                 }

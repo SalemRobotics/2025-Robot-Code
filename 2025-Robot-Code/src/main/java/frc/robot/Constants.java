@@ -145,7 +145,7 @@ public final class Constants {
      */
     public static final double kStowedHeight = 0;
     public static final double kL1Height = 1.1;
-    public static final double kL2Height = 1.536;
+    public static final double kL2Height = 1.67;
     public static final double kL3Height = 2.82;
     public static final double kL4Height = 4.69;
     public static final CANBus kElevatorMotorBus = new CANBus("canivore0");
@@ -153,6 +153,7 @@ public final class Constants {
     public static final int kElevatorMotorBPort = 14;
     public static final double kSensorToMechanismRatio = 9.0;
     public static final double kElevatorMaxSpeed = 9.0;
+    
     public static final double kElevatorMaxAcceleration = 13.0;
     public static final double kElevatorMaxJerk = 100.0;
     public static final double kElevatorG = 0.25;

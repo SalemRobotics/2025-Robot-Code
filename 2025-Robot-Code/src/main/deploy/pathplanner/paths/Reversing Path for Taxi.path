@@ -4,24 +4,24 @@
     {
       "anchor": {
         "x": 3.945,
-        "y": 5.318
+        "y": 2.733
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3845696224202992,
-        "y": 6.643159948006146
+        "x": 3.785461858249376,
+        "y": 2.4515272742852647
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.65,
-        "y": 7.3
+        "x": 3.464446721311475,
+        "y": 1.861219262295083
       },
       "prevControl": {
-        "x": 3.406286593894257,
-        "y": 5.783405454541461
+        "x": 3.5947006568236857,
+        "y": 2.0746060291846464
       },
       "nextControl": null,
       "isLocked": false,
@@ -29,33 +29,19 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [
-    {
-      "name": "Slow to Intake",
-      "minWaypointRelativePos": 0.0,
-      "maxWaypointRelativePos": 0.20216400911162072,
-      "constraints": {
-        "maxVelocity": 2.0,
-        "maxAcceleration": 2.0,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    }
-  ],
+  "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
       "name": "elevatorstow",
-      "waypointRelativePos": 0.051822323462418704,
+      "waypointRelativePos": 0.5005694760820042,
       "endWaypointRelativePos": null,
       "command": null
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 1.5,
+    "maxAcceleration": 1.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -63,13 +49,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -55.0
+    "rotation": 59.99999999999999
   },
   "reversed": false,
-  "folder": "Top Coral from Reef Paths ",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -59.99999999999999
+    "rotation": 59.99999999999999
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

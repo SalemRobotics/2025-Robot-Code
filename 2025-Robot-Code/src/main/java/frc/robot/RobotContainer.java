@@ -8,6 +8,7 @@ import frc.robot.Constants.AlgaeConstants;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.EndEffectorConstants;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.MobilityAuto;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
@@ -29,13 +30,18 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.net.WebServer;
 import java.nio.file.Paths;
 
@@ -44,19 +50,6 @@ import frc.robot.subsystems.AlgaeRemover;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
-        /*
-         * AJ reccomendations(NO JACK ATKINS):
-         * - Add short delay (1/4 sec max, check if lower times work to eliminate
-         * momentum) and add auto positioning of the coral to a "best" place (using
-         * breakbeams and state in EndEffector)
-         * - When coral is at optimal position or close, rumble the controller (should
-         * be immediately unset as soon as neither beam sees the coral)
-         * 
-         * JACK ATKINS: WRITE AUTO-ALIGN CODE FOR THE REEF!!! THIS IS OF TOP
-         * IMPORTANCE!!! The tasks above are for extras & other members to do, as
-         * auto-align is essential. After that, we should tune(slow down) velocities
-         * and after that you should fix the zeroing of the drivetrain
-         */
         private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top
                                                                                       // speed
         private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per
@@ -82,12 +75,19 @@ public class RobotContainer {
         public final AlgaeRemover algaeRemover = new AlgaeRemover();
         public final Field2d field = new Field2d();
 
+        private final Trigger coralTrigger = new Trigger(endEffector::coralInPosition);
+        private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+
         public RobotContainer() {
+                // create event triggers for autos to use
                 new EventTrigger("elevatorl4").whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height));
                 new EventTrigger("elevatorstow").whileTrue(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-                new EventTrigger("score").whileTrue(endEffector.ejectCoral());
-                endEffector.setDefaultCommand(endEffector.centerCoral());
+                new EventTrigger("score").whileTrue(new WaitCommand(1.0).andThen(endEffector.ejectCoral()));
+                new EventTrigger("score_safe").whileTrue(endEffector.scoreSafe(elevator::isAtHeight));
+
                 algaeRemover.setDefaultCommand(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
+                endEffector.setDefaultCommand(endEffector.centerCoral());
+
                 configureBindings();
                 WebServer.start(
                                 5801,
@@ -97,6 +97,17 @@ public class RobotContainer {
                 SmartDashboard.putData(field);
 
                 PathfindingCommand.warmupCommand().schedule();
+
+                autoChooser.setDefaultOption("Middle 1 Piece", new PathPlannerAuto("Mobility + AL"));
+                // autoChooser.addOption("Cross Line", new MobilityAuto(drivetrain));
+                autoChooser.addOption("Taxi", new PathPlannerAuto("Taxi"));
+                autoChooser.addOption("Three Piece", new PathPlannerAuto("1"));
+                autoChooser.addOption("Score from 1", new PathPlannerAuto("Score from 1"));
+                autoChooser.addOption("Taxi + CL", new PathPlannerAuto("Taxi + CL"));
+                SmartDashboard.putData("Auto Chooser", autoChooser);
+
+                SmartDashboard.putString("Aligned X", "Unknown");
+                SmartDashboard.putString("Aligned Y", "Unknown");
         }
 
         public void periodic() {
@@ -105,62 +116,53 @@ public class RobotContainer {
 
                 for (int i = 0; i < cam1Results.size(); i++) {
                         VisionHelper cam1Result = cam1Results.get(i);
-                        if (cam1Result.getPose().isPresent()) {
-                                drivetrain.addVisionMeasurement(cam1Result.getPose().get(), cam1Result.getTime());
-                        }
+                        drivetrain.addVisionMeasurement(cam1Result.getPose(), cam1Result.getTime());
                 }
                 for (int i = 0; i < cam2Results.size(); i++) {
                         VisionHelper cam2Result = cam2Results.get(i);
-                        if (cam2Result.getPose().isPresent()) {
-                                drivetrain.addVisionMeasurement(cam2Result.getPose().get(), cam2Result.getTime());
-                        }
+                        drivetrain.addVisionMeasurement(cam2Result.getPose(), cam2Result.getTime());
                 }
 
                 Pose2d currentPose = drivetrain.getState().Pose;
                 AllianceFlipUtil.apply(currentPose);
-                for (int i = 0; i < 6; i++) {
-                        SmartDashboard.putString("Blue Scoring Pose " + i, FieldConstants.blueCenterFaces[i].toString());
-                        SmartDashboard.putString("Red Scoring Pose " + i, FieldConstants.redCenterFaces[i].toString());
-                }
 
                 int face;
                 if (AllianceFlipUtil.shouldFlip()) {
-                        var closestFace = currentPose.nearest(Arrays.asList(FieldConstants.redCenterFaces));
+                        Pose2d closestFace = currentPose.nearest(Arrays.asList(FieldConstants.redCenterFaces));
                         face = Arrays.asList(FieldConstants.redCenterFaces).indexOf(closestFace);
                 } else {
                         Pose2d closestFace = currentPose.nearest(Arrays.asList(FieldConstants.blueCenterFaces));
                         face = Arrays.asList(FieldConstants.blueCenterFaces).indexOf(closestFace);
                 }
 
-                field.setRobotPose((AllianceFlipUtil.shouldFlip() 
-                        ? FieldConstants.redCenterFaces 
-                        : FieldConstants.blueCenterFaces)[face]);
-
-                SmartDashboard.putString("Robot Pose", "X: " + drivetrain.getState().Pose.getX() + 
-                        ", Y: " + drivetrain.getState().Pose.getY() + ", Heading: " +
-                        drivetrain.getState().Pose.getRotation());
+                field.setRobotPose((AllianceFlipUtil.shouldFlip()
+                                ? FieldConstants.redCenterFaces
+                                : FieldConstants.blueCenterFaces)[face]);
                 
-                Pose2d flippedPose = AllianceFlipUtil.apply(drivetrain.getState().Pose);
-                SmartDashboard.putString("Flipped Pose", "X: " + flippedPose.getX() + 
-                        ", Y: " + flippedPose.getY() + ", Heading: " +
-                        flippedPose.getRotation());
+                var xDiff = drivetrain.getState().Pose.getX() - 7.1;
+                var yDiff = drivetrain.getState().Pose.getY() - 1.9;
 
-                Pose2d leftPose = drivetrain.getScoringPose(false);
-                SmartDashboard.putString("Left Score Pose", "X: " + leftPose.getX() + 
-                        ", Y: " + leftPose.getY() + ", Heading: " +
-                        leftPose.getRotation());
-                Pose2d rightPose = drivetrain.getScoringPose(true);
-                SmartDashboard.putString("Right Score Pose", "X: " + rightPose.getX() + 
-                        ", Y: " + rightPose.getY() + ", Heading: " +
-                        rightPose.getRotation());
+                SmartDashboard.putString("Aligned X", xDiff < -0.01 ? "Out (to cages)" : (xDiff > 0.01 ? "Closer (away from cages)" : "Aligned"));
+                SmartDashboard.putString("Aligned Y", yDiff < -0.01 ? "Left" : (yDiff > 0.01 ? "Right" : "Aligned"));
+                SmartDashboard.putBoolean("Aligned X (num)", 
+                        Math.abs(drivetrain.getState().Pose.getX() - 7.1) < 0.02
+                );
+                SmartDashboard.putBoolean("Aligned Y (num)", 
+                        Math.abs(drivetrain.getState().Pose.getY() - 1.9) < 0.02
+                );
         }
 
         private void configureBindings() {
+                coralTrigger.onTrue(Commands
+                                .race(Commands.runOnce(() -> driverController.setRumble(RumbleType.kBothRumble,
+                                                OperatorConstants.kRumbleStrength)), new WaitCommand(0.5))
+                                .andThen(Commands.run(() -> driverController.setRumble(RumbleType.kBothRumble, 0))));
 
                 driverController.rightTrigger().whileTrue(endEffector.ejectCoral()).onFalse(endEffector.centerCoral());
                 driverController.leftTrigger()
                                 .whileTrue(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeExtendedRotation))
                                 .whileFalse(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
+                // driverController.leftTrigger().whileFalse(algaeRemover.reset());
 
                 // Note that X is defined as forward according to WPILib convention,
                 // and Y is defined as to the left according to WPILib convention.
@@ -190,10 +192,18 @@ public class RobotContainer {
                                 .withModuleDirection(new Rotation2d(-driverController.getLeftY(),
                                                 -driverController.getLeftX()))));
 
-                // driverController.a().onTrue(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kSlowEjectSpeed), endEffector))
-                //                 .onFalse(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kDefaultEjectSpeed), endEffector));
-                // driverController.y().onTrue(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kFastEjectSpeed), endEffector))
-                //                 .onFalse(Commands.run(() -> endEffector.setEjectSpeed(EndEffectorConstants.kDefaultEjectSpeed), endEffector));
+                // driverController.a().onTrue(Commands.run(() ->
+                // endEffector.setEjectSpeed(EndEffectorConstants.kSlowEjectSpeed),
+                // endEffector))
+                // .onFalse(Commands.run(() ->
+                // endEffector.setEjectSpeed(EndEffectorConstants.kDefaultEjectSpeed),
+                // endEffector));
+                // driverController.y().onTrue(Commands.run(() ->
+                // endEffector.setEjectSpeed(EndEffectorConstants.kFastEjectSpeed),
+                // endEffector))
+                // .onFalse(Commands.run(() ->
+                // endEffector.setEjectSpeed(EndEffectorConstants.kDefaultEjectSpeed),
+                // endEffector));
 
                 driverController.a().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
@@ -203,18 +213,18 @@ public class RobotContainer {
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 driverController.y().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-                
+
                 // TODO: these should only be enabled for testing/auto tuning.
                 // Run SysId routines when holding back/start and X/Y.
                 // Note that each routine should be run exactly once in a single log.
                 // driverController.back().and(driverController.y())
-                //                 .whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+                // .whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
                 // driverController.back().and(driverController.x())
-                //                 .whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+                // .whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
                 // driverController.start().and(driverController.y())
-                //                 .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+                // .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
                 // driverController.start().and(driverController.x())
-                //                 .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+                // .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
                 // reset the field-centric heading on start button press
                 driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
@@ -227,12 +237,17 @@ public class RobotContainer {
 
         public void ConfigureNamedCommands() {
                 NamedCommands.registerCommand("score", endEffector.ejectCoral());
-                NamedCommands.registerCommand("elevator stow", elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+                NamedCommands.registerCommand("elevator stow",
+                                elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 NamedCommands.registerCommand("elevator L3", elevator.setElevatorTarget(ElevatorConstants.kL3Height));
                 NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
         }
 
         public Command getAutonomousCommand() {
-                return new PathPlannerAuto("Mobility + AL");
+                return autoChooser.getSelected();
+        }
+
+        public void teleInit() {
+                elevator.setElevatorTarget(ElevatorConstants.kStowedHeight);
         }
 }

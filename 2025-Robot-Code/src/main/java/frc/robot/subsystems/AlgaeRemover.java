@@ -21,6 +21,8 @@ public class AlgaeRemover extends SubsystemBase {
     private final TalonFXConfiguration mConfig = new TalonFXConfiguration();
     private final TalonFX mAlgaeMotor = new TalonFX(AlgaeConstants.kAlgaeMotorPort, "rio");
     private final PositionVoltage mPositionVoltage = new PositionVoltage(0).withSlot(0);
+    private boolean mResetting;
+    private double mLastVoltage;
 
     public AlgaeRemover() {
         mAlgaeMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -28,7 +30,7 @@ public class AlgaeRemover extends SubsystemBase {
         mAlgaeMotor.setNeutralMode(NeutralModeValue.Brake);
 
         Slot0Configs slot0 = mConfig.Slot0;
-        slot0.kP = 8.0;
+        slot0.kP = 9.0;
         slot0.kI = 0;
         slot0.kD = 0.1;
 
@@ -48,7 +50,7 @@ public class AlgaeRemover extends SubsystemBase {
                 break;
         }
         if (!status.isOK())
-            DataLogManager.log("Failed to configure algea remover motor: " + status.toString());
+            System.err.println("Failed to configure algea remover motor: " + status.toString());
 
         mAlgaeMotor.setPosition(0);
     }

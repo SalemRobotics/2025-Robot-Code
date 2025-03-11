@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.1,
+        "x": 7.3,
         "y": 4.025
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.1044244074884535,
-        "y": 3.7506584136063363
+        "x": 5.535383914720758,
+        "y": 3.6865407107706565
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.802049180327868,
-        "y": 3.869159836065574
+        "x": 5.802,
+        "y": 3.84
       },
       "prevControl": {
-        "x": 8.091124632241224,
-        "y": 4.090661900480271
+        "x": 7.734477930908731,
+        "y": 4.155107991886446
       },
       "nextControl": null,
       "isLocked": false,
@@ -35,6 +35,12 @@
     {
       "name": "elevatorl4",
       "waypointRelativePos": 0.1998861047835922,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "score",
+      "waypointRelativePos": 1.0,
       "endWaypointRelativePos": null,
       "command": null
     }
