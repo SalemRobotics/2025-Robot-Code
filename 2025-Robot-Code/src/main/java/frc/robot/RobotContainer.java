@@ -6,10 +6,10 @@ package frc.robot;
 
 import frc.robot.Constants.AlgaeConstants;
 import frc.robot.Constants.ElevatorConstants;
-import frc.robot.Constants.EndEffectorConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.MobilityAuto;
+import frc.robot.FieldConstants.ReefSide;
+import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
 import frc.robot.subsystems.Vision;
@@ -19,6 +19,7 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -35,12 +36,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.net.WebServer;
 import java.nio.file.Paths;
@@ -126,19 +124,6 @@ public class RobotContainer {
                 Pose2d currentPose = drivetrain.getState().Pose;
                 AllianceFlipUtil.apply(currentPose);
 
-                int face;
-                if (AllianceFlipUtil.shouldFlip()) {
-                        Pose2d closestFace = currentPose.nearest(Arrays.asList(FieldConstants.redCenterFaces));
-                        face = Arrays.asList(FieldConstants.redCenterFaces).indexOf(closestFace);
-                } else {
-                        Pose2d closestFace = currentPose.nearest(Arrays.asList(FieldConstants.blueCenterFaces));
-                        face = Arrays.asList(FieldConstants.blueCenterFaces).indexOf(closestFace);
-                }
-
-                field.setRobotPose((AllianceFlipUtil.shouldFlip()
-                                ? FieldConstants.redCenterFaces
-                                : FieldConstants.blueCenterFaces)[face]);
-                
                 var xDiff = drivetrain.getState().Pose.getX() - 7.1;
                 var yDiff = drivetrain.getState().Pose.getY() - 1.9;
 
@@ -191,20 +176,7 @@ public class RobotContainer {
                 driverController.povRight().whileTrue(drivetrain.applyRequest(() -> point
                                 .withModuleDirection(new Rotation2d(-driverController.getLeftY(),
                                                 -driverController.getLeftX()))));
-
-                // driverController.a().onTrue(Commands.run(() ->
-                // endEffector.setEjectSpeed(EndEffectorConstants.kSlowEjectSpeed),
-                // endEffector))
-                // .onFalse(Commands.run(() ->
-                // endEffector.setEjectSpeed(EndEffectorConstants.kDefaultEjectSpeed),
-                // endEffector));
-                // driverController.y().onTrue(Commands.run(() ->
-                // endEffector.setEjectSpeed(EndEffectorConstants.kFastEjectSpeed),
-                // endEffector))
-                // .onFalse(Commands.run(() ->
-                // endEffector.setEjectSpeed(EndEffectorConstants.kDefaultEjectSpeed),
-                // endEffector));
-
+                                                
                 driverController.a().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 driverController.x().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height))
@@ -229,8 +201,15 @@ public class RobotContainer {
                 // reset the field-centric heading on start button press
                 driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-                driverController.leftBumper().onTrue(drivetrain.moveToScorePose(false));
-                driverController.rightBumper().onTrue(drivetrain.moveToScorePose(true));
+                // Driver Right Bumper: Approach nearest right-side reef branch
+                driverController.rightBumper().whileTrue(joystickApproach(
+                        () -> FieldConstants.getNearestReefBranch(drivetrain.getState().Pose, ReefSide.RIGHT)
+                ));
+
+                // Driver Left Bumper: approach nearest left-side reef branch
+                driverController.leftBumper().whileTrue(joystickApproach(
+                        () -> FieldConstants.getNearestReefBranch(drivetrain.getState().Pose, ReefSide.LEFT)
+                ));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
@@ -249,5 +228,9 @@ public class RobotContainer {
 
         public void teleInit() {
                 elevator.setElevatorTarget(ElevatorConstants.kStowedHeight);
+        }
+
+        private Command joystickApproach(Supplier<Pose2d> approachPose) {
+                return DriveCommands.joystickApproach(drivetrain, () -> driverController.getLeftY(), approachPose);
         }
 }
