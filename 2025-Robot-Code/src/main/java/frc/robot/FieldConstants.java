@@ -198,8 +198,7 @@ public class FieldConstants {
         public final double pitch;
     }
 
-    public static Pose2d getNearestReefFace(Pose2d currentPose)
-    {
+    public static Pose2d getNearestReefFace(Pose2d currentPose) {
         return currentPose.nearest(List.of(FieldConstants.Reef.centerFaces));
     }
 
@@ -208,16 +207,14 @@ public class FieldConstants {
         RIGHT
     }
 
-    public static Pose2d getNearestReefBranch(Pose2d currentPose, ReefSide side)
-    {
+    public static Pose2d getNearestReefBranch(Pose2d currentPose, ReefSide side) {
         return FieldConstants.Reef.branchPositions
             .get(List.of(FieldConstants.Reef.centerFaces).indexOf(getNearestReefFace(currentPose))
                 * 2 + (side == ReefSide.LEFT ? 1 : 0))
             .get(FieldConstants.ReefHeight.L1).toPose2d();
     }
 
-    public static Pose2d getNearestCoralStation(Pose2d currentPose)
-    {
+    public static Pose2d getNearestCoralStation(Pose2d currentPose) {
         if (currentPose.getTranslation().getX() > FieldConstants.fieldLength / 2) {
             if (currentPose.getTranslation().getY() > FieldConstants.fieldWidth / 2) {
                 return FieldConstants.CoralStation.rightCenterFace

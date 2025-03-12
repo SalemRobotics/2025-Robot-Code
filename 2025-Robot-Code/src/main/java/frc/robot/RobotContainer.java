@@ -6,7 +6,6 @@ package frc.robot;
 
 import frc.robot.Constants.AlgaeConstants;
 import frc.robot.Constants.ElevatorConstants;
-import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.FieldConstants.ReefSide;
 import frc.robot.commands.DriveCommands;
@@ -18,7 +17,6 @@ import frc.robot.util.AllianceFlipUtil;
 import static edu.wpi.first.units.Units.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -176,7 +174,7 @@ public class RobotContainer {
                 driverController.povRight().whileTrue(drivetrain.applyRequest(() -> point
                                 .withModuleDirection(new Rotation2d(-driverController.getLeftY(),
                                                 -driverController.getLeftX()))));
-                                                
+
                 driverController.a().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 driverController.x().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height))
