@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.net.WebServer;
@@ -104,6 +105,7 @@ public class RobotContainer {
 
                 SmartDashboard.putString("Aligned X", "Unknown");
                 SmartDashboard.putString("Aligned Y", "Unknown");
+                DriverStation.silenceJoystickConnectionWarning(true);
         }
 
         public void periodic() {
