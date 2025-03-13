@@ -104,17 +104,16 @@ public class DriveCommands {
                 ySupplier.getAsDouble()
             ).rotateBy(approachSupplier.get().getRotation()).rotateBy(Rotation2d.kCCW_90deg).plus(offsetVector);
 
-            double theta = angleController.calculate(drive.getState().Pose.getRotation().getRadians(), approachSupplier.get().getRotation().rotateBy(Rotation2d.k180deg).getRadians());
+            double omega = angleController.calculate(drive.getState().Pose.getRotation().getRadians(), approachSupplier.get().getRotation().rotateBy(Rotation2d.k180deg).getRadians());
 
             ChassisSpeeds speeds = new ChassisSpeeds(
                 linearVelocity.getX() * getMaxLinearSpeedMetersPerSecond(), 
                 linearVelocity.getY() * getMaxLinearSpeedMetersPerSecond(),
-                theta
+                omega
             );
             // Create a robot-centric swerve request to drive to the approach target, using the calculated chassis speeds.
-            SwerveRequest.ApplyRobotSpeeds request = new SwerveRequest.ApplyRobotSpeeds();
-            drive.applyRequest(() -> request
-                .withSpeeds(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getState().Pose.getRotation())));
+            SwerveRequest.ApplyFieldSpeeds request = new SwerveRequest.ApplyFieldSpeeds();
+            drive.applyRequest(() -> request.withSpeeds(speeds));
         },
         drive // Requirements
         ).beforeStarting(() -> angleController.reset(drive.getState().Pose.getRotation().getRadians()));
