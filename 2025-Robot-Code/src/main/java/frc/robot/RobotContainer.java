@@ -125,6 +125,7 @@ public class RobotContainer {
                                 Math.abs(drivetrain.getState().Pose.getX() - 7.1) < 0.02);
                 SmartDashboard.putBoolean("Aligned Y (num)",
                                 Math.abs(drivetrain.getState().Pose.getY() - 1.9) < 0.02);
+                field.setRobotPose(drivetrain.getState().Pose);
         }
 
         private void configureBindings() {
@@ -193,13 +194,11 @@ public class RobotContainer {
 
                 // Driver Right Bumper: Approach nearest right-side reef branch
                 driverController.rightBumper().whileTrue(joystickApproach(
-                        () -> FieldConstants.getNearestReefBranch(drivetrain.getState().Pose, ReefSide.RIGHT)
-                ));
+                                () -> FieldConstants.getNearestReefBranch(drivetrain.getState().Pose, ReefSide.RIGHT)));
 
                 // Driver Left Bumper: approach nearest left-side reef branch
                 driverController.leftBumper().whileTrue(joystickApproach(
-                        () -> FieldConstants.getNearestReefBranch(drivetrain.getState().Pose, ReefSide.LEFT)
-                ));
+                                () -> FieldConstants.getNearestReefBranch(drivetrain.getState().Pose, ReefSide.LEFT)));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
