@@ -112,19 +112,15 @@ public class RobotContainer {
                                         pose.getVisionMeasurementStdDevs());
                 }
 
-                Pose2d currentPose = drivetrain.getState().Pose;
-                AllianceFlipUtil.apply(currentPose);
-
-                var xDiff = drivetrain.getState().Pose.getX() - 7.1;
-                var yDiff = drivetrain.getState().Pose.getY() - 1.9;
+                var xDiff = AllianceFlipUtil.apply(drivetrain.getState().Pose).getX() - 7.1;
+                var yDiff = AllianceFlipUtil.apply(drivetrain.getState().Pose).getY() - 1.9;
 
                 SmartDashboard.putString("Aligned X", xDiff < -0.01 ? "Out (to cages)"
                                 : (xDiff > 0.01 ? "Closer (away from cages)" : "Aligned"));
                 SmartDashboard.putString("Aligned Y", yDiff < -0.01 ? "Left" : (yDiff > 0.01 ? "Right" : "Aligned"));
-                SmartDashboard.putBoolean("Aligned X (num)",
-                                Math.abs(drivetrain.getState().Pose.getX() - 7.1) < 0.02);
-                SmartDashboard.putBoolean("Aligned Y (num)",
-                                Math.abs(drivetrain.getState().Pose.getY() - 1.9) < 0.02);
+                SmartDashboard.putString("Aligned X (num)", xDiff);
+                SmartDashboard.putString("Aligned Y (num)", yDiff);
+
                 field.setRobotPose(drivetrain.getState().Pose);
         }
 
