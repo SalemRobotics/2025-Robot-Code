@@ -5,17 +5,17 @@ package frc.robot.util;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
-import frc.robot.Constants.FieldConstants;
+import frc.robot.FieldConstants;
 
 
 public class AllianceFlipUtil {
 
   public static double applyX(double x) {
-    return shouldFlip() ? FieldConstants.kFieldLength - x : x;
+    return shouldFlip() ? FieldConstants.fieldLength - x : x;
   }
 
   public static double applyY(double y) {
-    return shouldFlip() ? FieldConstants.kFieldWidth - y : y;
+    return shouldFlip() ? FieldConstants.fieldWidth - y : y;
   }
 
   public static Translation2d apply(Translation2d translation) {
@@ -33,10 +33,10 @@ public class AllianceFlipUtil {
   }
 
   public static double applyXUnchecked(double x) {
-    return FieldConstants.kFieldLength - x;
+    return FieldConstants.fieldLength - x;
   }
   public static double applyYUnchecked(double y) {
-    return FieldConstants.kFieldWidth - y;
+    return FieldConstants.fieldWidth - y;
   }
   public static Translation2d applyUnchecked(Translation2d translation) {
     return new Translation2d(applyXUnchecked(translation.getX()), applyYUnchecked(translation.getY()));

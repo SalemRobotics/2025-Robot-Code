@@ -43,7 +43,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.FieldConstants;
+import frc.robot.FieldConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 
@@ -345,53 +345,5 @@ private void ConfigureAutoBuilder(){
         Matrix<N3, N1> visionMeasurementStdDevs
     ) {
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
-    }
-
-    /***
-     * Based on the vehicles current location, return a scoring pose.
-     * @param isRight True if the right pole is selected.
-     * @return Pose2d of the scoring location.
-     */
-    public Pose2d getScoringPose(boolean isRight){
-        Pose2d currentPose = getState().Pose;
-        AllianceFlipUtil.apply(currentPose);
-
-        int face;
-        if (AllianceFlipUtil.shouldFlip()) {
-            var closestFace = currentPose.nearest(Arrays.asList(FieldConstants.redCenterFaces));
-            face = Arrays.asList(FieldConstants.redCenterFaces).indexOf(closestFace);
-        } else {
-            var closestFace = currentPose.nearest(Arrays.asList(FieldConstants.blueCenterFaces));
-            face = Arrays.asList(FieldConstants.blueCenterFaces).indexOf(closestFace);
-        }
-        return AllianceFlipUtil.apply(FieldConstants.kScoringPoses.get(face).get(isRight));
-    }
-
-    /***
-     * Given a destination pose, use PID to move the robot to that pose.
-     * This is optimized for short distances and small rotations,
-     * and relies on the operator getting most of the way there.
-     * @param destinationPoseOptional The destination pose to move to
-     * @return Command which exits when it is near the desired pose
-     */
-    public Command moveToScorePose(boolean isRight) {
-        return defer(() -> {
-            var pose = getScoringPose(isRight);
-            SmartDashboard.putString("target pose", "X: " + pose.getX() + 
-                        ", Y: " + pose.getY() + ", Heading: " +
-                        pose.getRotation());
-            System.out.println("----- PATHFINDING TO POSE -----\n\t" + pose.toString());
-            PathConstraints constraints = new PathConstraints(
-                3.0, 
-                4.0, 
-                Units.degreesToRadians(540), 
-                Units.degreesToRadians(720)
-            );
-            return AutoBuilder.pathfindToPose(
-                pose,
-                constraints, 
-                0.0
-            );
-        });
     }
 }
