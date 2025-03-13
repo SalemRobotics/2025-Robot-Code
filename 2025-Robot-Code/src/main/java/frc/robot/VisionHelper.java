@@ -1,9 +1,6 @@
 package frc.robot;
 
-<<<<<<< Updated upstream
-=======
 import edu.wpi.first.math.Matrix;
->>>>>>> Stashed changes
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;

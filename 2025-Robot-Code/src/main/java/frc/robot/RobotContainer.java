@@ -107,39 +107,14 @@ public class RobotContainer {
         }
 
         public void periodic() {
-<<<<<<< Updated upstream
-                ArrayList<VisionHelper> cameraResults = vision.getVisionUpdates();
-
-                for(VisionHelper result: cameraResults){
-                        
-                        double stdDevFactor = Math.pow(result.averageTagDistance, 2);
-                        drivetrain.addVisionMeasurement(result.getPose(), result.getTime());
-=======
                 for (var pose : vision.getVisionResults()) {
                         drivetrain.addVisionMeasurement(pose.getPose(), pose.getTime(),
                                         pose.getVisionMeasurementStdDevs());
->>>>>>> Stashed changes
                 }
 
                 Pose2d currentPose = drivetrain.getState().Pose;
                 AllianceFlipUtil.apply(currentPose);
 
-<<<<<<< Updated upstream
-=======
-                int face;
-                if (AllianceFlipUtil.shouldFlip()) {
-                        Pose2d closestFace = currentPose.nearest(Arrays.asList(FieldConstants.redCenterFaces));
-                        face = Arrays.asList(FieldConstants.redCenterFaces).indexOf(closestFace);
-                } else {
-                        Pose2d closestFace = currentPose.nearest(Arrays.asList(FieldConstants.blueCenterFaces));
-                        face = Arrays.asList(FieldConstants.blueCenterFaces).indexOf(closestFace);
-                }
-
-                field.setRobotPose((AllianceFlipUtil.shouldFlip()
-                                ? FieldConstants.redCenterFaces
-                                : FieldConstants.blueCenterFaces)[face]);
-
->>>>>>> Stashed changes
                 var xDiff = drivetrain.getState().Pose.getX() - 7.1;
                 var yDiff = drivetrain.getState().Pose.getY() - 1.9;
 
