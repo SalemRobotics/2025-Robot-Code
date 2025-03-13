@@ -107,16 +107,12 @@ public class RobotContainer {
         }
 
         public void periodic() {
-                ArrayList<VisionHelper> cam1Results = vision.getCurrentPositionCam1();
-                ArrayList<VisionHelper> cam2Results = vision.getCurrentPositionCam2();
+                ArrayList<VisionHelper> cameraResults = vision.getVisionUpdates();
 
-                for (int i = 0; i < cam1Results.size(); i++) {
-                        VisionHelper cam1Result = cam1Results.get(i);
-                        drivetrain.addVisionMeasurement(cam1Result.getPose(), cam1Result.getTime());
-                }
-                for (int i = 0; i < cam2Results.size(); i++) {
-                        VisionHelper cam2Result = cam2Results.get(i);
-                        drivetrain.addVisionMeasurement(cam2Result.getPose(), cam2Result.getTime());
+                for(VisionHelper result: cameraResults){
+                        
+                        double stdDevFactor = Math.pow(result.averageTagDistance, 2);
+                        drivetrain.addVisionMeasurement(result.getPose(), result.getTime());
                 }
 
                 Pose2d currentPose = drivetrain.getState().Pose;
