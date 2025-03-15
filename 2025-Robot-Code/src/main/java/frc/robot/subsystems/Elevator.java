@@ -75,7 +75,8 @@ public class Elevator extends SubsystemBase {
     public Command setElevatorTarget(double height) {
         mSetHeight = height;
         // DataLogManager.log("Setting elevator height to " + height);
-        return Commands.run(() -> mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0)));
+        // Swapped to `run` from `Commands.run` since this was not requiring the subsystem
+        return run(() -> mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0)));
     }
     public boolean isAtHeight() {
         return MathUtil.isNear(mSetHeight, mElevatorMotorA.getPosition().getValueAsDouble(), 0.01);

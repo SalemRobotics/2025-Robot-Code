@@ -49,7 +49,7 @@ public class EndEffector extends SubsystemBase {
          * - Improving the speed of this command, however it shoudln't be performance
          * intensive already.
          */
-        return Commands.runOnce(() -> {
+        return runOnce(() -> {
             if(!entranceDetected()&&!exitDetected()){
                 mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
                 SmartDashboard.putString("End Effector Branch", "!suck && !vomit");
@@ -88,7 +88,7 @@ public class EndEffector extends SubsystemBase {
                 SmartDashboard.putString("End Effector Branch", "!suck && vomit");
 
             }
-        }, this).andThen(Commands.waitSeconds(0.1));
+        }).andThen(Commands.waitSeconds(0.1));
     }
 
     // getter for mHasCoral
@@ -115,12 +115,12 @@ public class EndEffector extends SubsystemBase {
     }
 
     public Command ejectCoral() {
-        return Commands.run(() -> {
+        return run(() -> {
             mHasCoral = false;
             mCoralInPosition = false;
             mFirstTime = true;
             mEffectorMotor.set(mEjectSpeed);
-        }, this);
+        });
     }
 
     /**

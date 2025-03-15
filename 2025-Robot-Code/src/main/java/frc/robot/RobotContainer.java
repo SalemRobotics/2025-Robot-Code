@@ -77,10 +77,10 @@ public class RobotContainer {
 
         public RobotContainer() {
                 // create event triggers for autos to use
-                new EventTrigger("elevatorl4").whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height));
-                new EventTrigger("elevatorstow").whileTrue(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-                new EventTrigger("score").whileTrue(new WaitCommand(1.0).andThen(endEffector.ejectCoral()));
-                new EventTrigger("score_safe").whileTrue(endEffector.scoreSafe(elevator::isAtHeight));
+                new EventTrigger("elevatorl4").onTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height));
+                new EventTrigger("elevatorstow").onTrue(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+                new EventTrigger("score").onTrue(endEffector.ejectCoral());
+                new EventTrigger("intake").onTrue(endEffector.centerCoral());
 
                 algaeRemover.setDefaultCommand(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
                 endEffector.setDefaultCommand(endEffector.centerCoral());
@@ -120,8 +120,8 @@ public class RobotContainer {
                 SmartDashboard.putString("Aligned X", xDiff < -0.01 ? "Out (to cages)"
                                 : (xDiff > 0.01 ? "Closer (away from cages)" : "Aligned"));
                 SmartDashboard.putString("Aligned Y", yDiff < -0.01 ? "Left" : (yDiff > 0.01 ? "Right" : "Aligned"));
-                SmartDashboard.putString("Aligned X (num)", xDiff);
-                SmartDashboard.putString("Aligned Y (num)", yDiff);
+                SmartDashboard.putNumber("Aligned X (num)", xDiff);
+                SmartDashboard.putNumber("Aligned Y (num)", yDiff);
 
                 field.setRobotPose(drivetrain.getState().Pose);
         }

@@ -32,7 +32,7 @@
   "constraintZones": [
     {
       "name": "Slow to Elevator",
-      "minWaypointRelativePos": 0.45501138952163583,
+      "minWaypointRelativePos": 0.6,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 2.0,
@@ -46,12 +46,6 @@
   ],
   "pointTowardsZones": [],
   "eventMarkers": [
-    {
-      "name": "score",
-      "waypointRelativePos": 0.5005694760820083,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
     {
       "name": "elevatorl4",
       "waypointRelativePos": 0.7033029612756252,

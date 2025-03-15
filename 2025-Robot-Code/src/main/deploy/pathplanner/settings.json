@@ -1,14 +1,15 @@
 {
-  "robotWidth": 0.9,
-  "robotLength": 0.9,
+  "robotWidth": 0.9144,
+  "robotLength": 0.9144,
   "holonomicMode": true,
   "pathFolders": [
     "Bottom Coral From Reef Paths",
     "Bottom Coral to Reef Paths",
+    "Tush Push Paths",
     "Starting Paths",
     "Test Paths",
-    "Top Coral to Reef Paths",
-    "Top Coral from Reef Paths "
+    "Top Coral from Reef Paths ",
+    "Top Coral to Reef Paths"
   ],
   "autoFolders": [
     "Test Autos"
