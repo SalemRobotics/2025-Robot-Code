@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 5.019,
-        "y": 5.272
+        "x": 5.058811475409836,
+        "y": 5.241752049180327
       },
       "prevControl": {
-        "x": 5.311150709198579,
-        "y": 5.428144696117734
+        "x": 5.350962184608415,
+        "y": 5.397896745298061
       },
       "nextControl": null,
       "isLocked": false,
@@ -48,9 +48,14 @@
   "eventMarkers": [
     {
       "name": "elevatorl4",
-      "waypointRelativePos": 0.5,
+      "waypointRelativePos": 0.4,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevatorl4"
+        }
+      }
     }
   ],
   "globalConstraints": {
@@ -63,7 +68,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -120.57922687248914
+    "rotation": -120.96375653207359
   },
   "reversed": false,
   "folder": "Starting Paths",

@@ -33,7 +33,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -77,10 +79,10 @@ public class RobotContainer {
 
         public RobotContainer() {
                 // create event triggers for autos to use
-                new EventTrigger("elevatorl4").onTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height));
-                new EventTrigger("elevatorstow").onTrue(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-                new EventTrigger("score").onTrue(endEffector.ejectCoral());
-                new EventTrigger("intake").onTrue(endEffector.centerCoral());
+                NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
+                NamedCommands.registerCommand("elevatorstow", elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+                NamedCommands.registerCommand("score", endEffector.ejectCoral());
+                NamedCommands.registerCommand("intake", endEffector.cancelScore());
 
                 algaeRemover.setDefaultCommand(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
                 endEffector.setDefaultCommand(endEffector.centerCoral());
@@ -101,6 +103,8 @@ public class RobotContainer {
                 autoChooser.addOption("Three Piece", new PathPlannerAuto("1"));
                 autoChooser.addOption("Score from 1", new PathPlannerAuto("Score from 1"));
                 autoChooser.addOption("Taxi + CL", new PathPlannerAuto("Taxi + CL"));
+                autoChooser.addOption("Own Cage 3.5 Piece", new PathPlannerAuto("Own Cage 3.5pc"));
+                autoChooser.addOption("Simple Test", new PathPlannerAuto("Simple Test"));
                 SmartDashboard.putData("Auto Chooser", autoChooser);
 
                 SmartDashboard.putString("Aligned X", "Unknown");

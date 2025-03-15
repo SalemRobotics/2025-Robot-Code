@@ -50,7 +50,12 @@
       "name": "elevatorl4",
       "waypointRelativePos": 0.7033029612756252,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevatorl4"
+        }
+      }
     }
   ],
   "globalConstraints": {

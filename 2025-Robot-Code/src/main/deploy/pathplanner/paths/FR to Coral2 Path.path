@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 1.65,
-        "y": 7.3
+        "x": 1.6423155737704918,
+        "y": 7.36357581967213
       },
       "prevControl": {
-        "x": 2.419140453593081,
-        "y": 6.218753684484641
+        "x": 2.411456027363573,
+        "y": 6.282329504156771
       },
       "nextControl": null,
       "isLocked": false,
@@ -50,13 +50,23 @@
       "name": "elevatorstow",
       "waypointRelativePos": 0.1,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevatorstow"
+        }
+      }
     },
     {
       "name": "intake",
-      "waypointRelativePos": 0.25,
+      "waypointRelativePos": 0.14,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "intake"
+        }
+      }
     }
   ],
   "globalConstraints": {

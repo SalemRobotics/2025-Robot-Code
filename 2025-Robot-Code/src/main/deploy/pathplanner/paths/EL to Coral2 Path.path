@@ -50,13 +50,12 @@
       "name": "elevatorstow",
       "waypointRelativePos": 0.051822323462418704,
       "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
-      "name": "intake",
-      "waypointRelativePos": 0.25,
-      "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevatorstow"
+        }
+      }
     }
   ],
   "globalConstraints": {

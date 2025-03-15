@@ -2,7 +2,9 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import frc.robot.Constants.EndEffectorConstants;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -16,6 +18,7 @@ public class EndEffector extends SubsystemBase {
     private final DigitalInput mEntranceLineBreaker = new DigitalInput(EndEffectorConstants.kEntranceBreakerPort);
     private final DigitalInput mExitLineBreaker = new DigitalInput(EndEffectorConstants.kExitBreakerPort);
     private final TalonFX mEffectorMotor = new TalonFX(EndEffectorConstants.kMotorPort, "rio");
+    private Command mEjectCommand = Commands.none();
 
     private boolean mCoralInPosition = false;
     private boolean mHasCoral = false;
@@ -28,8 +31,8 @@ public class EndEffector extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putBoolean("Entrance", mEntranceLineBreaker.get());
-        SmartDashboard.putBoolean("Exit", mExitLineBreaker.get());
+        SmartDashboard.putBoolean("Entrance", entranceDetected());
+        SmartDashboard.putBoolean("Exit", exitDetected());
     }
 
     public Command centerCoral() {
@@ -49,38 +52,33 @@ public class EndEffector extends SubsystemBase {
          * - Improving the speed of this command, however it shoudln't be performance
          * intensive already.
          */
-        return runOnce(() -> {
-            if(!entranceDetected()&&!exitDetected()){
+        return run(() -> {
+            if (!entranceDetected() && !exitDetected()) {
                 mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
-                SmartDashboard.putString("End Effector Branch", "!suck && !vomit");
+                SmartDashboard.putString("End Effector Branch", "No Coral");
                 mCoralInPosition = false;
                 mHasCoral = false;
                 mFirstTime = true;
-            }
-            else if(entranceDetected()&&!exitDetected()){
+            } else if (entranceDetected() && !exitDetected()) {
                 mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed);
                 mCoralInPosition = false;
                 mHasCoral = true;
                 SmartDashboard.putString("End Effector Branch", "suck && !vomit");
-
-            }
-            else if(entranceDetected()&&exitDetected()){
-                if(mFirstTime){
+            } else if (entranceDetected() && exitDetected()) {
+                if (mFirstTime) {
                     mEffectorMotor.set(0.05);
                     mCoralInPosition = false;
                     mHasCoral = true;
                     SmartDashboard.putString("End Effector Branch", "firsttime!");
 
-                }
-                else{
+                } else {
                     mEffectorMotor.set(0);
                     mCoralInPosition = true;
                     mHasCoral = true;
-                    SmartDashboard.putString("End Effector Branch", "suck && vomit, not first");
+                    SmartDashboard.putString("End Effector Branch", "In Position");
 
                 }
-            }
-            else if(!entranceDetected()&&exitDetected()){
+            } else if (!entranceDetected() && exitDetected()) {
                 mEffectorMotor.set(-EndEffectorConstants.kIntakeSpeed);
                 mCoralInPosition = false;
                 mHasCoral = true;
@@ -101,11 +99,11 @@ public class EndEffector extends SubsystemBase {
         return mCoralInPosition;
     }
 
-    public boolean entranceDetected(){
+    public boolean entranceDetected() {
         return !mEntranceLineBreaker.get();
     }
 
-    public boolean exitDetected(){
+    public boolean exitDetected() {
         return !mExitLineBreaker.get();
     }
 
@@ -115,25 +113,41 @@ public class EndEffector extends SubsystemBase {
     }
 
     public Command ejectCoral() {
-        return run(() -> {
+        Command score = runOnce(() -> {
             mHasCoral = false;
             mCoralInPosition = false;
             mFirstTime = true;
             mEffectorMotor.set(mEjectSpeed);
         });
+        mEjectCommand = score;
+
+        return score;
     }
 
     /**
-     * Waits for the elevator to reach its target position, then ejects the coral and turns off motors
-     * @param elevatorAtHeight lambda that informs the command when the elevator is at the target height
+     * Waits for the elevator to reach its target position, then ejects the coral
+     * and turns off motors
+     * 
+     * @param elevatorAtHeight lambda that informs the command when the elevator is
+     *                         at the target height
      * @return the command sequence to run
      */
     public Command scoreSafe(BooleanSupplier elevatorAtHeight) {
         return Commands.sequence(
-            Commands.none().until(elevatorAtHeight),
-            ejectCoral(),
-            Commands.waitSeconds(0.5),
-            Commands.runOnce(() -> mEffectorMotor.stopMotor(), this)
-        );
+                Commands.none().until(elevatorAtHeight),
+                ejectCoral(),
+                Commands.waitSeconds(0.5),
+                Commands.runOnce(() -> mEffectorMotor.stopMotor(), this));
+    }
+
+    public Command cancelScore() {
+        return runOnce(() -> { 
+            mEjectCommand.cancel(); 
+            getDefaultCommand().schedule(); 
+        }).andThen(new PrintCommand("Cancelling score"));
+    }
+
+    public Command scoreL1() {
+        return runOnce(() -> {}).until(() -> !entranceDetected());
     }
 }

@@ -21,12 +21,13 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class DriveCommands {
-    
-    private static final double DEADBAND = 0.1;
-    private static final double ANGLE_KP = 5.0;
+    private static final double DEADBAND = 0.05;
+    private static final double ANGLE_KP = 4.0;
     private static final double ANGLE_KD = 0.4;
     private static final double ANGLE_MAX_VELOCITY = 8.0;
     private static final double ANGLE_MAX_ACCELERATION = 20.0;
+    private static final double kAngleTolerance = 1;
+    private static final double kLineTolerance = 0.05;
 
     public static final double DRIVE_BASE_RADIUS = Math.max(
         Math.max(
@@ -74,8 +75,10 @@ public class DriveCommands {
      */
     public static Command joystickApproach(CommandSwerveDrivetrain drive, DoubleSupplier ySupplier, Supplier<Pose2d> approachSupplier) {
         ProfiledPIDController angleController = new ProfiledPIDController(ANGLE_KP, 0.0, ANGLE_KD, new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+        angleController.setTolerance(kAngleTolerance);
         angleController.enableContinuousInput(-Math.PI, Math.PI);
         ProfiledPIDController alignController = new ProfiledPIDController(1.0, 0.0, 0.0, new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+        alignController.setTolerance(kLineTolerance);
         alignController.setGoal(0);
 
         return Commands.run(
@@ -102,7 +105,7 @@ public class DriveCommands {
             Translation2d linearVelocity = getLinearVelocityFromJoystick(
                 0, 
                 ySupplier.getAsDouble()
-            ).rotateBy(approachSupplier.get().getRotation()).rotateBy(Rotation2d.kCCW_90deg).plus(offsetVector);
+            ).rotateBy(approachSupplier.get().getRotation()).plus(offsetVector);
 
             double omega = angleController.calculate(drive.getState().Pose.getRotation().getRadians(), approachSupplier.get().getRotation().rotateBy(Rotation2d.k180deg).getRadians());
 
@@ -113,7 +116,7 @@ public class DriveCommands {
             );
             // Create a robot-centric swerve request to drive to the approach target, using the calculated chassis speeds.
             SwerveRequest.ApplyFieldSpeeds request = new SwerveRequest.ApplyFieldSpeeds();
-            drive.applyRequest(() -> request.withSpeeds(speeds));
+            drive.setControl(request.withSpeeds(speeds));
         },
         drive // Requirements
         ).beforeStarting(() -> angleController.reset(drive.getState().Pose.getRotation().getRadians()));
