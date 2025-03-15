@@ -82,10 +82,10 @@ public class RobotContainer {
                 NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
                 NamedCommands.registerCommand("elevatorstow", elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 NamedCommands.registerCommand("score", endEffector.ejectCoral());
-                NamedCommands.registerCommand("intake", endEffector.cancelScore());
+                NamedCommands.registerCommand("intake", endEffector.centerCoral());
 
                 algaeRemover.setDefaultCommand(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
-                endEffector.setDefaultCommand(endEffector.centerCoral());
+                // endEffector.setDefaultCommand(endEffector.centerCoral());
 
                 configureBindings();
                 WebServer.start(
@@ -105,6 +105,7 @@ public class RobotContainer {
                 autoChooser.addOption("Taxi + CL", new PathPlannerAuto("Taxi + CL"));
                 autoChooser.addOption("Own Cage 3.5 Piece", new PathPlannerAuto("Own Cage 3.5pc"));
                 autoChooser.addOption("Simple Test", new PathPlannerAuto("Simple Test"));
+                autoChooser.addOption("Opposing Cage 3.5 Piece", new PathPlannerAuto("Opps Cage 3.5pc"));
                 SmartDashboard.putData("Auto Chooser", autoChooser);
 
                 SmartDashboard.putString("Aligned X", "Unknown");
@@ -136,7 +137,7 @@ public class RobotContainer {
                                                 OperatorConstants.kRumbleStrength)), new WaitCommand(0.5))
                                 .andThen(Commands.run(() -> driverController.setRumble(RumbleType.kBothRumble, 0))));
 
-                driverController.rightTrigger().whileTrue(endEffector.ejectCoral()).onFalse(endEffector.centerCoral());
+                driverController.rightTrigger().whileTrue(endEffector.scoreCoral()).onFalse(endEffector.centerCoral());
                 driverController.leftTrigger()
                                 .whileTrue(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeExtendedRotation))
                                 .whileFalse(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
@@ -219,6 +220,7 @@ public class RobotContainer {
 
         public void teleInit() {
                 elevator.setElevatorTarget(ElevatorConstants.kStowedHeight);
+                endEffector.centerCoral();
         }
 
         private Command joystickApproach(Supplier<Pose2d> approachPose) {

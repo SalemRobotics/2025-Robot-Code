@@ -32,7 +32,7 @@
   "constraintZones": [
     {
       "name": "Elevator Slow",
-      "minWaypointRelativePos": 0.5000000000000002,
+      "minWaypointRelativePos": 0.4,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 2.0,
@@ -48,7 +48,7 @@
   "eventMarkers": [
     {
       "name": "elevatorl4",
-      "waypointRelativePos": 0.4,
+      "waypointRelativePos": 0.2955580865603694,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -59,8 +59,8 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

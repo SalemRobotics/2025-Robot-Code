@@ -18,7 +18,6 @@ public class EndEffector extends SubsystemBase {
     private final DigitalInput mEntranceLineBreaker = new DigitalInput(EndEffectorConstants.kEntranceBreakerPort);
     private final DigitalInput mExitLineBreaker = new DigitalInput(EndEffectorConstants.kExitBreakerPort);
     private final TalonFX mEffectorMotor = new TalonFX(EndEffectorConstants.kMotorPort, "rio");
-    private Command mEjectCommand = Commands.none();
 
     private boolean mCoralInPosition = false;
     private boolean mHasCoral = false;
@@ -113,15 +112,21 @@ public class EndEffector extends SubsystemBase {
     }
 
     public Command ejectCoral() {
-        Command score = runOnce(() -> {
+        return runOnce(() -> {
             mHasCoral = false;
             mCoralInPosition = false;
             mFirstTime = true;
             mEffectorMotor.set(mEjectSpeed);
         });
-        mEjectCommand = score;
+    }
 
-        return score;
+    public Command scoreCoral() {
+        return run(() -> {
+            mHasCoral = false;
+            mCoralInPosition = false;
+            mFirstTime = true;
+            mEffectorMotor.set(mEjectSpeed);
+        });
     }
 
     /**
@@ -138,13 +143,6 @@ public class EndEffector extends SubsystemBase {
                 ejectCoral(),
                 Commands.waitSeconds(0.5),
                 Commands.runOnce(() -> mEffectorMotor.stopMotor(), this));
-    }
-
-    public Command cancelScore() {
-        return runOnce(() -> { 
-            mEjectCommand.cancel(); 
-            getDefaultCommand().schedule(); 
-        }).andThen(new PrintCommand("Cancelling score"));
     }
 
     public Command scoreL1() {
