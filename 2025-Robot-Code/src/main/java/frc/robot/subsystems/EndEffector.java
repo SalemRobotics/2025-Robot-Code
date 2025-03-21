@@ -35,23 +35,7 @@ public class EndEffector extends SubsystemBase {
     }
 
     public Command centerCoral() {
-        /*
-         * Process:
-         * 1. Detect a coral at entrance
-         * 2. Slow down motors & wait until it is only seen at exit
-         * 3. Brake the motors
-         * 4. Reverse the motors until the coral is seen at both the exit and the
-         * entrance
-         * 5. Stop & set the inPosition flag(for AJ controller rumbling when it is safe
-         * to raise elevator)
-         * 
-         * Considerations:
-         * - Making this process quicker(adjusting speeds) while not affecting coral's
-         * end position
-         * - Improving the speed of this command, however it shoudln't be performance
-         * intensive already.
-         */
-        return run(() -> {
+        return runOnce(() -> {
             if (!entranceDetected() && !exitDetected()) {
                 mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
                 SmartDashboard.putString("End Effector Branch", "No Coral");
@@ -85,7 +69,7 @@ public class EndEffector extends SubsystemBase {
                 SmartDashboard.putString("End Effector Branch", "!suck && vomit");
 
             }
-        }).andThen(Commands.waitSeconds(0.1));
+        }).andThen(Commands.waitSeconds(0.05));
     }
 
     // getter for mHasCoral
@@ -146,6 +130,11 @@ public class EndEffector extends SubsystemBase {
     }
 
     public Command scoreL1() {
-        return runOnce(() -> {}).until(() -> !entranceDetected());
+        return run(() -> {
+            mHasCoral = false;
+            mCoralInPosition = false;
+            mFirstTime = true;
+            mEffectorMotor.set(-EndEffectorConstants.kL1EjectSpeed);
+        });
     }
 }

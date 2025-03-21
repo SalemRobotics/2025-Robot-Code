@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 1.6004716981132074,
-        "y": 0.7320754716981139
+        "x": 1.5795,
+        "y": 0.7002499999999998
       },
       "prevControl": {
-        "x": 2.380945865177414,
-        "y": 1.152636764484427
+        "x": 2.3599741670642063,
+        "y": 1.1208112927863128
       },
       "nextControl": null,
       "isLocked": false,
@@ -29,9 +29,46 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Slow for Elevator",
+      "minWaypointRelativePos": 0,
+      "maxWaypointRelativePos": 0.3,
+      "constraints": {
+        "maxVelocity": 2.0,
+        "maxAcceleration": 2.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "intake",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "intake"
+        }
+      }
+    },
+    {
+      "name": "elevatorstow",
+      "waypointRelativePos": 0.09867172675521761,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevatorstow"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 4.0,
     "maxAcceleration": 4.0,

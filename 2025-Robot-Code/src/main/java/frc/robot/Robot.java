@@ -9,6 +9,7 @@ import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -44,10 +45,17 @@ public class Robot extends TimedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    m_robotContainer.disabledPeriodic();
+  }
 
   @Override
-  public void disabledExit() {}
+  public void disabledExit() {
+    SmartDashboard.putString("Aligned X", "Unknown (not disabled)");
+    SmartDashboard.putString("Aligned Y", "Unknown (not disabled)");
+    SmartDashboard.putNumber("Aligned X (num)", -1);
+    SmartDashboard.putNumber("Aligned Y (num)", -1);
+  }
 
   @Override
   public void autonomousInit() {
@@ -76,7 +84,9 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {}
 
   @Override
-  public void teleopExit() {}
+  public void teleopExit() {
+    m_robotContainer.teleExit();
+  }
 
   @Override
   public void testInit() {

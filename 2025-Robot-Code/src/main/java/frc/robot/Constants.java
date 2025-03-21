@@ -133,11 +133,15 @@ public final class Constants {
 
     public static final double kFastEjectSpeed = 0.9;
     public static final double kDefaultEjectSpeed = 0.6;
-    public static final double kSlowEjectSpeed = 0.3;
+    public static final double kL1EjectSpeed = 0.3;
 
-    public static final double kIdleSpeed = 0.15;
-    public static final double kIntakeSpeed = 0.06;
+    public static final double kIdleSpeed = 0.3;
+    public static final double kIntakeSpeed = 0.125;
     
     public static final double kSensorToMechanismRatio = 25.0;
+  }
+
+  public static class ClimberConstants {
+    public static final double kHopperFallAngle = 120.0;
   }
 }

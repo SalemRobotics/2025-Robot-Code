@@ -27,7 +27,6 @@ public class AlgaeRemover extends SubsystemBase {
     public AlgaeRemover() {
         mAlgaeMotor.setNeutralMode(NeutralModeValue.Brake);
         mConfig.Feedback.SensorToMechanismRatio = AlgaeConstants.kSensorToMechanismRatio;
-        mAlgaeMotor.setNeutralMode(NeutralModeValue.Brake);
 
         Slot0Configs slot0 = mConfig.Slot0;
         slot0.kP = 9.0;

@@ -46,6 +46,7 @@ import java.nio.file.Paths;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeRemover;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
@@ -72,6 +73,8 @@ public class RobotContainer {
         public final Vision vision = new Vision();
         public final Elevator elevator = new Elevator();
         public final AlgaeRemover algaeRemover = new AlgaeRemover();
+        public final Climber climber = new Climber();
+
         public final Field2d field = new Field2d();
 
         private final Trigger coralTrigger = new Trigger(endEffector::coralInPosition);
@@ -81,7 +84,7 @@ public class RobotContainer {
                 // create event triggers for autos to use
                 NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
                 NamedCommands.registerCommand("elevatorstow", elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-                NamedCommands.registerCommand("score", endEffector.ejectCoral());
+                NamedCommands.registerCommand("score", endEffector.ejectCoral().repeatedly());
                 NamedCommands.registerCommand("intake", endEffector.centerCoral());
 
                 algaeRemover.setDefaultCommand(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
@@ -104,12 +107,11 @@ public class RobotContainer {
                 autoChooser.addOption("Score from 1", new PathPlannerAuto("Score from 1"));
                 autoChooser.addOption("Taxi + CL", new PathPlannerAuto("Taxi + CL"));
                 autoChooser.addOption("Own Cage 3.5 Piece", new PathPlannerAuto("Own Cage 3.5pc"));
-                autoChooser.addOption("Simple Test", new PathPlannerAuto("Simple Test"));
                 autoChooser.addOption("Opposing Cage 3.5 Piece", new PathPlannerAuto("Opps Cage 3.5pc"));
                 SmartDashboard.putData("Auto Chooser", autoChooser);
 
-                SmartDashboard.putString("Aligned X", "Unknown");
-                SmartDashboard.putString("Aligned Y", "Unknown");
+                SmartDashboard.putString("Aligned X", "Unknown (in initialization)");
+                SmartDashboard.putString("Aligned Y", "Unknown (in initialization)");
                 DriverStation.silenceJoystickConnectionWarning(true);
         }
 
@@ -118,15 +120,6 @@ public class RobotContainer {
                         drivetrain.addVisionMeasurement(pose.getPose(), pose.getTime(),
                                         pose.getVisionMeasurementStdDevs());
                 }
-
-                var xDiff = AllianceFlipUtil.apply(drivetrain.getState().Pose).getX() - 7.1;
-                var yDiff = AllianceFlipUtil.apply(drivetrain.getState().Pose).getY() - 1.9;
-
-                SmartDashboard.putString("Aligned X", xDiff < -0.01 ? "Out (to cages)"
-                                : (xDiff > 0.01 ? "Closer (away from cages)" : "Aligned"));
-                SmartDashboard.putString("Aligned Y", yDiff < -0.01 ? "Left" : (yDiff > 0.01 ? "Right" : "Aligned"));
-                SmartDashboard.putNumber("Aligned X (num)", xDiff);
-                SmartDashboard.putNumber("Aligned Y (num)", yDiff);
 
                 field.setRobotPose(drivetrain.getState().Pose);
         }
@@ -137,7 +130,7 @@ public class RobotContainer {
                                                 OperatorConstants.kRumbleStrength)), new WaitCommand(0.5))
                                 .andThen(Commands.run(() -> driverController.setRumble(RumbleType.kBothRumble, 0))));
 
-                driverController.rightTrigger().whileTrue(endEffector.scoreCoral()).onFalse(endEffector.centerCoral());
+                driverController.rightTrigger().whileTrue(endEffector.scoreCoral());
                 driverController.leftTrigger()
                                 .whileTrue(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeExtendedRotation))
                                 .whileFalse(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
@@ -166,13 +159,16 @@ public class RobotContainer {
                                                                                                                     // (left)
                                 ));
 
-                driverController.povDown().whileTrue(drivetrain.applyRequest(() -> brake));
-                driverController.povRight().whileTrue(drivetrain.applyRequest(() -> point
-                                .withModuleDirection(new Rotation2d(-driverController.getLeftY(),
-                                                -driverController.getLeftX()))));
+                driverController.povUp().whileTrue(climber.climb()).onFalse(climber.stopMotor());
+                driverController.povDown().whileTrue(climber.declimb()).onFalse(climber.stopMotor());
+                driverController.povLeft().whileTrue(climber.prepClimb()).onFalse(climber.stopMotor());
+                // driverController.povRight().whileTrue(climber.stowServo());
+                // driverController.povDown().whileTrue(drivetrain.applyRequest(() -> brake));
+                // driverController.povRight().whileTrue(drivetrain.applyRequest(() -> point
+                //                 .withModuleDirection(new Rotation2d(-driverController.getLeftY(),
+                //                                 -driverController.getLeftX()))));
 
-                driverController.a().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height))
-                                .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+                driverController.a().whileTrue(endEffector.scoreL1());
                 driverController.x().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 driverController.b().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL3Height))
@@ -220,7 +216,20 @@ public class RobotContainer {
 
         public void teleInit() {
                 elevator.setElevatorTarget(ElevatorConstants.kStowedHeight);
-                endEffector.centerCoral();
+                endEffector.setDefaultCommand(endEffector.centerCoral());
+        }
+        public void teleExit() {
+                endEffector.removeDefaultCommand();
+        }
+
+        public void disabledPeriodic() {
+                var xDiff = AllianceFlipUtil.apply(drivetrain.getState().Pose).getX() - 7.1;
+                var yDiff = AllianceFlipUtil.apply(drivetrain.getState().Pose).getY() - 1.9;
+
+                SmartDashboard.putString("Aligned X", xDiff < -0.01 ? "Out (to cages)" : (xDiff > 0.01 ? "Closer (away from cages)" : "Aligned"));
+                SmartDashboard.putString("Aligned Y", yDiff < -0.01 ? "Left" : (yDiff > 0.01 ? "Right" : "Aligned"));
+                SmartDashboard.putNumber("Aligned X (num)", xDiff);
+                SmartDashboard.putNumber("Aligned Y (num)", yDiff);
         }
 
         private Command joystickApproach(Supplier<Pose2d> approachPose) {
