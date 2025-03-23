@@ -16,7 +16,6 @@ import frc.robot.util.AllianceFlipUtil;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.ArrayList;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -67,28 +66,25 @@ public class RobotContainer {
         private final Telemetry logger = new Telemetry(MaxSpeed);
 
         private final CommandXboxController driverController = new CommandXboxController(0);
+        private final CommandXboxController operatorController = new CommandXboxController(1);
 
-        public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-        public final EndEffector endEffector = new EndEffector();
-        public final Vision vision = new Vision();
-        public final Elevator elevator = new Elevator();
-        public final AlgaeRemover algaeRemover = new AlgaeRemover();
-        public final Climber climber = new Climber();
+        private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+        private final EndEffector endEffector = new EndEffector(driverController);
+        private final Vision vision = new Vision();
+        private final Elevator elevator = new Elevator();
+        private final AlgaeRemover algaeRemover = new AlgaeRemover();
+        private final Climber climber = new Climber();
 
-        public final Field2d field = new Field2d();
+        private final Field2d field = new Field2d();
 
-        private final Trigger coralTrigger = new Trigger(endEffector::coralInPosition);
         private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
         public RobotContainer() {
-                // create event triggers for autos to use
+                // create named commands for autos to use
                 NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
                 NamedCommands.registerCommand("elevatorstow", elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-                NamedCommands.registerCommand("score", endEffector.ejectCoral().repeatedly());
-                NamedCommands.registerCommand("intake", endEffector.centerCoral());
-
-                algaeRemover.setDefaultCommand(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
-                // endEffector.setDefaultCommand(endEffector.centerCoral());
+                NamedCommands.registerCommand("score", endEffector.autoScoreCoral());
+                NamedCommands.registerCommand("intake", endEffector.autoIntake());
 
                 configureBindings();
                 WebServer.start(
@@ -108,10 +104,11 @@ public class RobotContainer {
                 autoChooser.addOption("Taxi + CL", new PathPlannerAuto("Taxi + CL"));
                 autoChooser.addOption("Own Cage 3.5 Piece", new PathPlannerAuto("Own Cage 3.5pc"));
                 autoChooser.addOption("Opposing Cage 3.5 Piece", new PathPlannerAuto("Opps Cage 3.5pc"));
-                SmartDashboard.putData("Auto Chooser", autoChooser);
 
+                SmartDashboard.putData("Auto Chooser", autoChooser);
                 SmartDashboard.putString("Aligned X", "Unknown (in initialization)");
                 SmartDashboard.putString("Aligned Y", "Unknown (in initialization)");
+                
                 DriverStation.silenceJoystickConnectionWarning(true);
         }
 
@@ -125,15 +122,9 @@ public class RobotContainer {
         }
 
         private void configureBindings() {
-                coralTrigger.onTrue(Commands
-                                .race(Commands.runOnce(() -> driverController.setRumble(RumbleType.kBothRumble,
-                                                OperatorConstants.kRumbleStrength)), new WaitCommand(0.5))
-                                .andThen(Commands.run(() -> driverController.setRumble(RumbleType.kBothRumble, 0))));
-
-                driverController.rightTrigger().whileTrue(endEffector.scoreCoral());
-                driverController.leftTrigger()
-                                .whileTrue(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeExtendedRotation))
-                                .whileFalse(algaeRemover.pivotAlgaeArm(AlgaeConstants.kAlgaeStowedRotation));
+                driverController.rightTrigger().whileTrue(endEffector.scoreCoral(driverController.y()::getAsBoolean));
+                
+                // driverController.leftTrigger().onTrue(algaeRemover.pivotAlgaeArm(() -> true)).onFalse(algaeRemover.pivotAlgaeArm(() -> false));
                 // driverController.leftTrigger().whileFalse(algaeRemover.reset());
 
                 // Note that X is defined as forward according to WPILib convention,
@@ -159,14 +150,17 @@ public class RobotContainer {
                                                                                                                     // (left)
                                 ));
 
-                driverController.povUp().whileTrue(climber.climb()).onFalse(climber.stopMotor());
-                driverController.povDown().whileTrue(climber.declimb()).onFalse(climber.stopMotor());
-                driverController.povLeft().whileTrue(climber.prepClimb()).onFalse(climber.stopMotor());
+                // driverController.povUp().whileTrue(climber.climb()).onFalse(climber.stopMotor());
+                // driverController.povDown().whileTrue(climber.declimb()).onFalse(climber.stopMotor());
+                // driverController.povLeft().whileTrue(climber.prepClimb()).onFalse(climber.stopMotor());
                 // driverController.povRight().whileTrue(climber.stowServo());
                 // driverController.povDown().whileTrue(drivetrain.applyRequest(() -> brake));
                 // driverController.povRight().whileTrue(drivetrain.applyRequest(() -> point
                 //                 .withModuleDirection(new Rotation2d(-driverController.getLeftY(),
                 //                                 -driverController.getLeftX()))));
+
+                operatorController.a().whileTrue(climber.climb()).onFalse(climber.stopMotor());
+                operatorController.y().whileTrue(climber.declimb()).onFalse(climber.stopMotor());
 
                 driverController.a().whileTrue(endEffector.scoreL1());
                 driverController.x().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height))
@@ -203,7 +197,7 @@ public class RobotContainer {
         }
 
         public void ConfigureNamedCommands() {
-                NamedCommands.registerCommand("score", endEffector.ejectCoral());
+                NamedCommands.registerCommand("score", endEffector.autoScoreCoral());
                 NamedCommands.registerCommand("elevator stow",
                                 elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 NamedCommands.registerCommand("elevator L3", elevator.setElevatorTarget(ElevatorConstants.kL3Height));
@@ -215,7 +209,7 @@ public class RobotContainer {
         }
 
         public void teleInit() {
-                elevator.setElevatorTarget(ElevatorConstants.kStowedHeight);
+                elevator.setElevatorTarget(ElevatorConstants.kStowedHeight).schedule();
                 endEffector.setDefaultCommand(endEffector.centerCoral());
         }
         public void teleExit() {

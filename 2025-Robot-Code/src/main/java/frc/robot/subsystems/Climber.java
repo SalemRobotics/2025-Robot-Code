@@ -37,15 +37,10 @@ public class Climber extends SubsystemBase {
         });
     }
 
-    public Command prepClimb() {
-        return run(() -> {
-            mServo.setAngle(120);
-        });
-    }
-
     public Command declimb() {
         return runOnce(() -> {
-            mClimberMotor.set(-.75);
+            mServo.setAngle(120);
+            mClimberMotor.set(-0.75);
         });
     }
     public Command stopMotor() {
@@ -53,6 +48,5 @@ public class Climber extends SubsystemBase {
             mClimberMotor.stopMotor();
             mServo.setAngle(75);
         });
-        
     }
 }

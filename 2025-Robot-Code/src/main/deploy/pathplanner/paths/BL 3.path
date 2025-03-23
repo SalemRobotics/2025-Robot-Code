@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.065610111872688,
-        "y": 2.322585039010876
+        "x": 5.434919749420931,
+        "y": 2.5861321446753953
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.022169811320754,
-        "y": 2.7924528301886777
+        "x": 5.002446116549323,
+        "y": 2.788623931721943
       },
       "prevControl": {
-        "x": 6.051840401993131,
-        "y": 2.3490700916964986
+        "x": 5.296042042561866,
+        "y": 2.655323419861962
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,7 +32,7 @@
   "constraintZones": [
     {
       "name": "Slow to Elevator",
-      "minWaypointRelativePos": 0.49841872232763823,
+      "minWaypointRelativePos": 0.4,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 2.0,

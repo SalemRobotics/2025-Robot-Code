@@ -38,5 +38,7 @@
   "brModuleY": -0.301361,
   "bumperOffsetX": 0.0,
   "bumperOffsetY": 0.0,
-  "robotFeatures": []
+  "robotFeatures": [
+    "{\"name\":\"Coral\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":0.0,\"y\":0.0},\"size\":{\"width\":0.114,\"length\":1.0},\"borderRadius\":0.0,\"strokeWidth\":0.012,\"filled\":false}}"
+  ]
 }
