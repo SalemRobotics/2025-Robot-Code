@@ -46,18 +46,21 @@ public final class Constants {
      * Our current positions *work*, but finding exact heights in inches and getting rotations with this rot:in ratio 
      * may be more precise
      */
+
     public static final double kStowedHeight = 0;
     public static final double kL1Height = 1.1;
     public static final double kL2Height = 1.67;
     public static final double kL3Height = 2.82;
     public static final double kL4Height = 4.68;
+    public static final double kLowAlgaeHeight = 0.3;
+    public static final double kHighAlgaeHeight = 1.5;
     public static final CANBus kElevatorMotorBus = new CANBus("canivore0");
     public static final int kElevatorMotorAPort = 13;
     public static final int kElevatorMotorBPort = 14;
     public static final double kSensorToMechanismRatio = 9.0;
     public static final double kElevatorMaxSpeed = 9.0;
     
-    public static final double kElevatorMaxAcceleration = 13.0;
+    public static final double kElevatorMaxAcceleration = 20.0;
     public static final double kElevatorMaxJerk = 100.0;
     public static final double kElevatorG = 0.25;
     public static final double kElevatorS = 0.25;
@@ -66,6 +69,7 @@ public final class Constants {
     public static final double kElevatorP = 60.0;
     public static final double kElevatorI = 0.0;
     public static final double kElevatorD = 0.5;
+    
   }
 
   public static class DriveConstants {

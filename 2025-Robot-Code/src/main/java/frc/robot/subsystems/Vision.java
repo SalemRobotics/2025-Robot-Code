@@ -34,11 +34,11 @@ public class Vision extends SubsystemBase {
     static {
         try {
             mFieldLayout = new AprilTagFieldLayout(
-                    Path.of(Filesystem.getDeployDirectory().getAbsolutePath() + "/andymarklayout.json"));
+                    Path.of(Filesystem.getDeployDirectory().getAbsolutePath() + "/weldedlayout.json"));
             useCustomField = true;
         } catch (Exception e) {
             // TODO: handle exception
-            mFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
+            mFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
         }
         SmartDashboard.putBoolean("Field Config", useCustomField);
     }

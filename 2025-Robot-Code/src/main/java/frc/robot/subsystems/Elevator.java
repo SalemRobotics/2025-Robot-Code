@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Second;
 
+import java.util.function.BooleanSupplier;
+
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -34,6 +36,7 @@ public class Elevator extends SubsystemBase {
     
     private double mSetHeight = 0;
     public final Trigger kElevatorAtTarget = new Trigger(this::isAtHeight);
+    public final Trigger kNearL4 = new Trigger(() -> MathUtil.isNear(ElevatorConstants.kL4Height, mElevatorMotorA.get(), 1));
 
     public Elevator() {
         mConfig.Feedback.SensorToMechanismRatio = ElevatorConstants.kSensorToMechanismRatio;

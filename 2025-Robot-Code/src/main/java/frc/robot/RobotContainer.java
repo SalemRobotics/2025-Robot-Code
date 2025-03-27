@@ -16,6 +16,7 @@ import frc.robot.util.AllianceFlipUtil;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -79,10 +80,14 @@ public class RobotContainer {
 
         private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
+        private boolean kBargeMode = false;
+        private final Trigger isBargeMode = new Trigger(() -> kBargeMode);
+
         public RobotContainer() {
                 // create named commands for autos to use
                 NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
-                NamedCommands.registerCommand("elevatorstow", elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+                NamedCommands.registerCommand("elevatorstow",
+                                elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 NamedCommands.registerCommand("score", endEffector.autoScoreCoral());
                 NamedCommands.registerCommand("intake", endEffector.autoIntake());
 
@@ -108,7 +113,7 @@ public class RobotContainer {
                 SmartDashboard.putData("Auto Chooser", autoChooser);
                 SmartDashboard.putString("Aligned X", "Unknown (in initialization)");
                 SmartDashboard.putString("Aligned Y", "Unknown (in initialization)");
-                
+
                 DriverStation.silenceJoystickConnectionWarning(true);
         }
 
@@ -119,13 +124,14 @@ public class RobotContainer {
                 }
 
                 field.setRobotPose(drivetrain.getState().Pose);
+                SmartDashboard.putBoolean("In Algae Mode", kBargeMode);
         }
 
         private void configureBindings() {
-                driverController.rightTrigger().whileTrue(endEffector.scoreCoral(driverController.y()::getAsBoolean));
-                
-                // driverController.leftTrigger().onTrue(algaeRemover.pivotAlgaeArm(() -> true)).onFalse(algaeRemover.pivotAlgaeArm(() -> false));
-                // driverController.leftTrigger().whileFalse(algaeRemover.reset());
+                driverController.rightTrigger().and(isBargeMode.negate())
+                                .whileTrue(endEffector.scoreCoral(driverController.y()::getAsBoolean));
+                driverController.rightTrigger().and(isBargeMode)
+                                .whileTrue(endEffector.scoreBarge().alongWith(algaeRemover.stowArm(() -> false)));
 
                 // Note that X is defined as forward according to WPILib convention,
                 // and Y is defined as to the left according to WPILib convention.
@@ -156,18 +162,29 @@ public class RobotContainer {
                 // driverController.povRight().whileTrue(climber.stowServo());
                 // driverController.povDown().whileTrue(drivetrain.applyRequest(() -> brake));
                 // driverController.povRight().whileTrue(drivetrain.applyRequest(() -> point
-                //                 .withModuleDirection(new Rotation2d(-driverController.getLeftY(),
-                //                                 -driverController.getLeftX()))));
+                // .withModuleDirection(new Rotation2d(-driverController.getLeftY(),
+                // -driverController.getLeftX()))));
 
                 operatorController.a().whileTrue(climber.climb()).onFalse(climber.stopMotor());
                 operatorController.y().whileTrue(climber.declimb()).onFalse(climber.stopMotor());
 
                 driverController.a().whileTrue(endEffector.scoreL1());
-                driverController.x().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height))
+                driverController.x().and(isBargeMode.negate())
+                                .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-                driverController.b().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL3Height))
+                driverController.b().and(isBargeMode.negate())
+                                .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL3Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 driverController.y().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height))
+                                .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+
+                algaeRemover.setDefaultCommand(algaeRemover.stowArm(driverController.leftTrigger()));
+
+                driverController.x().and(isBargeMode)
+                                .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kLowAlgaeHeight))
+                                .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+                driverController.b().and(isBargeMode)
+                                .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kHighAlgaeHeight))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
 
                 // TODO: these should only be enabled for testing/auto tuning.
@@ -186,12 +203,22 @@ public class RobotContainer {
                 driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
                 // Driver Right Bumper: Approach nearest right-side reef branch
-                driverController.rightBumper().whileTrue(joystickApproach(
+                driverController.rightBumper().and(isBargeMode.negate()).whileTrue(joystickApproach(
                                 () -> FieldConstants.getNearestReefBranch(drivetrain.getState().Pose, ReefSide.RIGHT)));
 
                 // Driver Left Bumper: approach nearest left-side reef branch
-                driverController.leftBumper().whileTrue(joystickApproach(
+                driverController.leftBumper().and(isBargeMode.negate()).whileTrue(joystickApproach(
                                 () -> FieldConstants.getNearestReefBranch(drivetrain.getState().Pose, ReefSide.LEFT)));
+
+                // Driver Left Bumper and Barge Mode: approach Algae on current reef face
+                driverController.leftBumper().and(isBargeMode).whileTrue(joystickApproach(
+                                () -> FieldConstants.getNearestReefFace(drivetrain.getState().Pose)));
+                driverController.rightBumper().and(isBargeMode).whileTrue(joystickApproach(
+                                () -> FieldConstants.getNearestReefFace(drivetrain.getState().Pose)));
+
+                driverController.leftTrigger().onTrue(
+                                algaeRemover.deployArm().alongWith(Commands.runOnce(() -> kBargeMode = true)))
+                                .onFalse(Commands.runOnce(() -> kBargeMode = false));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
@@ -210,8 +237,9 @@ public class RobotContainer {
 
         public void teleInit() {
                 elevator.setElevatorTarget(ElevatorConstants.kStowedHeight).schedule();
-                endEffector.setDefaultCommand(endEffector.centerCoral());
+                endEffector.setDefaultCommand(endEffector.teleIntake());
         }
+
         public void teleExit() {
                 endEffector.removeDefaultCommand();
         }
@@ -220,7 +248,8 @@ public class RobotContainer {
                 var xDiff = AllianceFlipUtil.apply(drivetrain.getState().Pose).getX() - 7.1;
                 var yDiff = AllianceFlipUtil.apply(drivetrain.getState().Pose).getY() - 1.9;
 
-                SmartDashboard.putString("Aligned X", xDiff < -0.01 ? "Out (to cages)" : (xDiff > 0.01 ? "Closer (away from cages)" : "Aligned"));
+                SmartDashboard.putString("Aligned X", xDiff < -0.01 ? "Out (to cages)"
+                                : (xDiff > 0.01 ? "Closer (away from cages)" : "Aligned"));
                 SmartDashboard.putString("Aligned Y", yDiff < -0.01 ? "Left" : (yDiff > 0.01 ? "Right" : "Aligned"));
                 SmartDashboard.putNumber("Aligned X (num)", xDiff);
                 SmartDashboard.putNumber("Aligned Y (num)", yDiff);

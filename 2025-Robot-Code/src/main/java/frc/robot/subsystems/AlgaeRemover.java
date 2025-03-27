@@ -9,6 +9,7 @@ import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TorqueCurrentConfigs;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -19,6 +20,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.AlgaeConstants;
 
 public class AlgaeRemover extends SubsystemBase {
@@ -26,9 +28,8 @@ public class AlgaeRemover extends SubsystemBase {
     private final Timer mDeployTimer = new Timer();
 
     public AlgaeRemover() {
-        mAlgaeMotor.setNeutralMode(NeutralModeValue.Brake);
         TalonFXConfiguration config = new TalonFXConfiguration();
-
+        config.Feedback.withSensorToMechanismRatio(25);
         config.CurrentLimits.withStatorCurrentLimit(10);
 
         StatusCode status = StatusCode.StatusCodeNotInitialized;
@@ -38,26 +39,41 @@ public class AlgaeRemover extends SubsystemBase {
                 break;
         }
         if (!status.isOK())
-            System.err.println("Failed to configure algea remover motor: " + status.toString());
-
+            System.err.println("Failed to configure algae remover motor: " + status.toString());
+        
         mAlgaeMotor.setPosition(0);
+        mAlgaeMotor.setNeutralMode(NeutralModeValue.Brake);
     }
 
-    /*
-     * Pivots algae arm into position to remove algae
-     * CURRENTLY NOT FUNCTIONAL - (physical) change belt to a chain
-     */
-    public Command pivotAlgaeArm(BooleanSupplier goDown) {
-        return Commands.waitSeconds(0.05)
-                .beforeStarting(() -> mAlgaeMotor.set(goDown.getAsBoolean() ? 0.5 : -0.5))
-                .andThen(
-                        run(() -> {
-                            if (MathUtil.isNear(0, mAlgaeMotor.getVelocity().getValueAsDouble(), 0.1))
-                                mDeployTimer.start();
-                        }).until(() -> mDeployTimer.hasElapsed(0.25)))
-                .finallyDo(() -> {
-                    mAlgaeMotor.stopMotor();
-                    mDeployTimer.reset();
-                });
+    public Trigger trigger = new Trigger(() -> true);
+
+    public Trigger hasDeployedTrigger = new Trigger(
+        () -> MathUtil.isNear(.283, mAlgaeMotor.getPosition().getValueAsDouble(), .1)
+    );
+
+    public Trigger hasStowedTrigger = new Trigger( 
+        () -> MathUtil.isNear(0.0, mAlgaeMotor.getPosition().getValueAsDouble(), 0.1)
+    );
+
+    public Command deployArm() {
+        return Commands.sequence(
+            runOnce(() -> mAlgaeMotor.set(.75)),
+            Commands.race(
+                Commands.waitUntil(this.hasDeployedTrigger),
+                Commands.waitSeconds(.5)
+            ),
+            runOnce(() -> mAlgaeMotor.stopMotor())
+        );
+    }
+
+    public Command stowArm(BooleanSupplier currentlyDeployed) {
+        return Commands.sequence(
+            runOnce(() -> mAlgaeMotor.set(-.75)),
+            Commands.race(
+                Commands.waitUntil(this.hasStowedTrigger),
+                Commands.waitSeconds(.5)
+            ),
+            runOnce(() -> mAlgaeMotor.stopMotor())
+        ).unless(currentlyDeployed);
     }
 }

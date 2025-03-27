@@ -27,7 +27,7 @@ public class DriveCommands {
     private static final double ANGLE_KD = 0;
     private static final double ANGLE_MAX_VELOCITY = 8.0;
     private static final double ANGLE_MAX_ACCELERATION = 20.0;
-    private static final double kAngleTolerance = Units.degreesToRadians(10);
+    private static final double kAngleTolerance = Units.degreesToRadians(5);
     private static final double kLineTolerance = 0.05;
 
     public static final double DRIVE_BASE_RADIUS = Math.max(
@@ -120,5 +120,9 @@ public class DriveCommands {
             },
             drive // Requirements
         ).beforeStarting(() -> angleController.reset(drive.getState().Pose.getRotation().getRadians()));
+    }
+
+    public static Command autoApproach(CommandSwerveDrivetrain drive, DoubleSupplier speed, Supplier<Pose2d> approachSupplier) {
+        return joystickApproach(drive, speed, approachSupplier).until(() -> drive.getState().Pose.getTranslation().getDistance(approachSupplier.get().getTranslation()) <= 0.1);
     }
 }
