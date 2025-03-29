@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.945,
-        "y": 5.318
+        "x": 3.96,
+        "y": 5.28
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.069408629450191,
-        "y": 6.096346547158564
+        "x": 3.2568395779375634,
+        "y": 5.947949530875624
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "EL"
     },
     {
       "anchor": {
-        "x": 1.5502500000000001,
-        "y": 7.456999999999999
+        "x": 1.55,
+        "y": 7.457
       },
       "prevControl": {
-        "x": 2.82718219367755,
-        "y": 6.357834377602895
+        "x": 2.6540376273638677,
+        "y": 6.443312105145415
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Coral 2"
     }
   ],
   "rotationTargets": [],
@@ -70,8 +70,8 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -79,7 +79,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -53.973
+    "rotation": -53.97262661489641
   },
   "reversed": false,
   "folder": "Top Coral from Reef Paths ",

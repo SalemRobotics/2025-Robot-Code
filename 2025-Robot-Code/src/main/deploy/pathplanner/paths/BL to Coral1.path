@@ -8,8 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.089150943396227,
-        "y": 2.1485849056603787
+        "x": 4.53375,
+        "y": 2.2017499999999997
+      },
+      "isLocked": false,
+      "linkedName": "BL"
+    },
+    {
+      "anchor": {
+        "x": 4.5825,
+        "y": 2.2407499999999994
+      },
+      "prevControl": {
+        "x": 5.3235,
+        "y": 3.0890000000000004
+      },
+      "nextControl": {
+        "x": 4.416075037420131,
+        "y": 2.0502372138888343
       },
       "isLocked": false,
       "linkedName": null
@@ -20,12 +36,12 @@
         "y": 0.6025102459016398
       },
       "prevControl": {
-        "x": 2.230986462146174,
-        "y": 1.0230715386879536
+        "x": 3.1102499999999997,
+        "y": 1.4119999999999993
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Coral 1"
     }
   ],
   "rotationTargets": [],
@@ -33,7 +49,7 @@
     {
       "name": "Slow for Elevator",
       "minWaypointRelativePos": 0,
-      "maxWaypointRelativePos": 0.3,
+      "maxWaypointRelativePos": 0.7,
       "constraints": {
         "maxVelocity": 2.0,
         "maxAcceleration": 2.0,
@@ -59,7 +75,7 @@
     },
     {
       "name": "elevatorstow",
-      "waypointRelativePos": 0.09867172675521761,
+      "waypointRelativePos": 0.2,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -70,8 +86,8 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

@@ -80,8 +80,8 @@ public class RobotContainer {
 
         private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
-        private boolean kBargeMode = false;
-        private final Trigger isBargeMode = new Trigger(() -> kBargeMode);
+        private boolean mBargeMode = false;
+        private final Trigger isBargeMode = new Trigger(() -> mBargeMode);
 
         public RobotContainer() {
                 // create named commands for autos to use
@@ -124,7 +124,7 @@ public class RobotContainer {
                 }
 
                 field.setRobotPose(drivetrain.getState().Pose);
-                SmartDashboard.putBoolean("In Algae Mode", kBargeMode);
+                SmartDashboard.putBoolean("In Algae Mode", mBargeMode);
         }
 
         private void configureBindings() {
@@ -217,8 +217,8 @@ public class RobotContainer {
                                 () -> FieldConstants.getNearestReefFace(drivetrain.getState().Pose)));
 
                 driverController.leftTrigger().onTrue(
-                                algaeRemover.deployArm().alongWith(Commands.runOnce(() -> kBargeMode = true)))
-                                .onFalse(Commands.runOnce(() -> kBargeMode = false));
+                                algaeRemover.deployArm().alongWith(Commands.runOnce(() -> mBargeMode = true)))
+                                .onFalse(Commands.runOnce(() -> mBargeMode = false));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
@@ -229,6 +229,16 @@ public class RobotContainer {
                                 elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 NamedCommands.registerCommand("elevator L3", elevator.setElevatorTarget(ElevatorConstants.kL3Height));
                 NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
+
+                NamedCommands.registerCommand("startalgae",
+                                algaeRemover.deployArm().alongWith(Commands.runOnce(() -> mBargeMode = true),
+                                                Commands.deadline(new WaitCommand(0.15), endEffector.autoIntake())));
+                NamedCommands.registerCommand("endalgae", algaeRemover.stowArm(() -> false)
+                                .alongWith(Commands.runOnce(() -> mBargeMode = false)));
+                NamedCommands.registerCommand("algael2", elevator.setElevatorTarget(ElevatorConstants.kLowAlgaeHeight));
+                NamedCommands.registerCommand("algael3",
+                                elevator.setElevatorTarget(ElevatorConstants.kHighAlgaeHeight));
+                NamedCommands.registerCommand("scorealgae", endEffector.scoreBarge());
         }
 
         public Command getAutonomousCommand() {

@@ -8,31 +8,31 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.434919749420931,
-        "y": 2.5861321446753953
+        "x": 5.14027669827848,
+        "y": 2.7125903641709916
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.002446116549323,
-        "y": 2.788623931721943
+        "x": 5.022,
+        "y": 2.792
       },
       "prevControl": {
-        "x": 5.296042042561866,
-        "y": 2.655323419861962
+        "x": 5.252766708558462,
+        "y": 2.6958401007639146
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "BL"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Slow to Elevator",
-      "minWaypointRelativePos": 0.4,
+      "minWaypointRelativePos": 0.3529197080291997,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 2.0,
@@ -59,8 +59,8 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

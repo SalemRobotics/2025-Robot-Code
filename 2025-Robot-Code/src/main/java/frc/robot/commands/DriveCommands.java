@@ -123,6 +123,7 @@ public class DriveCommands {
     }
 
     public static Command autoApproach(CommandSwerveDrivetrain drive, DoubleSupplier speed, Supplier<Pose2d> approachSupplier) {
-        return joystickApproach(drive, speed, approachSupplier).until(() -> drive.getState().Pose.getTranslation().getDistance(approachSupplier.get().getTranslation()) <= 0.1);
+        return joystickApproach(drive, speed, approachSupplier).until(() -> drive.getState().Pose.getTranslation()
+                .getDistance(approachSupplier.get().getTranslation()) <= 0.1);
     }
 }
