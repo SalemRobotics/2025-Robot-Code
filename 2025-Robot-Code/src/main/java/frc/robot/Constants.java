@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Current;
 
 
 /**
@@ -54,22 +55,22 @@ public final class Constants {
     public static final double kL4Height = 4.68;
     public static final double kLowAlgaeHeight = 0.3;
     public static final double kHighAlgaeHeight = 1.5;
-    public static final CANBus kElevatorMotorBus = new CANBus("canivore0");
-    public static final int kElevatorMotorAPort = 13;
-    public static final int kElevatorMotorBPort = 14;
+    public static final CANBus kMotorBus = new CANBus("canivore0");
+    public static final int    kMotorAPort = 13;
+    public static final int    kMotorBPort = 14;
     public static final double kSensorToMechanismRatio = 9.0;
-    public static final double kElevatorMaxSpeed = 9.0;
+    public static final double kMaxSpeed = 9;
     
-    public static final double kElevatorMaxAcceleration = 20.0;
-    public static final double kElevatorMaxJerk = 100.0;
-    public static final double kElevatorG = 0.25;
-    public static final double kElevatorS = 0.25;
-    public static final double kElevatorV = 0.12;
-    public static final double kElevatorA = 0.01;
-    public static final double kElevatorP = 60.0;
-    public static final double kElevatorI = 0.0;
-    public static final double kElevatorD = 0.5;
-    
+    public static final double kMaxAcceleration = 20.0;
+    public static final double kMaxJerk = 100.0;
+    public static final double kG = 0.25;
+    public static final double kS = 0.25;
+    public static final double kV = 0.12;
+    public static final double kA = 0.01;
+    public static final double kP = 60.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.5;
+    public static final double kStatorCurrentLimit = 50;
   }
 
   public static class DriveConstants {
@@ -142,6 +143,7 @@ public final class Constants {
 
     public static final double kIdleSpeed = 0.3;
     public static final double kIntakeSpeed = 0.125;
+    public static final double kDriveBackSpeed = 0.08;
     
     public static final double kSensorToMechanismRatio = 25.0;
   }

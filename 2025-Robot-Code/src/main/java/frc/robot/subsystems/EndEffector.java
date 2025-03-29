@@ -79,11 +79,6 @@ public class EndEffector extends SubsystemBase {
                 mCoralInPosition = false;
                 mHasCoral = false;
                 mFirstTime = true;
-            } else if (entranceDetected() && !exitDetected()) {
-                mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed);
-                mCoralInPosition = false;
-                mHasCoral = true;
-                SmartDashboard.putString("End Effector Branch", "suck && !vomit");
             } else if (entranceDetected() && exitDetected()) {
                 if (mFirstTime) {
                     mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed / 2);
@@ -96,12 +91,19 @@ public class EndEffector extends SubsystemBase {
                     mHasCoral = true;
                     SmartDashboard.putString("End Effector Branch", "In Position");
                 }
+            } else if (entranceDetected() && !exitDetected()) {
+                mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed);
+                mCoralInPosition = false;
+                mHasCoral = true;
+                SmartDashboard.putString("End Effector Branch", "Only At Entrance");
             } else if (!entranceDetected() && exitDetected()) {
-                mEffectorMotor.set(-EndEffectorConstants.kIntakeSpeed);
+                mEffectorMotor.set(-EndEffectorConstants.kDriveBackSpeed);
                 mCoralInPosition = false;
                 mHasCoral = true;
                 mFirstTime = false;
-                SmartDashboard.putString("End Effector Branch", "!suck && vomit");
+                SmartDashboard.putString("End Effector Branch", "Only At Exit");
+            } else {
+                SmartDashboard.putString("End Effector Branch", "Invalid State");
             }
         }).andThen(Commands.waitSeconds(0.05));
     }

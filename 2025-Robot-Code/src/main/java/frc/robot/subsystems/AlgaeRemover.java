@@ -45,13 +45,11 @@ public class AlgaeRemover extends SubsystemBase {
         mAlgaeMotor.setNeutralMode(NeutralModeValue.Brake);
     }
 
-    public Trigger trigger = new Trigger(() -> true);
-
-    public Trigger hasDeployedTrigger = new Trigger(
+    public final Trigger hasDeployedTrigger = new Trigger(
         () -> MathUtil.isNear(.283, mAlgaeMotor.getPosition().getValueAsDouble(), .1)
     );
 
-    public Trigger hasStowedTrigger = new Trigger( 
+    public final Trigger hasStowedTrigger = new Trigger( 
         () -> MathUtil.isNear(0.0, mAlgaeMotor.getPosition().getValueAsDouble(), 0.1)
     );
 
@@ -66,7 +64,7 @@ public class AlgaeRemover extends SubsystemBase {
         );
     }
 
-    public Command stowArm(BooleanSupplier currentlyDeployed) {
+    public Command stowArm() {
         return Commands.sequence(
             runOnce(() -> mAlgaeMotor.set(-.75)),
             Commands.race(
@@ -74,6 +72,9 @@ public class AlgaeRemover extends SubsystemBase {
                 Commands.waitSeconds(.5)
             ),
             runOnce(() -> mAlgaeMotor.stopMotor())
-        ).unless(currentlyDeployed);
+        );
+    }
+    public Command stowArm(BooleanSupplier currentlyDeployed) {
+        return stowArm().unless(currentlyDeployed);
     }
 }
