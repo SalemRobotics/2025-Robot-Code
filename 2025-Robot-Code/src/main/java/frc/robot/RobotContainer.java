@@ -230,7 +230,7 @@ public class RobotContainer {
 
                 NamedCommands.registerCommand("startalgae",
                                 algaeRemover.deployArm().alongWith(Commands.runOnce(() -> mBargeMode = true),
-                                                Commands.deadline(new WaitCommand(0.15), endEffector.autoIntake())));
+                                                Commands.deadline(new WaitCommand(0.15), endEffector.algaeIntake())));
                 NamedCommands.registerCommand("endalgae", algaeRemover.stowArm(() -> false)
                                 .alongWith(Commands.runOnce(() -> mBargeMode = false)));
                 NamedCommands.registerCommand("algael2", elevator.setElevatorTarget(ElevatorConstants.kLowAlgaeHeight));
@@ -241,7 +241,7 @@ public class RobotContainer {
                                 elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 NamedCommands.registerCommand("score", endEffector.autoScoreCoral());
                 NamedCommands.registerCommand("intake", endEffector.autoIntake());
-                NamedCommands.registerCommand("setIntakeAlgae", endEffector.algaeIntake());
+
         }
 
         public Command getAutonomousCommand() {
