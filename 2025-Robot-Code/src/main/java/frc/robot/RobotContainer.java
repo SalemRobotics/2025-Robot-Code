@@ -84,12 +84,7 @@ public class RobotContainer {
         private final Trigger isBargeMode = new Trigger(() -> kBargeMode);
 
         public RobotContainer() {
-                // create named commands for autos to use
-                NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
-                NamedCommands.registerCommand("elevatorstow",
-                                elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-                NamedCommands.registerCommand("score", endEffector.autoScoreCoral());
-                NamedCommands.registerCommand("intake", endEffector.autoIntake());
+                configureNamedCommands();
 
                 configureBindings();
                 WebServer.start(
@@ -131,7 +126,7 @@ public class RobotContainer {
                 driverController.rightTrigger().and(isBargeMode.negate())
                                 .whileTrue(endEffector.scoreCoral(driverController.y()::getAsBoolean));
                 driverController.rightTrigger().and(isBargeMode)
-                                .whileTrue(endEffector.scoreBarge().alongWith(algaeRemover.stowArm(() -> false)));
+                                .whileTrue(endEffector.scoreBarge().alongWith(algaeRemover.stowArm()));
 
                 // Note that X is defined as forward according to WPILib convention,
                 // and Y is defined as to the left according to WPILib convention.
@@ -175,7 +170,8 @@ public class RobotContainer {
                 driverController.b().and(isBargeMode.negate())
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL3Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-                driverController.y().whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height))
+                driverController.y().and(isBargeMode.negate())
+                                .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
 
                 algaeRemover.setDefaultCommand(algaeRemover.stowArm(driverController.leftTrigger()));
@@ -185,6 +181,11 @@ public class RobotContainer {
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 driverController.b().and(isBargeMode)
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kHighAlgaeHeight))
+                                .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+                driverController.y().and(isBargeMode)
+                                .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height)
+                                                .alongWith(new WaitCommand(0.625).andThen(endEffector.scoreBarge()
+                                                                .alongWith(algaeRemover.stowArm()))))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
 
                 // TODO: these should only be enabled for testing/auto tuning.
@@ -223,12 +224,14 @@ public class RobotContainer {
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
 
-        public void ConfigureNamedCommands() {
-                NamedCommands.registerCommand("score", endEffector.autoScoreCoral());
-                NamedCommands.registerCommand("elevator stow",
-                                elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
-                NamedCommands.registerCommand("elevator L3", elevator.setElevatorTarget(ElevatorConstants.kL3Height));
+        public void configureNamedCommands() {
+                // create named commands for autos to use
                 NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
+                NamedCommands.registerCommand("elevatorstow",
+                                elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+                NamedCommands.registerCommand("score", endEffector.autoScoreCoral());
+                NamedCommands.registerCommand("intake", endEffector.autoIntake());
+                NamedCommands.registerCommand("setIntakeAlgae", endEffector.algaeIntake());
         }
 
         public Command getAutonomousCommand() {

@@ -28,37 +28,35 @@ import frc.robot.Constants.ElevatorConstants;
 public class Elevator extends SubsystemBase {
 
     private final TalonFXConfiguration mConfig = new TalonFXConfiguration();
-    private final TalonFX mElevatorMotorA = new TalonFX(ElevatorConstants.kElevatorMotorAPort,
-            ElevatorConstants.kElevatorMotorBus);
-    private final TalonFX mElevatorMotorB = new TalonFX(ElevatorConstants.kElevatorMotorBPort,
-            ElevatorConstants.kElevatorMotorBus);
+    private final TalonFX mElevatorMotorA = new TalonFX(ElevatorConstants.kMotorAPort,
+            ElevatorConstants.kMotorBus);
+    private final TalonFX mElevatorMotorB = new TalonFX(ElevatorConstants.kMotorBPort,
+            ElevatorConstants.kMotorBus);
     private final MotionMagicVoltage mVoltage = new MotionMagicVoltage(0);
     
     private double mSetHeight = 0;
     public final Trigger kElevatorAtTarget = new Trigger(this::isAtHeight);
-    public final Trigger kNearL4 = new Trigger(() -> MathUtil.isNear(ElevatorConstants.kL4Height, mElevatorMotorA.get(), 1));
 
     public Elevator() {
         mConfig.Feedback.SensorToMechanismRatio = ElevatorConstants.kSensorToMechanismRatio;
         CurrentLimitsConfigs clcfg = mConfig.CurrentLimits;
 
         MotionMagicConfigs mmcfg = mConfig.MotionMagic;
-        mmcfg.withMotionMagicCruiseVelocity(RotationsPerSecond.of(ElevatorConstants.kElevatorMaxSpeed))
-                .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(ElevatorConstants.kElevatorMaxAcceleration))
-                .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(ElevatorConstants.kElevatorMaxJerk));
+        mmcfg.withMotionMagicCruiseVelocity(RotationsPerSecond.of(ElevatorConstants.kMaxSpeed))
+                .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(ElevatorConstants.kMaxAcceleration))
+                .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(ElevatorConstants.kMaxJerk));
 
         Slot0Configs slot0 = mConfig.Slot0;
-        slot0.kS = ElevatorConstants.kElevatorS;
-        slot0.kV = ElevatorConstants.kElevatorV;
-        slot0.kA = ElevatorConstants.kElevatorA;
-        slot0.kP = ElevatorConstants.kElevatorP;
-        slot0.kI = ElevatorConstants.kElevatorI;
-        slot0.kD = ElevatorConstants.kElevatorD;
-        slot0.kG = ElevatorConstants.kElevatorG;
+        slot0.kS = ElevatorConstants.kS;
+        slot0.kV = ElevatorConstants.kV;
+        slot0.kA = ElevatorConstants.kA;
+        slot0.kP = ElevatorConstants.kP;
+        slot0.kI = ElevatorConstants.kI;
+        slot0.kD = ElevatorConstants.kD;
+        slot0.kG = ElevatorConstants.kG;
 
         StatusCode status = StatusCode.StatusCodeNotInitialized;
-        clcfg.withStatorCurrentLimit(40.00);
-        mConfig.withCurrentLimits(clcfg);
+        clcfg.withStatorCurrentLimit(ElevatorConstants.kStatorCurrentLimit);
 
         for (int i = 0; i < 5; i++) {
             status = mElevatorMotorA.getConfigurator().apply(mConfig);
