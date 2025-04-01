@@ -196,7 +196,7 @@ public class EndEffector extends SubsystemBase {
             Commands.waitUntil(elevatorIsAtHeight),
             Commands.waitSeconds(0.25),
             runOnce(() -> mEffectorMotor.set(EndEffectorConstants.kAutoEjectSpeed)),
-            Commands.race(Commands.waitSeconds(0.25), Commands.waitUntil(mExitLineBreaker::get)),
+            Commands.race(Commands.waitSeconds(1), Commands.waitUntil(mExitLineBreaker::get)),
             runOnce(() -> {
                 mHasCoral = entranceDetected() || exitDetected();
                 mFirstTime = true;

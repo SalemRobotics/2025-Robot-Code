@@ -2,6 +2,9 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+
 import frc.robot.Constants.ElevatorConstants;
 
 import com.ctre.phoenix6.StatusCode;
@@ -74,6 +77,7 @@ public class Elevator extends SubsystemBase {
             mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0));
         });
     }
+
     public boolean isAtHeight() {
         return MathUtil.isNear(mSetHeight, mElevatorMotorA.getPosition().getValueAsDouble(), 0.5);
     }

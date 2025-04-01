@@ -98,6 +98,7 @@ public class RobotContainer {
                 autoChooser.setDefaultOption("Own Cage 3.5 Piece", new PathPlannerAuto("Own Cage 3.5pc"));
                 autoChooser.addOption("Opposing Cage 3.5 Piece", new PathPlannerAuto("Opps Cage 3.5pc"));
                 autoChooser.addOption("Test Safe Score", new PathPlannerAuto("Test Safe Score"));
+                autoChooser.addOption("1 Piece + 2 Barge", new PathPlannerAuto("AL + Barge Twice"));
 
                 SmartDashboard.putData("Auto Chooser", autoChooser);
                 SmartDashboard.putString("Aligned X", "Unknown (in initialization)");
@@ -159,8 +160,6 @@ public class RobotContainer {
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
 
-                algaeRemover.setDefaultCommand(algaeRemover.stowArm(driverController.leftTrigger()));
-
                 driverController.x().and(isBargeMode)
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kLowAlgaeHeight))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
@@ -203,7 +202,7 @@ public class RobotContainer {
                                 () -> FieldConstants.getNearestReefFace(drivetrain.getState().Pose)));
 
                 driverController.leftTrigger().onTrue(
-                                algaeRemover.deployArm().alongWith(Commands.runOnce(() -> mBargeMode = true)))
+                                algaeRemover.deployArm().alongWith(Commands.runOnce(() -> mBargeMode = true), endEffector.algaeIntake()))
                                 .onFalse(Commands.runOnce(() -> mBargeMode = false));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
@@ -213,21 +212,21 @@ public class RobotContainer {
                 // create named commands for autos to use
                 NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
 
-                NamedCommands.registerCommand("startalgae",
-                                algaeRemover.deployArm().alongWith(Commands.runOnce(() -> mBargeMode = true),
-                                                Commands.deadline(new WaitCommand(0.15), endEffector.algaeIntake())));
+                NamedCommands.registerCommand("startalgae", algaeRemover.deployArm().alongWith(Commands.runOnce(() -> mBargeMode = true), endEffector.algaeIntake()));
+                
                 NamedCommands.registerCommand("endalgae", algaeRemover.stowArm(() -> false)
                                 .alongWith(Commands.runOnce(() -> mBargeMode = false)));
                 NamedCommands.registerCommand("algael2", elevator.setElevatorTarget(ElevatorConstants.kLowAlgaeHeight));
                 NamedCommands.registerCommand("algael3",
                                 elevator.setElevatorTarget(ElevatorConstants.kHighAlgaeHeight));
-                NamedCommands.registerCommand("scorealgae", endEffector.scoreBarge());
+                NamedCommands.registerCommand("scorealgae", elevator.setElevatorTarget(ElevatorConstants.kL4Height)
+                .alongWith(new WaitCommand(0.7).andThen(endEffector.scoreBarge()
+                                .alongWith(algaeRemover.stowArm()))));
                 NamedCommands.registerCommand("elevatorstow",
                                 elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 NamedCommands.registerCommand("score", endEffector.autoScoreCoral());
                 NamedCommands.registerCommand("score_safe", endEffector.scoreSafe(elevator::isAtHeight));
                 NamedCommands.registerCommand("intake", endEffector.autoIntake());
-
         }
 
         public Command getAutonomousCommand() {
@@ -237,9 +236,11 @@ public class RobotContainer {
         public void teleInit() {
                 elevator.setElevatorTarget(ElevatorConstants.kStowedHeight).schedule();
                 endEffector.setDefaultCommand(endEffector.teleIntake());
+                algaeRemover.setDefaultCommand(algaeRemover.stowArm(driverController.leftTrigger()));
         }
         public void teleExit() {
                 endEffector.removeDefaultCommand();
+                algaeRemover.removeDefaultCommand();
         }
         public void disabledExit() {
                 endEffector.checkIfContainsCoral();

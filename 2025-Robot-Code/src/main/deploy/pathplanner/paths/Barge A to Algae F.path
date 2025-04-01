@@ -45,13 +45,13 @@
       "command": null
     },
     {
-      "name": "algael2",
+      "name": "algael3",
       "waypointRelativePos": 0.6025179856114989,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "algael2"
+          "name": "algael3"
         }
       }
     }

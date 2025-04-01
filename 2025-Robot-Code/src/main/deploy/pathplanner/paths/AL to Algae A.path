@@ -16,6 +16,22 @@
     },
     {
       "anchor": {
+        "x": 6.461372950819672,
+        "y": 3.9590676229508195
+      },
+      "prevControl": {
+        "x": 6.664738939190733,
+        "y": 3.8136637895286523
+      },
+      "nextControl": {
+        "x": 6.2580069624486105,
+        "y": 4.104471456372986
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
         "x": 5.802,
         "y": 4.03
       },
@@ -33,24 +49,24 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "startalgae",
-      "waypointRelativePos": 0.3017985611510753,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "startalgae"
-        }
-      }
-    },
-    {
       "name": "algael2",
-      "waypointRelativePos": 0.5953237410071899,
+      "waypointRelativePos": 0.2,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
           "name": "algael2"
+        }
+      }
+    },
+    {
+      "name": "startalgae",
+      "waypointRelativePos": 0.6,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "startalgae"
         }
       }
     }
