@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.945,
-        "y": 2.733
+        "x": 3.9480192737355395,
+        "y": 2.7800144619325793
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.5225152020898127,
-        "y": 2.3893249499434326
+        "x": 3.5255344758253524,
+        "y": 2.4363394118760118
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "CR"
     },
     {
       "anchor": {
@@ -85,7 +85,7 @@
   "folder": "Bottom Coral From Reef Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 59.99999999999999
+    "rotation": 61.0
   },
   "useDefaultConstraints": true
 }
