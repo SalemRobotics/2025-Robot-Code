@@ -212,12 +212,22 @@ public class RobotContainer {
         public void configureNamedCommands() {
                 // create named commands for autos to use
                 NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
+
+                NamedCommands.registerCommand("startalgae",
+                                algaeRemover.deployArm().alongWith(Commands.runOnce(() -> mBargeMode = true),
+                                                Commands.deadline(new WaitCommand(0.15), endEffector.algaeIntake())));
+                NamedCommands.registerCommand("endalgae", algaeRemover.stowArm(() -> false)
+                                .alongWith(Commands.runOnce(() -> mBargeMode = false)));
+                NamedCommands.registerCommand("algael2", elevator.setElevatorTarget(ElevatorConstants.kLowAlgaeHeight));
+                NamedCommands.registerCommand("algael3",
+                                elevator.setElevatorTarget(ElevatorConstants.kHighAlgaeHeight));
+                NamedCommands.registerCommand("scorealgae", endEffector.scoreBarge());
                 NamedCommands.registerCommand("elevatorstow",
                                 elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 NamedCommands.registerCommand("score", endEffector.autoScoreCoral());
                 NamedCommands.registerCommand("score_safe", endEffector.scoreSafe(elevator::isAtHeight));
                 NamedCommands.registerCommand("intake", endEffector.autoIntake());
-                NamedCommands.registerCommand("setIntakeAlgae", endEffector.algaeIntake());
+
         }
 
         public Command getAutonomousCommand() {

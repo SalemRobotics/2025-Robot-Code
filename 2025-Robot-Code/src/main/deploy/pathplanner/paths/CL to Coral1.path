@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.436456070086222,
-        "y": 2.728336249734472
+        "x": 3.3679488460231446,
+        "y": 2.743597387378236
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.354610655737705,
-        "y": 0.5665471311475403
+        "x": 1.4505122950819673,
+        "y": 0.6025102459016398
       },
       "prevControl": {
-        "x": 4.15868974247198,
-        "y": 3.4028826265170307
+        "x": 4.559420943939575,
+        "y": 3.7019728215529444
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Coral 1"
     }
   ],
   "rotationTargets": [],
@@ -70,8 +70,8 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -79,7 +79,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 53.0
+    "rotation": 53.973
   },
   "reversed": false,
   "folder": "Bottom Coral From Reef Paths",

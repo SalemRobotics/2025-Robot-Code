@@ -8,70 +8,56 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4343740504750797,
-        "y": 6.4949644643009385
+        "x": 3.50025,
+        "y": 5.662999999999999
       },
       "isLocked": false,
       "linkedName": "ER"
     },
     {
       "anchor": {
-        "x": 1.55,
-        "y": 7.457
+        "x": 3.81225,
+        "y": 5.18525
       },
       "prevControl": {
-        "x": 3.829093992021588,
-        "y": 4.9475097770283405
+        "x": 3.53925,
+        "y": 5.711749999999999
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Coral 2"
+      "linkedName": "Algae E"
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [
-    {
-      "name": "Slow for Elevator",
-      "minWaypointRelativePos": 0.0,
-      "maxWaypointRelativePos": 0.2021640091116238,
-      "constraints": {
-        "maxVelocity": 2.0,
-        "maxAcceleration": 2.0,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    }
-  ],
+  "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "intake",
-      "waypointRelativePos": 0,
+      "name": "startalgae",
+      "waypointRelativePos": 0.3,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "intake"
+          "name": "startalgae"
         }
       }
     },
     {
-      "name": "elevatorstow",
-      "waypointRelativePos": 0.049544419134401316,
+      "name": "algael2",
+      "waypointRelativePos": 0.5996402877697687,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "elevatorstow"
+          "name": "algael2"
         }
       }
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.5,
-    "maxAcceleration": 4.5,
+    "maxVelocity": 2.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -79,13 +65,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -53.97262661489641
+    "rotation": -59.99999999999999
   },
   "reversed": false,
-  "folder": "Top Coral from Reef Paths ",
+  "folder": "Algae Paths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -59.99999999999999
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

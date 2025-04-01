@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.532850161953046,
-        "y": 3.804015354803184
+        "x": 6.36675,
+        "y": 3.8592499999999994
       },
       "isLocked": false,
       "linkedName": "AL"
     },
     {
       "anchor": {
-        "x": 6.293545081967213,
-        "y": 3.869159836065574
+        "x": 5.802,
+        "y": 4.03
       },
       "prevControl": {
-        "x": 6.043827965663543,
-        "y": 3.881049403971072
+        "x": 6.38625,
+        "y": 4.063999999999999
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Algae A"
     }
   ],
   "rotationTargets": [],
@@ -33,15 +33,31 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "elevatorstow",
-      "waypointRelativePos": 0.5,
+      "name": "startalgae",
+      "waypointRelativePos": 0.3017985611510753,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "startalgae"
+        }
+      }
+    },
+    {
+      "name": "algael2",
+      "waypointRelativePos": 0.5953237410071899,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "algael2"
+        }
+      }
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 1.5,
-    "maxAcceleration": 1.5,
+    "maxVelocity": 2.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -52,7 +68,7 @@
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Algae Paths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

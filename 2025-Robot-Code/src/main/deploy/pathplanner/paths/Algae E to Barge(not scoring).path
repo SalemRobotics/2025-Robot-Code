@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.1,
-        "y": 1.9
+        "x": 3.81225,
+        "y": 5.18525
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.039198915553618,
-        "y": 1.946195118483835
+        "x": 3.79275,
+        "y": 6.0432500000000005
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Algae E"
     },
     {
       "anchor": {
-        "x": 5.337,
-        "y": 2.908
+        "x": 7.1,
+        "y": 6.189500000000001
       },
       "prevControl": {
-        "x": 6.246467665618715,
-        "y": 2.1311787960792046
+        "x": 5.520499999999999,
+        "y": 6.0725
       },
       "nextControl": null,
       "isLocked": false,
@@ -29,23 +29,21 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
     {
-      "name": "Slow to Elevator",
-      "minWaypointRelativePos": 0,
-      "maxWaypointRelativePos": 0,
-      "constraints": {
-        "maxVelocity": 2.0,
-        "maxAcceleration": 2.0,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
+      "name": "elevatorstow",
+      "waypointRelativePos": 0.05,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevatorstow"
+        }
       }
     }
   ],
-  "pointTowardsZones": [],
-  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
     "maxAcceleration": 4.5,
@@ -56,13 +54,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 119.99999999999999
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Starting Paths",
+  "folder": "Algae Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -59.99999999999999
   },
   "useDefaultConstraints": true
 }
