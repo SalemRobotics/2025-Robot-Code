@@ -6,16 +6,14 @@ package frc.robot;
 
 import java.util.HashMap;
 import java.util.List;
+
 import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.geometry.Rotation3d;
-
 import edu.wpi.first.math.geometry.Transform3d;
-
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Current;
 
 
 /**
@@ -31,7 +29,6 @@ import edu.wpi.first.units.measure.Current;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
     public static final int kOperatorControllerPort = 1;
@@ -39,30 +36,25 @@ public final class Constants {
   }
 
   public static class ElevatorConstants {
-    /*
-     * 1 rotation = ~6.426 in of carriage travel
-     * more precise: 1 rotation = ~6.425574853 inches, obtained by CAD & 2πr with 
-     *  r = 1.022662 and r is the radius of the sprocket
-     * 
-     * Our current positions *work*, but finding exact heights in inches and getting rotations with this rot:in ratio 
-     * may be more precise
-     */
-
+    // Motor ports
+    public static final int kMotorAPort = 13;
+    public static final int kMotorBPort = 14;
+    // Height setpoints
     public static final double kStowedHeight = 0;
     public static final double kL1Height = 1.1;
     public static final double kL2Height = 1.67;
     public static final double kL3Height = 2.82;
-    public static final double kL4Height = 4.68;
+    public static final double kL4Height = 4.67;
     public static final double kLowAlgaeHeight = 0.3;
     public static final double kHighAlgaeHeight = 1.5;
+    // Configuration details
+
     public static final CANBus kMotorBus = new CANBus("canivore0");
-    public static final int    kMotorAPort = 13;
-    public static final int    kMotorBPort = 14;
     public static final double kSensorToMechanismRatio = 9.0;
-    public static final double kMaxSpeed = 9;
-    
+    public static final double kMaxSpeed = 9.5;
     public static final double kMaxAcceleration = 20.0;
     public static final double kMaxJerk = 100.0;
+    // PID constants
     public static final double kG = 0.25;
     public static final double kS = 0.25;
     public static final double kV = 0.12;
@@ -70,7 +62,9 @@ public final class Constants {
     public static final double kP = 60.0;
     public static final double kI = 0.0;
     public static final double kD = 0.5;
-    public static final double kStatorCurrentLimit = 50;
+    // Current limits
+    public static final double kStatorCurrentLimit = 55;
+    public static final double kSupplyCurrentLimit = 70;
   }
 
   public static class DriveConstants {

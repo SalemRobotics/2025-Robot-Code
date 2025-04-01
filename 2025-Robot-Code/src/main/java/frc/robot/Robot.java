@@ -4,10 +4,6 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.SignalLogger;
-
-import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -55,6 +51,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putString("Aligned Y", "Unknown (not disabled)");
     SmartDashboard.putNumber("Aligned X (num)", -1);
     SmartDashboard.putNumber("Aligned Y (num)", -1);
+    m_robotContainer.disabledExit();
   }
 
   @Override

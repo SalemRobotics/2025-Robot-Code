@@ -2,13 +2,10 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.EndEffectorConstants;
 import frc.robot.Constants.OperatorConstants;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -17,7 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import static edu.wpi.first.units.Units.Amps;
 
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -30,7 +26,7 @@ public class EndEffector extends SubsystemBase {
     private final DigitalInput mExitLineBreaker = new DigitalInput(EndEffectorConstants.kExitBreakerPort);
     private final TalonFX mEffectorMotor = new TalonFX(EndEffectorConstants.kMotorPort, "rio");
     private final TorqueCurrentFOC mTorqueCurrent = new TorqueCurrentFOC(Amps.of(10));
-    
+
     private final CommandXboxController mControllerToRumble;
     private final Timer mRumbleTimer = new Timer();
 
@@ -38,7 +34,7 @@ public class EndEffector extends SubsystemBase {
     private boolean mHasCoral = false;
     private boolean mFirstTime = true;
 
-    public EndEffector(CommandXboxController controller) {        
+    public EndEffector(CommandXboxController controller) {
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.CurrentLimits.withSupplyCurrentLimit(70);
         config.CurrentLimits.withStatorCurrentLimit(120);
@@ -71,6 +67,7 @@ public class EndEffector extends SubsystemBase {
     public Command algaeIntake() {
         return runOnce(() -> mEffectorMotor.setControl(mTorqueCurrent));
     }
+
     public Command teleIntake() {
         return runOnce(() -> {
             if (!entranceDetected() && !exitDetected()) {
@@ -107,6 +104,7 @@ public class EndEffector extends SubsystemBase {
             }
         }).andThen(Commands.waitSeconds(0.05));
     }
+
     public Command autoIntake() {
         return run(() -> {
             if (!entranceDetected() && !exitDetected()) {
@@ -146,6 +144,7 @@ public class EndEffector extends SubsystemBase {
             mFirstTime = true;
         });
     }
+
     // getter for mHasCoral
     public boolean hasCoral() {
         return mHasCoral;
@@ -178,7 +177,8 @@ public class EndEffector extends SubsystemBase {
             mHasCoral = false;
             mCoralInPosition = false;
             mFirstTime = true;
-            mEffectorMotor.set(ejectFast.getAsBoolean() ? EndEffectorConstants.kFastEjectSpeed : EndEffectorConstants.kDefaultEjectSpeed);
+            mEffectorMotor.set(ejectFast.getAsBoolean() ? EndEffectorConstants.kFastEjectSpeed
+                    : EndEffectorConstants.kDefaultEjectSpeed);
         });
     }
 
@@ -191,12 +191,29 @@ public class EndEffector extends SubsystemBase {
         });
     }
 
-    public Command scoreL1() {
-        return run(() -> {
-            mHasCoral = false;
-            mCoralInPosition = false;
+    public Command scoreSafe(BooleanSupplier elevatorIsAtHeight) {
+        return Commands.sequence(
+            Commands.waitUntil(elevatorIsAtHeight),
+            Commands.waitSeconds(0.25),
+            runOnce(() -> mEffectorMotor.set(EndEffectorConstants.kAutoEjectSpeed)),
+            Commands.race(Commands.waitSeconds(0.25), Commands.waitUntil(mExitLineBreaker::get)),
+            runOnce(() -> {
+                mHasCoral = entranceDetected() || exitDetected();
+                mFirstTime = true;
+                mCoralInPosition = false;
+            })
+        );
+    }
+
+    public void checkIfContainsCoral() {
+        if (entranceDetected() && exitDetected()) {
+            mFirstTime = false;
+            mCoralInPosition = true;
+            mHasCoral = true;
+        } else {
+            mHasCoral = entranceDetected() || exitDetected();
             mFirstTime = true;
-            mEffectorMotor.set(-EndEffectorConstants.kL1EjectSpeed);
-        });
+            mCoralInPosition = false;
+        }
     }
 }

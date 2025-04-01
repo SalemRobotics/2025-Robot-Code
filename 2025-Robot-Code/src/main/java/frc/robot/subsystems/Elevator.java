@@ -1,15 +1,10 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.*;
 
-import java.util.function.BooleanSupplier;
+import frc.robot.Constants.ElevatorConstants;
 
 import com.ctre.phoenix6.StatusCode;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -18,12 +13,9 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.ElevatorConstants;
 
 public class Elevator extends SubsystemBase {
 
@@ -39,7 +31,9 @@ public class Elevator extends SubsystemBase {
 
     public Elevator() {
         mConfig.Feedback.SensorToMechanismRatio = ElevatorConstants.kSensorToMechanismRatio;
-        CurrentLimitsConfigs clcfg = mConfig.CurrentLimits;
+        
+        mConfig.CurrentLimits.withStatorCurrentLimit(ElevatorConstants.kStatorCurrentLimit)
+            .withSupplyCurrentLimit(ElevatorConstants.kSupplyCurrentLimit);
 
         MotionMagicConfigs mmcfg = mConfig.MotionMagic;
         mmcfg.withMotionMagicCruiseVelocity(RotationsPerSecond.of(ElevatorConstants.kMaxSpeed))
@@ -56,7 +50,6 @@ public class Elevator extends SubsystemBase {
         slot0.kG = ElevatorConstants.kG;
 
         StatusCode status = StatusCode.StatusCodeNotInitialized;
-        clcfg.withStatorCurrentLimit(ElevatorConstants.kStatorCurrentLimit);
 
         for (int i = 0; i < 5; i++) {
             status = mElevatorMotorA.getConfigurator().apply(mConfig);
@@ -74,12 +67,14 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command setElevatorTarget(double height) {
-        mSetHeight = height;
         // DataLogManager.log("Setting elevator height to " + height);
         // Swapped to `run` from `Commands.run` since this was not requiring the subsystem
-        return run(() -> mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0)));
+        return run(() -> {
+            mSetHeight = height;
+            mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0));
+        });
     }
     public boolean isAtHeight() {
-        return MathUtil.isNear(mSetHeight, mElevatorMotorA.getPosition().getValueAsDouble(), 0.01);
+        return MathUtil.isNear(mSetHeight, mElevatorMotorA.getPosition().getValueAsDouble(), 0.5);
     }
 }
