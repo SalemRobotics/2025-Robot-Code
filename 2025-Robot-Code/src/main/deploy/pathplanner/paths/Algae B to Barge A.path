@@ -3,63 +3,51 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.81225,
-        "y": 5.18525
+        "x": 5.094774590163934,
+        "y": 2.9281249999999988
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.9976884654216094,
-        "y": 5.480213380491504
+        "x": 5.459712872792832,
+        "y": 2.8170358212010327
       },
       "isLocked": false,
-      "linkedName": "Algae E"
+      "linkedName": "Algae B"
     },
     {
       "anchor": {
-        "x": 4.3875,
-        "y": 5.996977459016393
+        "x": 6.017827868852459,
+        "y": 2.8921618852459017
       },
       "prevControl": {
-        "x": 4.177555785431508,
-        "y": 5.820852223990046
+        "x": 5.794980608890463,
+        "y": 2.778852138412583
       },
       "nextControl": {
-        "x": 4.628624354001272,
-        "y": 6.199260163525953
+        "x": 6.240675128814455,
+        "y": 3.0054716320792205
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.132684426229508,
-        "y": 7.01593237704918
+        "x": 7.1,
+        "y": 5.6435
       },
       "prevControl": {
-        "x": 6.178657491637883,
-        "y": 6.671453543121306
+        "x": 6.99778507104876,
+        "y": 5.340372479804351
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Barge A Middle"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "elevatorstow",
-      "waypointRelativePos": 0.1,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "elevatorstow"
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
     "maxAcceleration": 4.5,
@@ -76,7 +64,7 @@
   "folder": "Algae Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -59.99999999999999
+    "rotation": 119.99999999999999
   },
   "useDefaultConstraints": true
 }

@@ -3,45 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.802,
-        "y": 3.84
+        "x": 7.1,
+        "y": 5.6435
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.36675,
-        "y": 3.8592499999999994
+        "x": 7.072417156883844,
+        "y": 4.122746814886118
       },
       "isLocked": false,
-      "linkedName": "AL"
+      "linkedName": "Barge A Middle"
     },
     {
       "anchor": {
-        "x": 6.461372950819672,
-        "y": 3.9590676229508195
+        "x": 6.113729508196721,
+        "y": 2.4606045081967203
       },
       "prevControl": {
-        "x": 6.664738939190733,
-        "y": 3.8136637895286523
+        "x": 6.91310635601111,
+        "y": 2.7718886120298127
       },
       "nextControl": {
-        "x": 6.25800696244861,
-        "y": 4.104471456372986
+        "x": 5.567931916888414,
+        "y": 2.2480663110382797
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.706147540983607,
-        "y": 4.030993852459016
+        "x": 5.094774590163934,
+        "y": 2.9281249999999988
       },
       "prevControl": {
-        "x": 6.290397540983608,
-        "y": 4.064993852459015
+        "x": 5.237927682701502,
+        "y": 2.664061752296459
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Algae A"
+      "linkedName": "Algae B"
     }
   ],
   "rotationTargets": [],
@@ -49,19 +49,19 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "algael2",
-      "waypointRelativePos": 0.2,
+      "name": "elevatorstow",
+      "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "algael2"
+          "name": "elevatorstow"
         }
       }
     },
     {
       "name": "startalgae",
-      "waypointRelativePos": 0.95,
+      "waypointRelativePos": 0.5,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -69,11 +69,22 @@
           "name": "startalgae"
         }
       }
+    },
+    {
+      "name": "algael3",
+      "waypointRelativePos": 0.6,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "algael3"
+        }
+      }
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 2.0,
-    "maxAcceleration": 2.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -81,13 +92,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 119.99999999999999
   },
   "reversed": false,
   "folder": "Algae Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 0.0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

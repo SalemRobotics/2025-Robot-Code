@@ -23,8 +23,8 @@ import frc.robot.Constants.VisionConstants;
 public class Vision extends SubsystemBase {
     static AprilTagFieldLayout mFieldLayout;
     static boolean useCustomField = false;
-    static double linearStdDevBaseline = 0.02;
-    static double angularStdDevBaseline = 0.06;
+    static final double linearStdDevBaseline = 0.02;
+    static final double angularStdDevBaseline = 0.06;
 
     public static record PoseObservation(
             double timestamp, Pose3d pose, double ambiguity, int tagCount, double averageTagDistance) {

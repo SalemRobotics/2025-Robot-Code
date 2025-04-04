@@ -2,9 +2,6 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-
 import frc.robot.Constants.ElevatorConstants;
 
 import com.ctre.phoenix6.StatusCode;

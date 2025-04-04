@@ -8,11 +8,27 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.50025,
-        "y": 5.662999999999999
+        "x": 3.4537073341274787,
+        "y": 5.231529917819407
       },
       "isLocked": false,
       "linkedName": "ER"
+    },
+    {
+      "anchor": {
+        "x": 3.1882500000000005,
+        "y": 5.86775
+      },
+      "prevControl": {
+        "x": 2.958377798508928,
+        "y": 5.6986394235315485
+      },
+      "nextControl": {
+        "x": 3.430769425015172,
+        "y": 6.046164786577426
+      },
+      "isLocked": false,
+      "linkedName": null
     },
     {
       "anchor": {
@@ -20,8 +36,8 @@
         "y": 5.18525
       },
       "prevControl": {
-        "x": 3.53925,
-        "y": 5.711749999999999
+        "x": 3.7350736584950157,
+        "y": 5.423039428511669
       },
       "nextControl": null,
       "isLocked": false,
@@ -34,7 +50,7 @@
   "eventMarkers": [
     {
       "name": "startalgae",
-      "waypointRelativePos": 0.3,
+      "waypointRelativePos": 0.6,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -45,7 +61,7 @@
     },
     {
       "name": "algael2",
-      "waypointRelativePos": 0.5996402877697687,
+      "waypointRelativePos": 0.8,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -56,8 +72,8 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 2.0,
-    "maxAcceleration": 2.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -73,5 +89,5 @@
     "velocity": 0,
     "rotation": -59.99999999999999
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

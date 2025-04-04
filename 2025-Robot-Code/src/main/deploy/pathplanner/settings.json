@@ -12,9 +12,7 @@
     "Top Coral to Reef Paths",
     "Tush Push Paths"
   ],
-  "autoFolders": [
-    "Test Autos"
-  ],
+  "autoFolders": [],
   "defaultMaxVel": 4.5,
   "defaultMaxAccel": 4.5,
   "defaultMaxAngVel": 540.0,

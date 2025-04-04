@@ -32,7 +32,8 @@ public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
     public static final int kOperatorControllerPort = 1;
-    public static final double kRumbleStrength = 0.5;
+    public static final double kCoralRumbleStrength = 0.5;
+    public static final double kBargeRumbleStrength = 0.9;
   }
 
   public static class ElevatorConstants {
@@ -45,10 +46,9 @@ public final class Constants {
     public static final double kL2Height = 1.67;
     public static final double kL3Height = 2.82;
     public static final double kL4Height = 4.67;
-    public static final double kLowAlgaeHeight = 0.3;
-    public static final double kHighAlgaeHeight = 1.5;
+    public static final double kLowAlgaeHeight = 0.35;
+    public static final double kHighAlgaeHeight = 1.55;
     // Configuration details
-
     public static final CANBus kMotorBus = new CANBus("canivore0");
     public static final double kSensorToMechanismRatio = 9.0;
     public static final double kMaxSpeed = 9.5;
@@ -131,7 +131,7 @@ public final class Constants {
     public static final int kExitBreakerPort = 0;
 
     public static final double kFastEjectSpeed = 0.9;
-    public static final double kAutoEjectSpeed = 0.6;
+    public static final double kAutoEjectSpeed = 0.8;
     public static final double kDefaultEjectSpeed = 0.2;
     public static final double kL1EjectSpeed = 0.3;
 

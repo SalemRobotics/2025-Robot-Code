@@ -9,14 +9,14 @@ import static edu.wpi.first.units.Units.*;
 
 import frc.robot.FieldConstants.ReefSide;
 import frc.robot.commands.DriveCommands;
+import frc.robot.util.AllianceFlipUtil;
+import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.AlgaeRemover;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.util.AllianceFlipUtil;
-import frc.robot.generated.TunerConstants;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -62,7 +62,7 @@ public class RobotContainer {
         private final CommandXboxController driverController = new CommandXboxController(0);
         private final CommandXboxController operatorController = new CommandXboxController(1);
 
-        private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+        private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain(driverController);
         private final EndEffector endEffector = new EndEffector(driverController);
         private final Vision vision = new Vision();
         private final Elevator elevator = new Elevator();
@@ -89,16 +89,10 @@ public class RobotContainer {
 
                 PathfindingCommand.warmupCommand().schedule();
 
-                autoChooser.addOption("Middle 1 Piece", new PathPlannerAuto("Mobility + AL"));
-                // autoChooser.addOption("Cross Line", new MobilityAuto(drivetrain));
-                autoChooser.addOption("Taxi", new PathPlannerAuto("Taxi"));
-                autoChooser.addOption("Three Piece", new PathPlannerAuto("1"));
-                autoChooser.addOption("Score from 1", new PathPlannerAuto("Score from 1"));
-                autoChooser.addOption("Taxi + CL", new PathPlannerAuto("Taxi + CL"));
-                autoChooser.setDefaultOption("Own Cage 3.5 Piece", new PathPlannerAuto("Own Cage 3.5pc"));
-                autoChooser.addOption("Opposing Cage 3.5 Piece", new PathPlannerAuto("Opps Cage 3.5pc"));
-                autoChooser.addOption("Test Safe Score", new PathPlannerAuto("Test Safe Score"));
-                autoChooser.addOption("1 Piece + 2 Barge", new PathPlannerAuto("AL + Barge Twice"));
+                autoChooser.setDefaultOption("Own Cage 3pc + Algae", new PathPlannerAuto("Own Cage 3pc + Algae"));
+                autoChooser.addOption("Middle 1pc + 3 Barge", new PathPlannerAuto("Middle 1pc + 3 Barge"));
+                autoChooser.addOption("Opps Cage 3.5pc", new PathPlannerAuto("Opps Cage 3.5pc"));
+                autoChooser.addOption("Tush Push", new PathPlannerAuto("Tush Push"));
 
                 SmartDashboard.putData("Auto Chooser", autoChooser);
                 SmartDashboard.putString("Aligned X", "Unknown (in initialization)");
@@ -115,11 +109,13 @@ public class RobotContainer {
 
                 field.setRobotPose(drivetrain.getState().Pose);
                 SmartDashboard.putBoolean("In Algae Mode", mBargeMode);
+
+                SmartDashboard.putNumber("Timer", DriverStation.getMatchTime());
         }
 
         private void configureBindings() {
                 driverController.rightTrigger().and(isBargeMode.negate())
-                                .whileTrue(endEffector.scoreCoral(driverController.y()::getAsBoolean));
+                                .whileTrue(endEffector.scoreCoral(driverController.y()));
                 driverController.rightTrigger().and(isBargeMode)
                                 .whileTrue(endEffector.scoreBarge().alongWith(algaeRemover.stowArm()));
 
@@ -149,7 +145,6 @@ public class RobotContainer {
                 operatorController.a().whileTrue(climber.climb()).onFalse(climber.stopMotor());
                 operatorController.y().whileTrue(climber.declimb()).onFalse(climber.stopMotor());
 
-                // driverController.a().whileTrue(endEffector.scoreL1());
                 driverController.x().and(isBargeMode.negate())
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
@@ -168,8 +163,9 @@ public class RobotContainer {
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 driverController.y().and(isBargeMode)
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height)
-                                                .alongWith(new WaitCommand(0.7).andThen(endEffector.scoreBarge()
-                                                                .alongWith(algaeRemover.stowArm()))))
+                                                .alongWith(new WaitCommand(0.7)
+                                                                .andThen(endEffector.scoreBarge()
+                                                                                .alongWith(algaeRemover.stowArm()))))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
 
                 // TODO: these should only be enabled for testing/auto tuning.
@@ -202,26 +198,27 @@ public class RobotContainer {
                                 () -> FieldConstants.getNearestReefFace(drivetrain.getState().Pose)));
 
                 driverController.leftTrigger().onTrue(
-                                algaeRemover.deployArm().alongWith(Commands.runOnce(() -> mBargeMode = true), endEffector.algaeIntake()))
+                                algaeRemover.deployArm().alongWith(Commands.runOnce(() -> mBargeMode = true),
+                                                endEffector.algaeIntake()))
                                 .onFalse(Commands.runOnce(() -> mBargeMode = false));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
-
-        public void configureNamedCommands() {
+        private void configureNamedCommands() {
                 // create named commands for autos to use
                 NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
 
-                NamedCommands.registerCommand("startalgae", algaeRemover.deployArm().alongWith(Commands.runOnce(() -> mBargeMode = true), endEffector.algaeIntake()));
-                
+                NamedCommands.registerCommand("startalgae", algaeRemover.deployArm()
+                                .alongWith(Commands.runOnce(() -> mBargeMode = true), endEffector.algaeIntake()));
+
                 NamedCommands.registerCommand("endalgae", algaeRemover.stowArm(() -> false)
                                 .alongWith(Commands.runOnce(() -> mBargeMode = false)));
                 NamedCommands.registerCommand("algael2", elevator.setElevatorTarget(ElevatorConstants.kLowAlgaeHeight));
                 NamedCommands.registerCommand("algael3",
                                 elevator.setElevatorTarget(ElevatorConstants.kHighAlgaeHeight));
                 NamedCommands.registerCommand("scorealgae", elevator.setElevatorTarget(ElevatorConstants.kL4Height)
-                .alongWith(new WaitCommand(0.7).andThen(endEffector.scoreBarge()
-                                .alongWith(algaeRemover.stowArm()))));
+                                .alongWith(new WaitCommand(0.7).andThen(endEffector.scoreBarge()
+                                                .alongWith(algaeRemover.stowArm()))));
                 NamedCommands.registerCommand("elevatorstow",
                                 elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 NamedCommands.registerCommand("score", endEffector.autoScoreCoral());
@@ -233,19 +230,39 @@ public class RobotContainer {
                 return autoChooser.getSelected();
         }
 
+        public void autoInit() {
+                endEffector.checkIfContainsCoral();
+        }
         public void teleInit() {
+                // ensure that barge mode doesn't carry through from a previous enable
+                mBargeMode = false;
+                // send the elevator to the stow position so AJ doesn't lose time manually
+                // sending it down
                 elevator.setElevatorTarget(ElevatorConstants.kStowedHeight).schedule();
+                // set default commands here to prevent issues in auto, as in auto we want to
+                // manually schedule all commands & states
                 endEffector.setDefaultCommand(endEffector.teleIntake());
                 algaeRemover.setDefaultCommand(algaeRemover.stowArm(driverController.leftTrigger()));
         }
         public void teleExit() {
+                // remove default commands after teleop to prevent accidental cancellations by
+                // default commands
                 endEffector.removeDefaultCommand();
                 algaeRemover.removeDefaultCommand();
         }
+        /**
+         * Makes sure that when entering any mode other than disabled, we don't jog the
+         * coral out of the end effector
+         */
         public void disabledExit() {
                 endEffector.checkIfContainsCoral();
         }
-
+        /**
+         * Code to run while the robot is disabled. This code is for alignment purposes
+         * and some other currently unused functionality. 
+         * 
+         * TODO: make field alignment states actually useful
+         */
         public void disabledPeriodic() {
                 var xDiff = AllianceFlipUtil.apply(drivetrain.getState().Pose).getX() - 7.1;
                 var yDiff = AllianceFlipUtil.apply(drivetrain.getState().Pose).getY() - 1.9;

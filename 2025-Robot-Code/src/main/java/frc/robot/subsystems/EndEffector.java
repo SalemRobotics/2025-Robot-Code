@@ -25,7 +25,7 @@ public class EndEffector extends SubsystemBase {
     private final DigitalInput mEntranceLineBreaker = new DigitalInput(EndEffectorConstants.kEntranceBreakerPort);
     private final DigitalInput mExitLineBreaker = new DigitalInput(EndEffectorConstants.kExitBreakerPort);
     private final TalonFX mEffectorMotor = new TalonFX(EndEffectorConstants.kMotorPort, "rio");
-    private final TorqueCurrentFOC mTorqueCurrent = new TorqueCurrentFOC(Amps.of(10));
+    private final TorqueCurrentFOC mTorqueCurrent = new TorqueCurrentFOC(Amps.of(20));
 
     private final CommandXboxController mControllerToRumble;
     private final Timer mRumbleTimer = new Timer();
@@ -38,6 +38,7 @@ public class EndEffector extends SubsystemBase {
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.CurrentLimits.withSupplyCurrentLimit(70);
         config.CurrentLimits.withStatorCurrentLimit(120);
+
         StatusCode status = StatusCode.StatusCodeNotInitialized;
         for (int i = 0; i < 5; i++) {
             status = mEffectorMotor.getConfigurator().apply(config);
@@ -46,6 +47,7 @@ public class EndEffector extends SubsystemBase {
         }
         if (!status.isOK())
             System.err.println("Failed to configure algae remover motor: " + status.toString());
+        
         mEffectorMotor.setNeutralMode(NeutralModeValue.Brake);
         mControllerToRumble = controller;
     }
@@ -57,15 +59,20 @@ public class EndEffector extends SubsystemBase {
 
         if (mCoralInPosition)
             mRumbleTimer.start();
-        else
+        else {
+            mRumbleTimer.stop();
             mRumbleTimer.reset();
+        }
 
         mControllerToRumble.setRumble(RumbleType.kBothRumble,
-                mCoralInPosition && !mRumbleTimer.hasElapsed(0.5) ? OperatorConstants.kRumbleStrength : 0);
+                mCoralInPosition && !mRumbleTimer.hasElapsed(0.5) ? OperatorConstants.kCoralRumbleStrength : 0);
     }
 
     public Command algaeIntake() {
-        return runOnce(() -> mEffectorMotor.setControl(mTorqueCurrent));
+        return runOnce(() ->{
+            mEffectorMotor.set(EndEffectorConstants.kIdleSpeed); 
+            mEffectorMotor.setControl(mTorqueCurrent);
+        });
     }
 
     public Command teleIntake() {
@@ -104,7 +111,6 @@ public class EndEffector extends SubsystemBase {
             }
         }).andThen(Commands.waitSeconds(0.05));
     }
-
     public Command autoIntake() {
         return run(() -> {
             if (!entranceDetected() && !exitDetected()) {
@@ -155,11 +161,10 @@ public class EndEffector extends SubsystemBase {
         return mCoralInPosition;
     }
 
-    public boolean entranceDetected() {
+    private boolean entranceDetected() {
         return !mEntranceLineBreaker.get();
     }
-
-    public boolean exitDetected() {
+    private boolean exitDetected() {
         return !mExitLineBreaker.get();
     }
 
@@ -171,7 +176,6 @@ public class EndEffector extends SubsystemBase {
             mEffectorMotor.set(EndEffectorConstants.kFastEjectSpeed);
         });
     }
-
     public Command scoreCoral(BooleanSupplier ejectFast) {
         return run(() -> {
             mHasCoral = false;
@@ -181,7 +185,6 @@ public class EndEffector extends SubsystemBase {
                     : EndEffectorConstants.kDefaultEjectSpeed);
         });
     }
-
     public Command scoreBarge() {
         return run(() -> {
             mHasCoral = false;
@@ -190,19 +193,18 @@ public class EndEffector extends SubsystemBase {
             mEffectorMotor.set(-1.0);
         });
     }
-
     public Command scoreSafe(BooleanSupplier elevatorIsAtHeight) {
         return Commands.sequence(
-            Commands.waitUntil(elevatorIsAtHeight),
-            Commands.waitSeconds(0.25),
-            runOnce(() -> mEffectorMotor.set(EndEffectorConstants.kAutoEjectSpeed)),
-            Commands.race(Commands.waitSeconds(1), Commands.waitUntil(mExitLineBreaker::get)),
-            runOnce(() -> {
-                mHasCoral = entranceDetected() || exitDetected();
-                mFirstTime = true;
-                mCoralInPosition = false;
-            })
-        );
+                Commands.waitUntil(elevatorIsAtHeight),
+                Commands.waitSeconds(0.225),
+                runOnce(() -> mEffectorMotor.set(EndEffectorConstants.kAutoEjectSpeed)),
+                Commands.race(Commands.waitSeconds(0.25), Commands.waitUntil(mExitLineBreaker::get)),
+                runOnce(() -> {
+                    mEffectorMotor.stopMotor();
+                    mHasCoral = entranceDetected() || exitDetected();
+                    mFirstTime = true;
+                    mCoralInPosition = false;
+                }));
     }
 
     public void checkIfContainsCoral() {
