@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.669336687740101,
-        "y": 5.105023072705782
+        "x": 3.6855,
+        "y": 5.097499999999999
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.4537073341274787,
-        "y": 5.231529917819407
+        "x": 3.2857500000000006,
+        "y": 5.22425
       },
       "isLocked": false,
       "linkedName": "ER"
@@ -36,8 +36,8 @@
         "y": 5.18525
       },
       "prevControl": {
-        "x": 3.7350736584950157,
-        "y": 5.423039428511669
+        "x": 3.79275,
+        "y": 5.711749999999999
       },
       "nextControl": null,
       "isLocked": false,
@@ -50,7 +50,7 @@
   "eventMarkers": [
     {
       "name": "startalgae",
-      "waypointRelativePos": 0.6,
+      "waypointRelativePos": 0.8,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -72,8 +72,8 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.5,
-    "maxAcceleration": 4.5,
+    "maxVelocity": 2.75,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -89,5 +89,5 @@
     "velocity": 0,
     "rotation": -59.99999999999999
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

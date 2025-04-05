@@ -67,4 +67,17 @@ public class AlgaeRemover extends SubsystemBase {
     public Command stowArm(BooleanSupplier currentlyDeployed) {
         return stowArm().unless(currentlyDeployed);
     }
+    public Command dropArm() {
+        return Commands.sequence(
+            runOnce(() -> {
+                removeDefaultCommand();
+                mAlgaeMotor.setNeutralMode(NeutralModeValue.Coast);
+                mAlgaeMotor.set(0.5);
+            }),
+            Commands.waitSeconds(1),
+            runOnce(() -> {
+                mAlgaeMotor.stopMotor();
+            })
+        );
+    }
 }

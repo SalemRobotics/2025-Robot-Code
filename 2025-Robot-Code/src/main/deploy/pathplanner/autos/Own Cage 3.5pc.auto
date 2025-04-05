@@ -93,25 +93,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "ER to Algae E"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "startalgae"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.4
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Algae E to Barge(not scoring)"
+            "pathName": "ER to Coral2 Path"
           }
         }
       ]

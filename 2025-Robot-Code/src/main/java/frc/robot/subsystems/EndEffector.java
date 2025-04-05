@@ -74,7 +74,6 @@ public class EndEffector extends SubsystemBase {
             mEffectorMotor.setControl(mTorqueCurrent);
         });
     }
-
     public Command teleIntake() {
         return runOnce(() -> {
             if (!entranceDetected() && !exitDetected()) {

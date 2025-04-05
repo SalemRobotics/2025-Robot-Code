@@ -80,8 +80,7 @@ public class RobotContainer {
                 configureNamedCommands();
 
                 configureBindings();
-                WebServer.start(
-                                5801,
+                WebServer.start(5801,
                                 Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(), "hud")
                                                 .toString());
 
@@ -89,7 +88,7 @@ public class RobotContainer {
 
                 PathfindingCommand.warmupCommand().schedule();
 
-                autoChooser.setDefaultOption("Own Cage 3pc + Algae", new PathPlannerAuto("Own Cage 3pc + Algae"));
+                autoChooser.setDefaultOption("Own Cage 3.5pc", new PathPlannerAuto("Own Cage 3.5pc"));
                 autoChooser.addOption("Middle 1pc + 3 Barge", new PathPlannerAuto("Middle 1pc + 3 Barge"));
                 autoChooser.addOption("Opps Cage 3.5pc", new PathPlannerAuto("Opps Cage 3.5pc"));
                 autoChooser.addOption("Tush Push", new PathPlannerAuto("Tush Push"));
@@ -108,8 +107,8 @@ public class RobotContainer {
                 }
 
                 field.setRobotPose(drivetrain.getState().Pose);
+                
                 SmartDashboard.putBoolean("In Algae Mode", mBargeMode);
-
                 SmartDashboard.putNumber("Timer", DriverStation.getMatchTime());
         }
 
@@ -142,7 +141,7 @@ public class RobotContainer {
                                                                                                                     // (left)
                                 ));
 
-                operatorController.a().whileTrue(climber.climb()).onFalse(climber.stopMotor());
+                operatorController.a().whileTrue(climber.climb().alongWith(algaeRemover.dropArm())).onFalse(climber.stopMotor());
                 operatorController.y().whileTrue(climber.declimb()).onFalse(climber.stopMotor());
 
                 driverController.x().and(isBargeMode.negate())
@@ -204,6 +203,7 @@ public class RobotContainer {
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
+
         private void configureNamedCommands() {
                 // create named commands for autos to use
                 NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
@@ -233,6 +233,7 @@ public class RobotContainer {
         public void autoInit() {
                 endEffector.checkIfContainsCoral();
         }
+
         public void teleInit() {
                 // ensure that barge mode doesn't carry through from a previous enable
                 mBargeMode = false;
@@ -244,12 +245,14 @@ public class RobotContainer {
                 endEffector.setDefaultCommand(endEffector.teleIntake());
                 algaeRemover.setDefaultCommand(algaeRemover.stowArm(driverController.leftTrigger()));
         }
+
         public void teleExit() {
                 // remove default commands after teleop to prevent accidental cancellations by
                 // default commands
                 endEffector.removeDefaultCommand();
                 algaeRemover.removeDefaultCommand();
         }
+
         /**
          * Makes sure that when entering any mode other than disabled, we don't jog the
          * coral out of the end effector
@@ -257,9 +260,10 @@ public class RobotContainer {
         public void disabledExit() {
                 endEffector.checkIfContainsCoral();
         }
+
         /**
          * Code to run while the robot is disabled. This code is for alignment purposes
-         * and some other currently unused functionality. 
+         * and some other currently unused functionality.
          * 
          * TODO: make field alignment states actually useful
          */
