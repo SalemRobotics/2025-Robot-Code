@@ -364,7 +364,7 @@ private void ConfigureAutoBuilder(){
     public Command L1Move(BooleanSupplier isRight) {
         SwerveRequest.RobotCentric request = new SwerveRequest.RobotCentric();
         return run(() -> {
-            setControl(request.withVelocityX(isRight.getAsBoolean()? DriveConstants.kL1Speed: -DriveConstants.kL1Speed));
+            setControl(request.withVelocityY(isRight.getAsBoolean()? -DriveConstants.kL1Speed: DriveConstants.kL1Speed));
         });
     }
 }

@@ -31,7 +31,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -147,8 +146,8 @@ public class RobotContainer {
 
                 driverController.a().and(isBargeMode.negate())
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height)
-                                .alongWith(new WaitCommand(0.2)
-                                .andThen(endEffector.scoreL1()).alongWith(L1MoveCommand())))
+                                .alongWith(Commands.waitSeconds(0.3)
+                                .andThen(endEffector.scoreL1()).alongWith(Commands.waitSeconds(0.1).andThen(L1MoveCommand()))))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 driverController.x().and(isBargeMode.negate())
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height))
@@ -168,7 +167,7 @@ public class RobotContainer {
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 driverController.y().and(isBargeMode)
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height)
-                                                .alongWith(new WaitCommand(0.7)
+                                                .alongWith(Commands.waitSeconds(0.7)
                                                                 .andThen(endEffector.scoreBarge()
                                                                                 .alongWith(algaeRemover.stowArm()))))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
@@ -223,7 +222,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand("algael3",
                                 elevator.setElevatorTarget(ElevatorConstants.kHighAlgaeHeight));
                 NamedCommands.registerCommand("scorealgae", elevator.setElevatorTarget(ElevatorConstants.kL4Height)
-                                .alongWith(new WaitCommand(0.7).andThen(endEffector.scoreBarge()
+                                .alongWith(Commands.waitSeconds(0.7).andThen(endEffector.scoreBarge()
                                                 .alongWith(algaeRemover.stowArm()))));
                 NamedCommands.registerCommand("elevatorstow",
                                 elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
