@@ -96,6 +96,7 @@ public class RobotContainer {
                 SmartDashboard.putData("Auto Chooser", autoChooser);
                 SmartDashboard.putString("Aligned X", "Unknown (in initialization)");
                 SmartDashboard.putString("Aligned Y", "Unknown (in initialization)");
+                SmartDashboard.putBoolean("L1 Direction", true);
 
                 DriverStation.silenceJoystickConnectionWarning(true);
         }
@@ -144,6 +145,11 @@ public class RobotContainer {
                 operatorController.a().whileTrue(climber.climb().alongWith(algaeRemover.dropArm())).onFalse(climber.stopMotor());
                 operatorController.y().whileTrue(climber.declimb()).onFalse(climber.stopMotor());
 
+                driverController.a().and(isBargeMode.negate())
+                                .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height)
+                                .alongWith(new WaitCommand(0.2)
+                                .andThen(endEffector.scoreL1()).alongWith(L1MoveCommand())))
+                                .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 driverController.x().and(isBargeMode.negate())
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
@@ -280,5 +286,9 @@ public class RobotContainer {
 
         private Command joystickApproach(Supplier<Pose2d> approachPose) {
                 return DriveCommands.joystickApproach(drivetrain, () -> driverController.getLeftY(), approachPose);
+        }
+
+        private Command L1MoveCommand() {
+                return drivetrain.L1Move(() -> SmartDashboard.getBoolean("L1 Direction", false));
         }
 }

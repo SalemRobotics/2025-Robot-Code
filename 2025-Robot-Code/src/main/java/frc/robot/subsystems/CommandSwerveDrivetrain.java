@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.Volts;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -28,6 +29,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
@@ -357,5 +359,12 @@ private void ConfigureAutoBuilder(){
         Matrix<N3, N1> visionMeasurementStdDevs
     ) {
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+    }
+
+    public Command L1Move(BooleanSupplier isRight) {
+        SwerveRequest.RobotCentric request = new SwerveRequest.RobotCentric();
+        return run(() -> {
+            setControl(request.withVelocityX(isRight.getAsBoolean()? DriveConstants.kL1Speed: -DriveConstants.kL1Speed));
+        });
     }
 }
