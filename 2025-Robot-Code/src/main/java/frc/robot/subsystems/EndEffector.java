@@ -188,7 +188,14 @@ public class EndEffector extends SubsystemBase {
                     : EndEffectorConstants.kDefaultEjectSpeed);
         });
     }
-
+    public Command scoreL1() {
+        return run(() -> {
+            mHasCoral = false;
+            mCoralInPosition = false;
+            mFirstTime = true;
+            mEffectorMotor.set(EndEffectorConstants.kL1EjectSpeed);
+        });
+    }
     public Command scoreBarge() {
         return run(() -> {
             mHasCoral = false;

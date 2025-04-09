@@ -42,7 +42,7 @@ public final class Constants {
     public static final int kMotorBPort = 14;
     // Height setpoints
     public static final double kStowedHeight = 0;
-    public static final double kL1Height = 1.1;
+    public static final double kL1Height = 0.9;
     public static final double kL2Height = 1.67;
     public static final double kL3Height = 2.82;
     public static final double kL4Height = 4.67;
@@ -77,6 +77,8 @@ public final class Constants {
     public static final PathConstraints kScoringConstraints = new PathConstraints(3.0, 3.0, 2 * Math.PI, 4 * Math.PI);
 
     public static final PathConstraints kMobilityConstraints = new PathConstraints(3.0, 3.0, 2 * Math.PI, 4 * Math.PI);
+
+    public static final double kL1Speed = 1.5;
   }
 
   public static class AutoConstants {
@@ -138,7 +140,7 @@ public final class Constants {
     public static final double kAlgaeBargeSpeed = 1.0;
     public static final double kAlgaeProcessorSpeed = 0.3;
 
-    public static final double kIdleSpeed = 0.3;
+    public static final double kIdleSpeed = 0.225;
     public static final double kIntakeSpeed = 0.125;
     public static final double kDriveBackSpeed = 0.08;
     
