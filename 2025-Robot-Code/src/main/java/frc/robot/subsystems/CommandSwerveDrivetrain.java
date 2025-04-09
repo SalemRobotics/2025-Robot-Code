@@ -15,6 +15,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -39,6 +40,7 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -366,5 +368,16 @@ private void ConfigureAutoBuilder(){
         return run(() -> {
             setControl(request.withVelocityY(isRight.getAsBoolean()? -DriveConstants.kL1Speed: DriveConstants.kL1Speed));
         });
+    }
+
+    public Command AlignAuto(SendableChooser<PathPlannerAuto> autoChooser) {
+        List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
+        getState().Pose,
+        autoChooser.getSelected().getStartingPose());
+
+        PathConstraints constraints = new PathConstraints(1.0, 1.0, Math.PI, Math.PI);
+
+        PathPlannerPath path = new PathPlannerPath(waypoints, constraints, null, new GoalEndState(0.0, getState().Pose.getRotation()));
+        return AutoBuilder.followPath(path);
     }
 }

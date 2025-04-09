@@ -70,7 +70,7 @@ public class RobotContainer {
 
         private final Field2d field = new Field2d();
 
-        private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+        private final SendableChooser<PathPlannerAuto> autoChooser = new SendableChooser<>();
 
         private boolean mBargeMode = false;
         private final Trigger isBargeMode = new Trigger(() -> mBargeMode);
@@ -96,6 +96,7 @@ public class RobotContainer {
                 SmartDashboard.putString("Aligned X", "Unknown (in initialization)");
                 SmartDashboard.putString("Aligned Y", "Unknown (in initialization)");
                 SmartDashboard.putBoolean("L1 Direction", true);
+                SmartDashboard.putData("Align Auto", drivetrain.AlignAuto(autoChooser));
 
                 DriverStation.silenceJoystickConnectionWarning(true);
         }
