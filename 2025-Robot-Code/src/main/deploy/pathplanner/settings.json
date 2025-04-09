@@ -3,9 +3,10 @@
   "robotLength": 0.9144,
   "holonomicMode": true,
   "pathFolders": [
+    "Algae Paths",
     "Bottom Coral From Reef Paths",
     "Bottom Coral to Reef Paths",
-    "Algae Paths",
+    "Fast 4pc paths",
     "Starting Paths",
     "Test Paths",
     "Top Coral from Reef Paths ",
@@ -13,8 +14,8 @@
     "Tush Push Paths"
   ],
   "autoFolders": [],
-  "defaultMaxVel": 4.5,
-  "defaultMaxAccel": 4.5,
+  "defaultMaxVel": 4.73,
+  "defaultMaxAccel": 4.73,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,
   "defaultNominalVoltage": 12.0,

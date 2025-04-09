@@ -51,20 +51,21 @@ public final class Constants {
     // Configuration details
     public static final CANBus kMotorBus = new CANBus("canivore0");
     public static final double kSensorToMechanismRatio = 9.0;
-    public static final double kMaxSpeed = 9.5;
+    public static final double kMaxSpeed = 11;
     public static final double kMaxAcceleration = 20.0;
     public static final double kMaxJerk = 100.0;
+    public static final double kPositionTolerance = 0.3;
     // PID constants
-    public static final double kG = 0.25;
+    public static final double kG = 0.64;
     public static final double kS = 0.25;
-    public static final double kV = 0.12;
-    public static final double kA = 0.01;
+    public static final double kV = 1.58;
+    public static final double kA = 0.07;
     public static final double kP = 60.0;
     public static final double kI = 0.0;
     public static final double kD = 0.5;
     // Current limits
-    public static final double kStatorCurrentLimit = 55;
-    public static final double kSupplyCurrentLimit = 70;
+    public static final double kStatorCurrentLimit = 70;
+    public static final double kSupplyCurrentLimit = 120;
   }
 
   public static class DriveConstants {
@@ -131,9 +132,11 @@ public final class Constants {
     public static final int kExitBreakerPort = 0;
 
     public static final double kFastEjectSpeed = 0.9;
-    public static final double kAutoEjectSpeed = 0.8;
+    public static final double kAutoEjectSpeed = 0.85;
     public static final double kDefaultEjectSpeed = 0.2;
     public static final double kL1EjectSpeed = 0.3;
+    public static final double kAlgaeBargeSpeed = 1.0;
+    public static final double kAlgaeProcessorSpeed = 0.3;
 
     public static final double kIdleSpeed = 0.3;
     public static final double kIntakeSpeed = 0.125;

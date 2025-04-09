@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.942,
-        "y": 1.9189999999999998
+        "x": 6.9768442622950815,
+        "y": 2.5924692622950816
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.041922679495138,
-        "y": 2.762106233357081
+        "x": 5.442418032786885,
+        "y": 2.2328381147540983
       },
       "isLocked": false,
       "linkedName": null
@@ -20,8 +20,8 @@
         "y": 2.748309426229507
       },
       "prevControl": {
-        "x": 5.261591655754334,
-        "y": 2.6430388115174024
+        "x": 5.173511114630078,
+        "y": 2.5402968526450467
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,8 +33,19 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
+      "name": "elevatorl3",
+      "waypointRelativePos": 0.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevatorl3"
+        }
+      }
+    },
+    {
       "name": "elevatorl4",
-      "waypointRelativePos": 0.5,
+      "waypointRelativePos": 0.4,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -57,10 +68,10 @@
     "rotation": 119.99999999999999
   },
   "reversed": false,
-  "folder": "Starting Paths",
+  "folder": "Fast 4pc paths",
   "idealStartingState": {
-    "velocity": 0,
-    "rotation": 136.74290224973132
+    "velocity": 0.0,
+    "rotation": 119.99999999999999
   },
   "useDefaultConstraints": false
 }

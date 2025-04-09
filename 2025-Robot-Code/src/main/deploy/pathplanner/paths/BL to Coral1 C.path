@@ -3,35 +3,47 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.720081967213115,
-        "y": 7.0
+        "x": 5.03483606557377,
+        "y": 2.748309426229507
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.720081967213126,
-        "y": 7.0
+        "x": 5.63422131147481,
+        "y": 2.2088627049185696
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "BL"
     },
     {
       "anchor": {
-        "x": 5.72,
-        "y": 7.0
+        "x": 0.959016393442023,
+        "y": 0.9981045081972582
       },
       "prevControl": {
-        "x": 6.72,
-        "y": 7.0
+        "x": 3.4404713114748104,
+        "y": 1.3337602459021765
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Coral1 C"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "elevatorstow",
+      "waypointRelativePos": 0.10120177103098828,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevatorstow"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 4.73,
     "maxAcceleration": 4.73,
@@ -42,13 +54,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 54.0
   },
   "reversed": false,
-  "folder": "Test Paths",
+  "folder": "Fast 4pc paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 119.99999999999999
   },
   "useDefaultConstraints": true
 }

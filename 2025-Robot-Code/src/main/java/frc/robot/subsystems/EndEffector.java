@@ -47,7 +47,7 @@ public class EndEffector extends SubsystemBase {
         }
         if (!status.isOK())
             System.err.println("Failed to configure algae remover motor: " + status.toString());
-        
+
         mEffectorMotor.setNeutralMode(NeutralModeValue.Brake);
         mControllerToRumble = controller;
     }
@@ -69,11 +69,12 @@ public class EndEffector extends SubsystemBase {
     }
 
     public Command algaeIntake() {
-        return runOnce(() ->{
-            mEffectorMotor.set(EndEffectorConstants.kIdleSpeed); 
+        return runOnce(() -> {
+            mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
             mEffectorMotor.setControl(mTorqueCurrent);
         });
     }
+
     public Command teleIntake() {
         return runOnce(() -> {
             if (!entranceDetected() && !exitDetected()) {
@@ -110,6 +111,7 @@ public class EndEffector extends SubsystemBase {
             }
         }).andThen(Commands.waitSeconds(0.05));
     }
+
     public Command autoIntake() {
         return run(() -> {
             if (!entranceDetected() && !exitDetected()) {
@@ -160,10 +162,11 @@ public class EndEffector extends SubsystemBase {
         return mCoralInPosition;
     }
 
-    private boolean entranceDetected() {
+    public boolean entranceDetected() {
         return !mEntranceLineBreaker.get();
     }
-    private boolean exitDetected() {
+
+    public boolean exitDetected() {
         return !mExitLineBreaker.get();
     }
 
@@ -175,6 +178,7 @@ public class EndEffector extends SubsystemBase {
             mEffectorMotor.set(EndEffectorConstants.kFastEjectSpeed);
         });
     }
+
     public Command scoreCoral(BooleanSupplier ejectFast) {
         return run(() -> {
             mHasCoral = false;
@@ -184,18 +188,29 @@ public class EndEffector extends SubsystemBase {
                     : EndEffectorConstants.kDefaultEjectSpeed);
         });
     }
+
     public Command scoreBarge() {
         return run(() -> {
             mHasCoral = false;
             mCoralInPosition = false;
             mFirstTime = true;
-            mEffectorMotor.set(-1.0);
+            mEffectorMotor.set(-EndEffectorConstants.kAlgaeBargeSpeed);
         });
     }
+
+    public Command scoreProcessor() {
+        return run(() -> {
+            mHasCoral = false;
+            mCoralInPosition = false;
+            mFirstTime = true;
+            mEffectorMotor.set(-EndEffectorConstants.kAlgaeProcessorSpeed);
+        });
+    }
+
     public Command scoreSafe(BooleanSupplier elevatorIsAtHeight) {
         return Commands.sequence(
                 Commands.waitUntil(elevatorIsAtHeight),
-                Commands.waitSeconds(0.225),
+                Commands.waitSeconds(0.175),
                 runOnce(() -> mEffectorMotor.set(EndEffectorConstants.kAutoEjectSpeed)),
                 Commands.race(Commands.waitSeconds(0.25), Commands.waitUntil(mExitLineBreaker::get)),
                 runOnce(() -> {
@@ -206,7 +221,7 @@ public class EndEffector extends SubsystemBase {
                 }));
     }
 
-    public void checkIfContainsCoral() {
+    public void enableInit() {
         if (entranceDetected() && exitDetected()) {
             mFirstTime = false;
             mCoralInPosition = true;
@@ -216,5 +231,9 @@ public class EndEffector extends SubsystemBase {
             mFirstTime = true;
             mCoralInPosition = false;
         }
+    }
+
+    public Command autoIntakeFast() {
+        return Commands.race(Commands.waitSeconds(0.5), Commands.waitUntil(() -> exitDetected()), autoIntake());
     }
 }

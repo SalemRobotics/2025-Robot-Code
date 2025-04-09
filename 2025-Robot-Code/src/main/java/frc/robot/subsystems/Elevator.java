@@ -25,15 +25,16 @@ public class Elevator extends SubsystemBase {
     private final TalonFX mElevatorMotorB = new TalonFX(ElevatorConstants.kMotorBPort,
             ElevatorConstants.kMotorBus);
     private final MotionMagicVoltage mVoltage = new MotionMagicVoltage(0);
-    
+
     private double mSetHeight = 0;
-    public final Trigger kElevatorAtTarget = new Trigger(this::isAtHeight);
+    public final Trigger kIsStowed = new Trigger(() -> MathUtil.isNear(0,
+            mElevatorMotorA.getPosition().getValueAsDouble(), ElevatorConstants.kPositionTolerance));
 
     public Elevator() {
         mConfig.Feedback.SensorToMechanismRatio = ElevatorConstants.kSensorToMechanismRatio;
-        
+
         mConfig.CurrentLimits.withStatorCurrentLimit(ElevatorConstants.kStatorCurrentLimit)
-            .withSupplyCurrentLimit(ElevatorConstants.kSupplyCurrentLimit);
+                .withSupplyCurrentLimit(ElevatorConstants.kSupplyCurrentLimit);
 
         MotionMagicConfigs mmcfg = mConfig.MotionMagic;
         mmcfg.withMotionMagicCruiseVelocity(RotationsPerSecond.of(ElevatorConstants.kMaxSpeed))
@@ -67,8 +68,6 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command setElevatorTarget(double height) {
-        // DataLogManager.log("Setting elevator height to " + height);
-        // Swapped to `run` from `Commands.run` since this was not requiring the subsystem
         return run(() -> {
             mSetHeight = height;
             mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0));
@@ -76,6 +75,6 @@ public class Elevator extends SubsystemBase {
     }
 
     public boolean isAtHeight() {
-        return MathUtil.isNear(mSetHeight, mElevatorMotorA.getPosition().getValueAsDouble(), 0.5);
+        return MathUtil.isNear(mSetHeight, mElevatorMotorA.getPosition().getValueAsDouble(), ElevatorConstants.kPositionTolerance);
     }
 }

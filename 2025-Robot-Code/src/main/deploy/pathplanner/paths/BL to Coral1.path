@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.998872950819672,
-        "y": 2.7962602459016397
+        "x": 5.03483606557377,
+        "y": 2.748309426229507
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.5106229508196725,
-        "y": 2.2060102459016395
+        "x": 4.54658606557377,
+        "y": 2.158059426229507
       },
       "isLocked": false,
       "linkedName": "BL"
@@ -49,10 +49,10 @@
     {
       "name": "Slow for Elevator",
       "minWaypointRelativePos": 0,
-      "maxWaypointRelativePos": 0.7,
+      "maxWaypointRelativePos": 0.6,
       "constraints": {
-        "maxVelocity": 2.0,
-        "maxAcceleration": 2.0,
+        "maxVelocity": 3.5,
+        "maxAcceleration": 2.75,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
@@ -75,7 +75,7 @@
     },
     {
       "name": "elevatorstow",
-      "waypointRelativePos": 0.2,
+      "waypointRelativePos": 0.17,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -86,8 +86,8 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.5,
-    "maxAcceleration": 4.5,
+    "maxVelocity": 4.73,
+    "maxAcceleration": 4.73,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -95,7 +95,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 53.973
+    "rotation": 54.0
   },
   "reversed": false,
   "folder": "Bottom Coral From Reef Paths",

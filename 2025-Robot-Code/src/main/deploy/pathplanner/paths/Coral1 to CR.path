@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.411776191381008,
-        "y": 2.3333782794862876
+        "x": 3.9264684716364107,
+        "y": 2.7304791808962188
       },
       "isLocked": false,
       "linkedName": "Coral 1"
@@ -20,8 +20,8 @@
         "y": 2.7800144619325793
       },
       "prevControl": {
-        "x": 3.768161684647736,
-        "y": 2.606373315750222
+        "x": 3.7538332577453977,
+        "y": 2.6225603695949196
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,11 +32,11 @@
   "constraintZones": [
     {
       "name": "Slow for Elevator",
-      "minWaypointRelativePos": 0.5,
+      "minWaypointRelativePos": 0.6451612903225747,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 2.0,
-        "maxAcceleration": 2.0,
+        "maxVelocity": 3.25,
+        "maxAcceleration": 3.25,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
@@ -70,8 +70,8 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.5,
-    "maxAcceleration": 4.5,
+    "maxVelocity": 4.73,
+    "maxAcceleration": 4.73,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -79,13 +79,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 61.0
+    "rotation": 59.99999999999999
   },
   "reversed": false,
   "folder": "Bottom Coral to Reef Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 53.973
+    "rotation": 54.0
   },
   "useDefaultConstraints": true
 }

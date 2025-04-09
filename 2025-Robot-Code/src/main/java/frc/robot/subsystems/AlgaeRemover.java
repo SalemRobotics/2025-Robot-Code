@@ -36,18 +36,18 @@ public class AlgaeRemover extends SubsystemBase {
     }
 
     public final Trigger hasDeployedTrigger = new Trigger(
-        () -> MathUtil.isNear(.283, mAlgaeMotor.getPosition().getValueAsDouble(), .1)
+        () -> MathUtil.isNear(.283, mAlgaeMotor.getPosition().getValueAsDouble(), .01)
     );
 
     public final Trigger hasStowedTrigger = new Trigger( 
-        () -> MathUtil.isNear(0.0, mAlgaeMotor.getPosition().getValueAsDouble(), 0.1)
+        () -> MathUtil.isNear(0.0, mAlgaeMotor.getPosition().getValueAsDouble(), .01)
     );
 
     public Command deployArm() {
         return Commands.sequence(
             runOnce(() -> mAlgaeMotor.set(.75)),
             Commands.race(
-                Commands.waitUntil(this.hasDeployedTrigger),
+                Commands.waitUntil(hasDeployedTrigger),
                 Commands.waitSeconds(.5)
             ),
             runOnce(() -> mAlgaeMotor.stopMotor())
@@ -58,7 +58,7 @@ public class AlgaeRemover extends SubsystemBase {
         return Commands.sequence(
             runOnce(() -> mAlgaeMotor.set(-.75)),
             Commands.race(
-                Commands.waitUntil(this.hasStowedTrigger),
+                Commands.waitUntil(hasStowedTrigger),
                 Commands.waitSeconds(.5)
             ),
             runOnce(() -> mAlgaeMotor.stopMotor())

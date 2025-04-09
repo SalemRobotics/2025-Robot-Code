@@ -3,25 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.720081967213115,
-        "y": 7.0
+        "x": 1.55,
+        "y": 7.457
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.720081967213126,
-        "y": 7.0
+        "x": 1.6889244093248357,
+        "y": 7.1644419474758685
+      },
+      "isLocked": false,
+      "linkedName": "Coral 2"
+    },
+    {
+      "anchor": {
+        "x": 2.3136270491803277,
+        "y": 4.570440573770491
+      },
+      "prevControl": {
+        "x": 1.821716526162384,
+        "y": 5.2735706256866735
+      },
+      "nextControl": {
+        "x": 2.456937782252289,
+        "y": 4.365594207470337
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.72,
-        "y": 7.0
+        "x": 3.15,
+        "y": 4.18
       },
       "prevControl": {
-        "x": 6.72,
-        "y": 7.0
+        "x": 2.7455227347894953,
+        "y": 4.3589582140975365
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,7 +47,14 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "elevatorl4",
+      "waypointRelativePos": 1.25,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 4.73,
     "maxAcceleration": 4.73,
@@ -45,10 +68,10 @@
     "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Test Paths",
+  "folder": "Top Coral to Reef Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -53.97262661489641
   },
   "useDefaultConstraints": true
 }

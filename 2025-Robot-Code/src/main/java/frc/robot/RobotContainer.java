@@ -115,8 +115,10 @@ public class RobotContainer {
         private void configureBindings() {
                 driverController.rightTrigger().and(isBargeMode.negate())
                                 .whileTrue(endEffector.scoreCoral(driverController.y()));
-                driverController.rightTrigger().and(isBargeMode)
+                driverController.rightTrigger().and(isBargeMode).and(elevator.kIsStowed.negate())
                                 .whileTrue(endEffector.scoreBarge().alongWith(algaeRemover.stowArm()));
+                driverController.rightTrigger().and(isBargeMode).and(elevator.kIsStowed) 
+                                .whileTrue(endEffector.scoreProcessor());
 
                 // Note that X is defined as forward according to WPILib convention,
                 // and Y is defined as to the left according to WPILib convention.
@@ -162,7 +164,7 @@ public class RobotContainer {
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 driverController.y().and(isBargeMode)
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height)
-                                                .alongWith(new WaitCommand(0.7)
+                                                .alongWith(new WaitCommand(0.5)
                                                                 .andThen(endEffector.scoreBarge()
                                                                                 .alongWith(algaeRemover.stowArm()))))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
@@ -207,6 +209,7 @@ public class RobotContainer {
         private void configureNamedCommands() {
                 // create named commands for autos to use
                 NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
+                NamedCommands.registerCommand("elevatorl3", elevator.setElevatorTarget(ElevatorConstants.kL3Height));
 
                 NamedCommands.registerCommand("startalgae", algaeRemover.deployArm()
                                 .alongWith(Commands.runOnce(() -> mBargeMode = true), endEffector.algaeIntake()));
@@ -224,6 +227,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand("score", endEffector.autoScoreCoral());
                 NamedCommands.registerCommand("score_safe", endEffector.scoreSafe(elevator::isAtHeight));
                 NamedCommands.registerCommand("intake", endEffector.autoIntake());
+                NamedCommands.registerCommand("intake_fast", endEffector.autoIntakeFast());
         }
 
         public Command getAutonomousCommand() {
@@ -231,7 +235,7 @@ public class RobotContainer {
         }
 
         public void autoInit() {
-                endEffector.checkIfContainsCoral();
+                endEffector.enableInit();
         }
 
         public void teleInit() {
@@ -258,7 +262,7 @@ public class RobotContainer {
          * coral out of the end effector
          */
         public void disabledExit() {
-                endEffector.checkIfContainsCoral();
+                endEffector.enableInit();
         }
 
         /**
