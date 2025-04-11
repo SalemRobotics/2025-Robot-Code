@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.65,
-        "y": 7.3
+        "x": 1.55,
+        "y": 7.457
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.3003434071577997,
-        "y": 5.948597990534634
+        "x": 3.0661726577406583,
+        "y": 6.096077644058996
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Coral 2"
     },
     {
       "anchor": {
-        "x": 3.945,
-        "y": 5.318
+        "x": 3.96,
+        "y": 5.28
       },
       "prevControl": {
-        "x": 2.581581926809908,
-        "y": 6.457519888532778
+        "x": 3.023973189356413,
+        "y": 6.128707934074227
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "EL"
     }
   ],
   "rotationTargets": [],
@@ -47,21 +47,31 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "score",
-      "waypointRelativePos": 0.57,
+      "name": "intake",
+      "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "intake"
+        }
+      }
     },
     {
       "name": "elevatorl4",
       "waypointRelativePos": 0.6,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevatorl4"
+        }
+      }
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 4.73,
+    "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -75,7 +85,7 @@
   "folder": "Top Coral to Reef Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -55.0
+    "rotation": -53.97262661489641
   },
   "useDefaultConstraints": true
 }

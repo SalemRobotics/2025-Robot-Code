@@ -3,36 +3,36 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.65,
-        "y": 7.3
+        "x": 1.55,
+        "y": 7.457
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.8593138051804665,
-        "y": 5.965475127074298
+        "x": 3.0077721908209467,
+        "y": 5.818725424010536
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Coral 2"
     },
     {
       "anchor": {
-        "x": 3.642,
-        "y": 5.143
+        "x": 3.6855,
+        "y": 5.097499999999999
       },
       "prevControl": {
-        "x": 2.1930555692037252,
-        "y": 6.731648039765533
+        "x": 2.365503250817217,
+        "y": 6.581176417796299
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "ER"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Slow to Elevator",
-      "minWaypointRelativePos": 0.45501138952163583,
+      "minWaypointRelativePos": 0.55,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 2.0,
@@ -47,21 +47,31 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "score",
-      "waypointRelativePos": 0.5005694760820083,
+      "name": "intake",
+      "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "intake"
+        }
+      }
     },
     {
       "name": "elevatorl4",
       "waypointRelativePos": 0.7033029612756252,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevatorl4"
+        }
+      }
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 4.73,
+    "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -75,7 +85,7 @@
   "folder": "Top Coral to Reef Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -55.0
+    "rotation": -53.97262661489641
   },
   "useDefaultConstraints": true
 }

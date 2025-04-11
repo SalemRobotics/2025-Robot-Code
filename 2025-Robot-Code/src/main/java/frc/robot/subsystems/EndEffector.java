@@ -3,12 +3,21 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.EndEffectorConstants;
+import frc.robot.Constants.OperatorConstants;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import static edu.wpi.first.units.Units.Amps;
 
 import java.util.function.BooleanSupplier;
 
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -16,79 +25,131 @@ public class EndEffector extends SubsystemBase {
     private final DigitalInput mEntranceLineBreaker = new DigitalInput(EndEffectorConstants.kEntranceBreakerPort);
     private final DigitalInput mExitLineBreaker = new DigitalInput(EndEffectorConstants.kExitBreakerPort);
     private final TalonFX mEffectorMotor = new TalonFX(EndEffectorConstants.kMotorPort, "rio");
+    private final TorqueCurrentFOC mTorqueCurrent = new TorqueCurrentFOC(Amps.of(20));
+
+    private final CommandXboxController mControllerToRumble;
+    private final Timer mRumbleTimer = new Timer();
 
     private boolean mCoralInPosition = false;
     private boolean mHasCoral = false;
     private boolean mFirstTime = true;
-    private double mEjectSpeed = EndEffectorConstants.kDefaultEjectSpeed;
 
-    public EndEffector() {
+    public EndEffector(CommandXboxController controller) {
+        TalonFXConfiguration config = new TalonFXConfiguration();
+        config.CurrentLimits.withSupplyCurrentLimit(70);
+        config.CurrentLimits.withStatorCurrentLimit(120);
+
+        StatusCode status = StatusCode.StatusCodeNotInitialized;
+        for (int i = 0; i < 5; i++) {
+            status = mEffectorMotor.getConfigurator().apply(config);
+            if (status.isOK())
+                break;
+        }
+        if (!status.isOK())
+            System.err.println("Failed to configure algae remover motor: " + status.toString());
+
         mEffectorMotor.setNeutralMode(NeutralModeValue.Brake);
+        mControllerToRumble = controller;
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putBoolean("Entrance", mEntranceLineBreaker.get());
-        SmartDashboard.putBoolean("Exit", mExitLineBreaker.get());
+        SmartDashboard.putBoolean("Entrance", entranceDetected());
+        SmartDashboard.putBoolean("Exit", exitDetected());
+
+        if (mCoralInPosition)
+            mRumbleTimer.start();
+        else {
+            mRumbleTimer.stop();
+            mRumbleTimer.reset();
+        }
+
+        mControllerToRumble.setRumble(RumbleType.kBothRumble,
+                mCoralInPosition && !mRumbleTimer.hasElapsed(0.5) ? OperatorConstants.kCoralRumbleStrength : 0);
     }
 
-    public Command centerCoral() {
-        /*
-         * Process:
-         * 1. Detect a coral at entrance
-         * 2. Slow down motors & wait until it is only seen at exit
-         * 3. Brake the motors
-         * 4. Reverse the motors until the coral is seen at both the exit and the
-         * entrance
-         * 5. Stop & set the inPosition flag(for AJ controller rumbling when it is safe
-         * to raise elevator)
-         * 
-         * Considerations:
-         * - Making this process quicker(adjusting speeds) while not affecting coral's
-         * end position
-         * - Improving the speed of this command, however it shoudln't be performance
-         * intensive already.
-         */
-        return Commands.runOnce(() -> {
-            if(!entranceDetected()&&!exitDetected()){
+    public Command algaeIntake() {
+        return runOnce(() -> {
+            mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
+            mEffectorMotor.setControl(mTorqueCurrent);
+        });
+    }
+
+    public Command teleIntake() {
+        return runOnce(() -> {
+            if (!entranceDetected() && !exitDetected()) {
                 mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
-                SmartDashboard.putString("End Effector Branch", "!suck && !vomit");
+                SmartDashboard.putString("End Effector Branch", "No Coral");
                 mCoralInPosition = false;
                 mHasCoral = false;
                 mFirstTime = true;
+            } else if (entranceDetected() && exitDetected()) {
+                if (mFirstTime) {
+                    mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed / 2);
+                    mCoralInPosition = false;
+                    mHasCoral = true;
+                    SmartDashboard.putString("End Effector Branch", "First Time!");
+                } else {
+                    mEffectorMotor.stopMotor();
+                    mCoralInPosition = true;
+                    mHasCoral = true;
+                    SmartDashboard.putString("End Effector Branch", "In Position");
+                }
+            } else if (entranceDetected() && !exitDetected()) {
+                mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed);
+                mCoralInPosition = false;
+                mHasCoral = true;
+                SmartDashboard.putString("End Effector Branch", "Only At Entrance");
+            } else if (!entranceDetected() && exitDetected()) {
+                mEffectorMotor.set(-EndEffectorConstants.kDriveBackSpeed);
+                mCoralInPosition = false;
+                mHasCoral = true;
+                mFirstTime = false;
+                SmartDashboard.putString("End Effector Branch", "Only At Exit");
+            } else {
+                SmartDashboard.putString("End Effector Branch", "Invalid State");
             }
-            else if(entranceDetected()&&!exitDetected()){
+        }).andThen(Commands.waitSeconds(0.05));
+    }
+
+    public Command autoIntake() {
+        return run(() -> {
+            if (!entranceDetected() && !exitDetected()) {
+                mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
+                SmartDashboard.putString("End Effector Branch", "No Coral");
+                mCoralInPosition = false;
+                mHasCoral = false;
+                mFirstTime = true;
+            } else if (entranceDetected() && !exitDetected()) {
                 mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed);
                 mCoralInPosition = false;
                 mHasCoral = true;
                 SmartDashboard.putString("End Effector Branch", "suck && !vomit");
-
-            }
-            else if(entranceDetected()&&exitDetected()){
-                if(mFirstTime){
-                    mEffectorMotor.set(0.05);
+            } else if (entranceDetected() && exitDetected()) {
+                if (mFirstTime) {
+                    mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed / 2);
                     mCoralInPosition = false;
                     mHasCoral = true;
-                    SmartDashboard.putString("End Effector Branch", "firsttime!");
-
-                }
-                else{
-                    mEffectorMotor.set(0);
+                    SmartDashboard.putString("End Effector Branch", "First Time!");
+                } else {
+                    mEffectorMotor.stopMotor();
                     mCoralInPosition = true;
                     mHasCoral = true;
-                    SmartDashboard.putString("End Effector Branch", "suck && vomit, not first");
-
+                    SmartDashboard.putString("End Effector Branch", "In Position");
                 }
-            }
-            else if(!entranceDetected()&&exitDetected()){
+            } else if (!entranceDetected() && exitDetected()) {
                 mEffectorMotor.set(-EndEffectorConstants.kIntakeSpeed);
                 mCoralInPosition = false;
                 mHasCoral = true;
                 mFirstTime = false;
                 SmartDashboard.putString("End Effector Branch", "!suck && vomit");
-
             }
-        }, this).andThen(Commands.waitSeconds(0.1));
+        }).finallyDo(() -> {
+            mEffectorMotor.stopMotor();
+            mCoralInPosition = false;
+            mHasCoral = false;
+            mFirstTime = true;
+        });
     }
 
     // getter for mHasCoral
@@ -101,39 +162,88 @@ public class EndEffector extends SubsystemBase {
         return mCoralInPosition;
     }
 
-    public boolean entranceDetected(){
+    public boolean entranceDetected() {
         return !mEntranceLineBreaker.get();
     }
 
-    public boolean exitDetected(){
+    public boolean exitDetected() {
         return !mExitLineBreaker.get();
     }
 
-    // setter for mEjectSpeed
-    public void setEjectSpeed(double speed) {
-        mEjectSpeed = speed;
-    }
-
-    public Command ejectCoral() {
-        return Commands.run(() -> {
+    public Command autoScoreCoral() {
+        return runOnce(() -> {
             mHasCoral = false;
             mCoralInPosition = false;
             mFirstTime = true;
-            mEffectorMotor.set(mEjectSpeed);
-        }, this);
+            mEffectorMotor.set(EndEffectorConstants.kFastEjectSpeed);
+        });
     }
 
-    /**
-     * Waits for the elevator to reach its target position, then ejects the coral and turns off motors
-     * @param elevatorAtHeight lambda that informs the command when the elevator is at the target height
-     * @return the command sequence to run
-     */
-    public Command scoreSafe(BooleanSupplier elevatorAtHeight) {
+    public Command scoreCoral(BooleanSupplier ejectFast) {
+        return run(() -> {
+            mHasCoral = false;
+            mCoralInPosition = false;
+            mFirstTime = true;
+            mEffectorMotor.set(ejectFast.getAsBoolean() ? EndEffectorConstants.kFastEjectSpeed
+                    : EndEffectorConstants.kDefaultEjectSpeed);
+        });
+    }
+    public Command scoreL1() {
+        return run(() -> {
+            mHasCoral = false;
+            mCoralInPosition = false;
+            mFirstTime = true;
+            mEffectorMotor.set(EndEffectorConstants.kL1EjectSpeed);
+        });
+    }
+    public Command scoreBarge() {
+        return run(() -> {
+            mHasCoral = false;
+            mCoralInPosition = false;
+            mFirstTime = true;
+            mEffectorMotor.set(-EndEffectorConstants.kAlgaeBargeSpeed);
+        });
+    }
+
+    public Command scoreProcessor() {
+        return run(() -> {
+            mHasCoral = false;
+            mCoralInPosition = false;
+            mFirstTime = true;
+            mEffectorMotor.set(-EndEffectorConstants.kAlgaeProcessorSpeed);
+        });
+    }
+
+    public Command scoreSafe(BooleanSupplier elevatorIsAtHeight) {
         return Commands.sequence(
-            Commands.none().until(elevatorAtHeight),
-            ejectCoral(),
-            Commands.waitSeconds(0.5),
-            Commands.runOnce(() -> mEffectorMotor.stopMotor(), this)
-        );
+                Commands.waitUntil(elevatorIsAtHeight),
+                Commands.waitSeconds(0.15),
+                runOnce(() -> mEffectorMotor.set(EndEffectorConstants.kAutoEjectSpeed)),
+                Commands.race(Commands.waitSeconds(0.2), Commands.waitUntil(mExitLineBreaker::get)),
+                runOnce(() -> {
+                    mEffectorMotor.stopMotor();
+                    mHasCoral = entranceDetected() || exitDetected();
+                    mFirstTime = true;
+                    mCoralInPosition = false;
+                }));
+    }
+
+    public void enableInit() {
+        if (entranceDetected() && exitDetected()) {
+            mFirstTime = false;
+            mCoralInPosition = true;
+            mHasCoral = true;
+        } else {
+            mHasCoral = entranceDetected() || exitDetected();
+            mFirstTime = true;
+            mCoralInPosition = false;
+        }
+    }
+
+    public Command autoIntakeFast() {
+        return Commands.race(Commands.waitSeconds(0.4), Commands.waitUntil(() -> exitDetected()), autoIntake());
+    }
+    public Command autoPostIntake(Command elevatorl3) {
+        return autoIntake().alongWith(Commands.waitUntil(this::exitDetected).andThen(elevatorl3));
     }
 }

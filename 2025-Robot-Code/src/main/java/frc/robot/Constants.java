@@ -6,13 +6,12 @@ package frc.robot;
 
 import java.util.HashMap;
 import java.util.List;
+
 import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.geometry.Rotation3d;
-
 import edu.wpi.first.math.geometry.Transform3d;
-
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
@@ -30,42 +29,44 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
     public static final int kOperatorControllerPort = 1;
-    public static final double kRumbleStrength = 0.5;
+    public static final double kCoralRumbleStrength = 0.5;
+    public static final double kBargeRumbleStrength = 0.9;
+    public static final double kJoystickDeadband = 0.1;
   }
 
   public static class ElevatorConstants {
-    /*
-     * 1 rotation = ~6.426 in of carriage travel
-     * more precise: 1 rotation = ~6.425574853 inches, obtained by CAD & 2πr with 
-     *  r = 1.022662 and r is the radius of the sprocket
-     * 
-     * Our current positions *work*, but finding exact heights in inches and getting rotations with this rot:in ratio 
-     * may be more precise
-     */
+    // Motor ports
+    public static final int kMotorAPort = 13;
+    public static final int kMotorBPort = 14;
+    // Height setpoints
     public static final double kStowedHeight = 0;
-    public static final double kL1Height = 1.1;
+    public static final double kL1Height = 0.9;
     public static final double kL2Height = 1.67;
     public static final double kL3Height = 2.82;
-    public static final double kL4Height = 4.69;
-    public static final CANBus kElevatorMotorBus = new CANBus("canivore0");
-    public static final int kElevatorMotorAPort = 13;
-    public static final int kElevatorMotorBPort = 14;
+    public static final double kL4Height = 4.67;
+    public static final double kLowAlgaeHeight = 0.35;
+    public static final double kHighAlgaeHeight = 1.625;
+    // Configuration details
+    public static final CANBus kMotorBus = new CANBus("canivore0");
     public static final double kSensorToMechanismRatio = 9.0;
-    public static final double kElevatorMaxSpeed = 9.0;
-    
-    public static final double kElevatorMaxAcceleration = 13.0;
-    public static final double kElevatorMaxJerk = 100.0;
-    public static final double kElevatorG = 0.25;
-    public static final double kElevatorS = 0.25;
-    public static final double kElevatorV = 0.12;
-    public static final double kElevatorA = 0.01;
-    public static final double kElevatorP = 60.0;
-    public static final double kElevatorI = 0.0;
-    public static final double kElevatorD = 0.5;
+    public static final double kMaxSpeed = 11;
+    public static final double kMaxAcceleration = 20.0;
+    public static final double kMaxJerk = 100.0;
+    public static final double kPositionTolerance = 0.3;
+    // PID constants
+    public static final double kG = 0.64;
+    public static final double kS = 0.25;
+    public static final double kV = 1.58;
+    public static final double kA = 0.07;
+    public static final double kP = 60.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.5;
+    // Current limits
+    public static final double kStatorCurrentLimit = 70;
+    public static final double kSupplyCurrentLimit = 120;
   }
 
   public static class DriveConstants {
@@ -77,6 +78,8 @@ public final class Constants {
     public static final PathConstraints kScoringConstraints = new PathConstraints(3.0, 3.0, 2 * Math.PI, 4 * Math.PI);
 
     public static final PathConstraints kMobilityConstraints = new PathConstraints(3.0, 3.0, 2 * Math.PI, 4 * Math.PI);
+
+    public static final double kL1Speed = 1.5;
   }
 
   public static class AutoConstants {
@@ -132,12 +135,20 @@ public final class Constants {
     public static final int kExitBreakerPort = 0;
 
     public static final double kFastEjectSpeed = 0.9;
-    public static final double kDefaultEjectSpeed = 0.6;
-    public static final double kSlowEjectSpeed = 0.3;
+    public static final double kAutoEjectSpeed = 1;
+    public static final double kDefaultEjectSpeed = 0.2;
+    public static final double kL1EjectSpeed = 0.3;
+    public static final double kAlgaeBargeSpeed = 1.0;
+    public static final double kAlgaeProcessorSpeed = 0.3;
 
-    public static final double kIdleSpeed = 0.15;
-    public static final double kIntakeSpeed = 0.06;
+    public static final double kIdleSpeed = 0.225;
+    public static final double kIntakeSpeed = 0.125;
+    public static final double kDriveBackSpeed = 0.08;
     
     public static final double kSensorToMechanismRatio = 25.0;
+  }
+
+  public static class ClimberConstants {
+    public static final double kHopperFallAngle = 120.0;
   }
 }

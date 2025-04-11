@@ -67,7 +67,6 @@ public class AutoPicker {
         } catch (Exception e) {
             System.out.println("------ NULL!! name of path: " + name);
         }
-        
     }
 
     /**

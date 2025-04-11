@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.Volts;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -14,6 +15,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -28,21 +30,27 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.OperatorConstants;
 import frc.robot.FieldConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
@@ -54,6 +62,8 @@ import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
     private static final double kSimLoopPeriod = 0.005; // 5 ms
+    private final Timer mRumbleTimer = new Timer();
+    private final CommandXboxController mControllerToRumble;
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
 
@@ -149,9 +159,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      */
     public CommandSwerveDrivetrain(
         SwerveDrivetrainConstants drivetrainConstants,
+        CommandXboxController controller,
         SwerveModuleConstants<?, ?, ?>... modules
     ) {
         super(drivetrainConstants, modules);
+        mControllerToRumble = controller;
         if (Utils.isSimulation()) {
             startSimThread();
         }
@@ -173,10 +185,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      */
     public CommandSwerveDrivetrain(
         SwerveDrivetrainConstants drivetrainConstants,
+        CommandXboxController controller,
         double odometryUpdateFrequency,
         SwerveModuleConstants<?, ?, ?>... modules
     ) {
         super(drivetrainConstants, odometryUpdateFrequency, modules);
+        mControllerToRumble = controller;
         if (Utils.isSimulation()) {
             startSimThread();
         }
@@ -204,12 +218,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      */
     public CommandSwerveDrivetrain(
         SwerveDrivetrainConstants drivetrainConstants,
+        CommandXboxController controller,
         double odometryUpdateFrequency,
         Matrix<N3, N1> odometryStandardDeviation,
         Matrix<N3, N1> visionStandardDeviation,
         SwerveModuleConstants<?, ?, ?>... modules
     ) {
         super(drivetrainConstants, odometryUpdateFrequency, odometryStandardDeviation, visionStandardDeviation, modules);
+        mControllerToRumble = controller;
         if (Utils.isSimulation()) {
             startSimThread();
         }
@@ -345,5 +361,23 @@ private void ConfigureAutoBuilder(){
         Matrix<N3, N1> visionMeasurementStdDevs
     ) {
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+    }
+
+    public Command L1Move(BooleanSupplier isRight) {
+        SwerveRequest.RobotCentric request = new SwerveRequest.RobotCentric();
+        return run(() -> {
+            setControl(request.withVelocityY(isRight.getAsBoolean()? -DriveConstants.kL1Speed: DriveConstants.kL1Speed));
+        });
+    }
+
+    public Command AlignAuto(SendableChooser<PathPlannerAuto> autoChooser) {
+        List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
+        getState().Pose,
+        autoChooser.getSelected().getStartingPose());
+
+        PathConstraints constraints = new PathConstraints(1.0, 1.0, Math.PI, Math.PI);
+
+        PathPlannerPath path = new PathPlannerPath(waypoints, constraints, null, new GoalEndState(0.0, getState().Pose.getRotation()));
+        return AutoBuilder.followPath(path);
     }
 }

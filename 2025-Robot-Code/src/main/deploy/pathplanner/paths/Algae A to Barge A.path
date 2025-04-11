@@ -1,0 +1,82 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.706147540983607,
+        "y": 4.030993852459016
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.498601630795559,
+        "y": 4.356004603611423
+      },
+      "isLocked": false,
+      "linkedName": "Algae A"
+    },
+    {
+      "anchor": {
+        "x": 6.545286885245901,
+        "y": 4.342674180327869
+      },
+      "prevControl": {
+        "x": 6.014334131972805,
+        "y": 4.057255424658171
+      },
+      "nextControl": {
+        "x": 6.827420230022528,
+        "y": 4.494337671481582
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.25,
+        "y": 4.999999999999999
+      },
+      "prevControl": {
+        "x": 6.842107411074362,
+        "y": 4.452639565501362
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Barge A"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "scorealgae",
+      "waypointRelativePos": 1.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "scorealgae"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 2.0,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": "Algae Paths",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "useDefaultConstraints": false
+}

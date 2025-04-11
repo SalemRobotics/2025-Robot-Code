@@ -1,13 +1,10 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.*;
+
+import frc.robot.Constants.ElevatorConstants;
 
 import com.ctre.phoenix6.StatusCode;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -16,46 +13,44 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.ElevatorConstants;
 
 public class Elevator extends SubsystemBase {
 
     private final TalonFXConfiguration mConfig = new TalonFXConfiguration();
-    private final TalonFX mElevatorMotorA = new TalonFX(ElevatorConstants.kElevatorMotorAPort,
-            ElevatorConstants.kElevatorMotorBus);
-    private final TalonFX mElevatorMotorB = new TalonFX(ElevatorConstants.kElevatorMotorBPort,
-            ElevatorConstants.kElevatorMotorBus);
+    private final TalonFX mElevatorMotorA = new TalonFX(ElevatorConstants.kMotorAPort,
+            ElevatorConstants.kMotorBus);
+    private final TalonFX mElevatorMotorB = new TalonFX(ElevatorConstants.kMotorBPort,
+            ElevatorConstants.kMotorBus);
     private final MotionMagicVoltage mVoltage = new MotionMagicVoltage(0);
-    
+
     private double mSetHeight = 0;
-    public final Trigger kElevatorAtTarget = new Trigger(this::isAtHeight);
+    public final Trigger kIsStowed = new Trigger(() -> MathUtil.isNear(0,
+            mElevatorMotorA.getPosition().getValueAsDouble(), ElevatorConstants.kPositionTolerance));
 
     public Elevator() {
         mConfig.Feedback.SensorToMechanismRatio = ElevatorConstants.kSensorToMechanismRatio;
-        CurrentLimitsConfigs clcfg = mConfig.CurrentLimits;
+
+        mConfig.CurrentLimits.withStatorCurrentLimit(ElevatorConstants.kStatorCurrentLimit)
+                .withSupplyCurrentLimit(ElevatorConstants.kSupplyCurrentLimit);
 
         MotionMagicConfigs mmcfg = mConfig.MotionMagic;
-        mmcfg.withMotionMagicCruiseVelocity(RotationsPerSecond.of(ElevatorConstants.kElevatorMaxSpeed))
-                .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(ElevatorConstants.kElevatorMaxAcceleration))
-                .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(ElevatorConstants.kElevatorMaxJerk));
+        mmcfg.withMotionMagicCruiseVelocity(RotationsPerSecond.of(ElevatorConstants.kMaxSpeed))
+                .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(ElevatorConstants.kMaxAcceleration))
+                .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(ElevatorConstants.kMaxJerk));
 
         Slot0Configs slot0 = mConfig.Slot0;
-        slot0.kS = ElevatorConstants.kElevatorS;
-        slot0.kV = ElevatorConstants.kElevatorV;
-        slot0.kA = ElevatorConstants.kElevatorA;
-        slot0.kP = ElevatorConstants.kElevatorP;
-        slot0.kI = ElevatorConstants.kElevatorI;
-        slot0.kD = ElevatorConstants.kElevatorD;
-        slot0.kG = ElevatorConstants.kElevatorG;
+        slot0.kS = ElevatorConstants.kS;
+        slot0.kV = ElevatorConstants.kV;
+        slot0.kA = ElevatorConstants.kA;
+        slot0.kP = ElevatorConstants.kP;
+        slot0.kI = ElevatorConstants.kI;
+        slot0.kD = ElevatorConstants.kD;
+        slot0.kG = ElevatorConstants.kG;
 
         StatusCode status = StatusCode.StatusCodeNotInitialized;
-        clcfg.withStatorCurrentLimit(40.00);
-        mConfig.withCurrentLimits(clcfg);
 
         for (int i = 0; i < 5; i++) {
             status = mElevatorMotorA.getConfigurator().apply(mConfig);
@@ -73,11 +68,13 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command setElevatorTarget(double height) {
-        mSetHeight = height;
-        // DataLogManager.log("Setting elevator height to " + height);
-        return Commands.run(() -> mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0)));
+        return run(() -> {
+            mSetHeight = height;
+            mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0));
+        });
     }
+
     public boolean isAtHeight() {
-        return MathUtil.isNear(mSetHeight, mElevatorMotorA.getPosition().getValueAsDouble(), 0.01);
+        return MathUtil.isNear(mSetHeight, mElevatorMotorA.getPosition().getValueAsDouble(), ElevatorConstants.kPositionTolerance);
     }
 }

@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.3,
+        "x": 7.1,
         "y": 4.025
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.535383914720758,
-        "y": 3.6865407107706565
+        "x": 5.43345240535961,
+        "y": 3.793839931582558
       },
       "isLocked": false,
       "linkedName": null
@@ -17,15 +17,15 @@
     {
       "anchor": {
         "x": 5.802,
-        "y": 3.84
+        "y": 3.86
       },
       "prevControl": {
-        "x": 7.734477930908731,
-        "y": 4.155107991886446
+        "x": 7.550013031972286,
+        "y": 4.061015565653943
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "AL"
     }
   ],
   "rotationTargets": [],
@@ -34,20 +34,19 @@
   "eventMarkers": [
     {
       "name": "elevatorl4",
-      "waypointRelativePos": 0.1998861047835922,
+      "waypointRelativePos": 0.0,
       "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
-      "name": "score",
-      "waypointRelativePos": 1.0,
-      "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevatorl4"
+        }
+      }
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 1.5,
-    "maxAcceleration": 1.5,
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
