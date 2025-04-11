@@ -47,10 +47,33 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "startalgae",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "startalgae"
+        }
+      }
+    },
+    {
+      "name": "elevatorstow",
+      "waypointRelativePos": 0.39906542056073335,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevatorstow"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 4.73,
-    "maxAcceleration": 4.73,
+    "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

@@ -8,24 +8,40 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.63422131147481,
-        "y": 2.2088627049185696
+        "x": 4.901378790583832,
+        "y": 2.536911328432341
       },
       "isLocked": false,
       "linkedName": "BL"
     },
     {
       "anchor": {
-        "x": 0.959016393442023,
-        "y": 0.9981045081972582
+        "x": 4.63125,
+        "y": 2.2602499999999996
       },
       "prevControl": {
-        "x": 3.4404713114748104,
-        "y": 1.3337602459021765
+        "x": 4.804479779259727,
+        "y": 2.440503830965187
+      },
+      "nextControl": {
+        "x": 4.331196773499281,
+        "y": 1.9480303354518635
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.4505122950819673,
+        "y": 0.6025102459016398
+      },
+      "prevControl": {
+        "x": 2.948745304952488,
+        "y": 1.3823086389930146
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Coral1 C"
+      "linkedName": "Coral 1"
     }
   ],
   "rotationTargets": [],
@@ -34,7 +50,7 @@
   "eventMarkers": [
     {
       "name": "elevatorstow",
-      "waypointRelativePos": 0.10120177103098828,
+      "waypointRelativePos": 0.2,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -46,7 +62,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 4.73,
-    "maxAcceleration": 4.73,
+    "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

@@ -60,6 +60,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "startalgae"
+          }
+        },
+        {
           "type": "wait",
           "data": {
             "waitTime": 0.5
@@ -130,7 +136,7 @@
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": null,
   "choreoAuto": false
 }

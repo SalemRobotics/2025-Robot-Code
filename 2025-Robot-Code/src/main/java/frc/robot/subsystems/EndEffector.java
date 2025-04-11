@@ -217,9 +217,9 @@ public class EndEffector extends SubsystemBase {
     public Command scoreSafe(BooleanSupplier elevatorIsAtHeight) {
         return Commands.sequence(
                 Commands.waitUntil(elevatorIsAtHeight),
-                Commands.waitSeconds(0.175),
+                Commands.waitSeconds(0.15),
                 runOnce(() -> mEffectorMotor.set(EndEffectorConstants.kAutoEjectSpeed)),
-                Commands.race(Commands.waitSeconds(0.25), Commands.waitUntil(mExitLineBreaker::get)),
+                Commands.race(Commands.waitSeconds(0.2), Commands.waitUntil(mExitLineBreaker::get)),
                 runOnce(() -> {
                     mEffectorMotor.stopMotor();
                     mHasCoral = entranceDetected() || exitDetected();
@@ -241,6 +241,9 @@ public class EndEffector extends SubsystemBase {
     }
 
     public Command autoIntakeFast() {
-        return Commands.race(Commands.waitSeconds(0.5), Commands.waitUntil(() -> exitDetected()), autoIntake());
+        return Commands.race(Commands.waitSeconds(0.4), Commands.waitUntil(() -> exitDetected()), autoIntake());
+    }
+    public Command autoPostIntake(Command elevatorl3) {
+        return autoIntake().alongWith(Commands.waitUntil(this::exitDetected).andThen(elevatorl3));
     }
 }

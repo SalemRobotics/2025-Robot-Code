@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0951956833200613,
-        "y": 2.3973007554508716
+        "x": 3.1736623157467423,
+        "y": 2.415383369214754
       },
       "isLocked": false,
       "linkedName": "Coral 1"
@@ -20,8 +20,8 @@
         "y": 2.959227752974466
       },
       "prevControl": {
-        "x": 3.461124809998988,
-        "y": 2.7374370042902365
+        "x": 3.3917602320897386,
+        "y": 2.6779202500976207
       },
       "nextControl": null,
       "isLocked": false,
@@ -29,21 +29,7 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [
-    {
-      "name": "Slow to Elevator",
-      "minWaypointRelativePos": 0.65,
-      "maxWaypointRelativePos": 1.0,
-      "constraints": {
-        "maxVelocity": 3.5,
-        "maxAcceleration": 3.25,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    }
-  ],
+  "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
@@ -59,7 +45,7 @@
     },
     {
       "name": "elevatorl4",
-      "waypointRelativePos": 0.7,
+      "waypointRelativePos": 0.5509345794392584,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -71,7 +57,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 4.73,
-    "maxAcceleration": 4.73,
+    "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

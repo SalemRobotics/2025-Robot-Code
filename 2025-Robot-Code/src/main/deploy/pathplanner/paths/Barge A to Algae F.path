@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 5.849999999999999,
-        "y": 5.481506147540983
+        "x": 5.694000000000001,
+        "y": 5.53625
       },
       "prevControl": {
-        "x": 6.242142386941299,
-        "y": 5.400239943534572
+        "x": 6.086142386941301,
+        "y": 5.454983795993589
       },
       "nextControl": {
-        "x": 5.605201417595189,
-        "y": 5.532237341619137
+        "x": 5.449201417595191,
+        "y": 5.586981194078153
       },
       "isLocked": false,
       "linkedName": null
@@ -44,7 +44,12 @@
       "linkedName": "Algae F"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -130.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [

@@ -25,6 +25,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.commands.PathfindingCommand;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -108,7 +109,7 @@ public class RobotContainer {
                 }
 
                 field.setRobotPose(drivetrain.getState().Pose);
-                
+
                 SmartDashboard.putBoolean("In Algae Mode", mBargeMode);
                 SmartDashboard.putNumber("Timer", DriverStation.getMatchTime());
         }
@@ -118,7 +119,7 @@ public class RobotContainer {
                                 .whileTrue(endEffector.scoreCoral(driverController.y()));
                 driverController.rightTrigger().and(isBargeMode).and(elevator.kIsStowed.negate())
                                 .whileTrue(endEffector.scoreBarge().alongWith(algaeRemover.stowArm()));
-                driverController.rightTrigger().and(isBargeMode).and(elevator.kIsStowed) 
+                driverController.rightTrigger().and(isBargeMode).and(elevator.kIsStowed)
                                 .whileTrue(endEffector.scoreProcessor());
 
                 // Note that X is defined as forward according to WPILib convention,
@@ -127,12 +128,20 @@ public class RobotContainer {
                                 // Drivetrain will execute this command periodically
                                 drivetrain.applyRequest(() -> drive
                                                 .withVelocityX(
-                                                                Math.copySign(Math.pow(driverController.getLeftY(), 2),
+                                                                Math.copySign(Math.pow(
+                                                                                MathUtil.applyDeadband(driverController
+                                                                                                .getLeftY(),
+                                                                                                OperatorConstants.kJoystickDeadband),
+                                                                                2),
                                                                                 -driverController.getLeftY())
                                                                                 * MaxSpeed) // Drive forward with
                                                                                             // negative Y (forward)
                                                 .withVelocityY(
-                                                                Math.copySign(Math.pow(driverController.getLeftX(), 2),
+                                                                Math.copySign(Math.pow(
+                                                                                MathUtil.applyDeadband(driverController
+                                                                                                .getLeftX(),
+                                                                                                OperatorConstants.kJoystickDeadband),
+                                                                                2),
                                                                                 -driverController.getLeftX())
                                                                                 * MaxSpeed) // Drive left with negative
                                                                                             // X (left)
@@ -144,13 +153,16 @@ public class RobotContainer {
                                                                                                                     // (left)
                                 ));
 
-                operatorController.a().whileTrue(climber.climb().alongWith(algaeRemover.dropArm())).onFalse(climber.stopMotor());
+                operatorController.a().whileTrue(climber.climb().alongWith(algaeRemover.dropArm()))
+                                .onFalse(climber.stopMotor());
                 operatorController.y().whileTrue(climber.declimb()).onFalse(climber.stopMotor());
 
                 driverController.a().and(isBargeMode.negate())
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height)
-                                .alongWith(Commands.waitSeconds(0.3)
-                                .andThen(endEffector.scoreL1()).alongWith(Commands.waitSeconds(0.1).andThen(L1MoveCommand()))))
+                                                .alongWith(Commands.waitSeconds(0.3)
+                                                                .andThen(endEffector.scoreL1())
+                                                                .alongWith(Commands.waitSeconds(0.1)
+                                                                                .andThen(L1MoveCommand()))))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 driverController.x().and(isBargeMode.negate())
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height))

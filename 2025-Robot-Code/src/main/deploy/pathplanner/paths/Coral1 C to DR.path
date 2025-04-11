@@ -3,40 +3,61 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.959016393442023,
-        "y": 0.9981045081972582
+        "x": 1.4505122950819673,
+        "y": 0.6025102459016398
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.959016393442023,
-        "y": 0.9981045081972582
+        "x": 2.1939080080397324,
+        "y": 2.6576774643708543
       },
       "isLocked": false,
-      "linkedName": "Coral1 C"
+      "linkedName": "Coral 1"
+    },
+    {
+      "anchor": {
+        "x": 2.7397500000000004,
+        "y": 3.5179999999999993
+      },
+      "prevControl": {
+        "x": 2.3661486845661654,
+        "y": 3.1279924041368403
+      },
+      "nextControl": {
+        "x": 3.3373771596855075,
+        "y": 4.141871282414559
+      },
+      "isLocked": false,
+      "linkedName": null
     },
     {
       "anchor": {
         "x": 3.159,
-        "y": 3.8592499999999994
+        "y": 3.8725
       },
       "prevControl": {
-        "x": 1.6423155737704918,
-        "y": 4.00701844262295
+        "x": 3.1515128031303465,
+        "y": 3.6226121413853107
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "DR"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.3274161735700178,
+      "rotationDegrees": 40.0
+    }
+  ],
   "constraintZones": [
     {
       "name": "Elevator Constraint",
-      "minWaypointRelativePos": 0.675,
-      "maxWaypointRelativePos": 1.0,
+      "minWaypointRelativePos": 1.35,
+      "maxWaypointRelativePos": 2.0,
       "constraints": {
         "maxVelocity": 3.5,
-        "maxAcceleration": 3.25,
+        "maxAcceleration": 3.35,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
@@ -59,7 +80,7 @@
     },
     {
       "name": "elevatorl4",
-      "waypointRelativePos": 0.7008222643896246,
+      "waypointRelativePos": 0.8,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -71,7 +92,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 4.73,
-    "maxAcceleration": 4.73,
+    "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

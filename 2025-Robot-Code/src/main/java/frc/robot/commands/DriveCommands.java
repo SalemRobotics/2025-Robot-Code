@@ -55,7 +55,7 @@ public class DriveCommands {
      */
     private static Translation2d getLinearVelocityFromJoystick(double x, double y) {
         // Apply a deadband to the joystick inputs
-        double magnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
+        double magnitude = Math.hypot(x, y);
         Rotation2d linearDirection = new Rotation2d(Math.atan2(x, y));
 
         // Squared inputs

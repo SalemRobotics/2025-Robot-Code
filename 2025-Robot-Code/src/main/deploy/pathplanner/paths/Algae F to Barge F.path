@@ -8,11 +8,27 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.488374862100798,
-        "y": 5.090470053036527
+        "x": 5.507895718130681,
+        "y": 5.391974094395643
       },
       "isLocked": false,
       "linkedName": "Algae F"
+    },
+    {
+      "anchor": {
+        "x": 5.528250000000001,
+        "y": 5.614249999999999
+      },
+      "prevControl": {
+        "x": 4.728731272258398,
+        "y": 5.059431867321562
+      },
+      "nextControl": {
+        "x": 5.7336410078132705,
+        "y": 5.756779063385153
+      },
+      "isLocked": false,
+      "linkedName": null
     },
     {
       "anchor": {
@@ -20,8 +36,8 @@
         "y": 5.6435
       },
       "prevControl": {
-        "x": 4.952476701864654,
-        "y": 5.3035381211981205
+        "x": 5.877936114089526,
+        "y": 5.718826499449263
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,8 +49,19 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
+      "name": "startalgae",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "startalgae"
+        }
+      }
+    },
+    {
       "name": "elevatorstow",
-      "waypointRelativePos": 0.0,
+      "waypointRelativePos": 0.85,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -42,12 +69,6 @@
           "name": "elevatorstow"
         }
       }
-    },
-    {
-      "name": "elevatorstow",
-      "waypointRelativePos": 0,
-      "endWaypointRelativePos": null,
-      "command": null
     }
   ],
   "globalConstraints": {
