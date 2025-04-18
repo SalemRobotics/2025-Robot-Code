@@ -1,0 +1,134 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.802,
+        "y": 3.86
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.367119193448153,
+        "y": 4.2955753323567
+      },
+      "isLocked": false,
+      "linkedName": "AL"
+    },
+    {
+      "anchor": {
+        "x": 7.183,
+        "y": 5.662
+      },
+      "prevControl": {
+        "x": 6.82194464537704,
+        "y": 5.330505508715409
+      },
+      "nextControl": {
+        "x": 7.769884645862715,
+        "y": 6.2008343494480505
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 11.63175,
+        "y": 5.604500000000001
+      },
+      "prevControl": {
+        "x": 10.968577208039981,
+        "y": 5.730787218043903
+      },
+      "nextControl": {
+        "x": 11.916410727602246,
+        "y": 5.550292391046393
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 12.43125,
+        "y": 5.097899590163934
+      },
+      "prevControl": {
+        "x": 12.132436882630744,
+        "y": 5.282964373356268
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "SneakLeft"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [
+    {
+      "name": "Slow Zone",
+      "minWaypointRelativePos": 1.2327543424317604,
+      "maxWaypointRelativePos": 1.4769230769230717,
+      "constraints": {
+        "maxVelocity": 2.0,
+        "maxAcceleration": 4.5,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 400.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "elevatorstow",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevatorstow"
+        }
+      }
+    },
+    {
+      "name": "algael3",
+      "waypointRelativePos": 1.6,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "algael3"
+        }
+      }
+    },
+    {
+      "name": "startalgae",
+      "waypointRelativePos": 1.6,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "startalgae"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.73,
+    "maxAcceleration": 5.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -59.99999999999999
+  },
+  "reversed": false,
+  "folder": "Algae Paths",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "useDefaultConstraints": true
+}

@@ -17,7 +17,8 @@ import edu.wpi.first.math.util.Units;
 
 
 /**
- * The Constants class provides a convenient place for teams to hold robot-wide
+ * The Constants class provides 
+ *  convenient place for teams to hold robot-wide
  * numerical or boolean
  * constants. This class should not be used for any other purpose. All constants
  * should be declared
@@ -34,7 +35,7 @@ public final class Constants {
     public static final int kOperatorControllerPort = 1;
     public static final double kCoralRumbleStrength = 0.5;
     public static final double kBargeRumbleStrength = 0.9;
-    public static final double kJoystickDeadband = 0.1;
+    public static final double kJoystickDeadband = 0.075;
   }
 
   public static class ElevatorConstants {
@@ -138,12 +139,13 @@ public final class Constants {
     public static final double kAutoEjectSpeed = 1;
     public static final double kDefaultEjectSpeed = 0.2;
     public static final double kL1EjectSpeed = 0.3;
-    public static final double kAlgaeBargeSpeed = 1.0;
+    public static final double kAlgaeBargeSpeed = 1;
     public static final double kAlgaeProcessorSpeed = 0.3;
+    public static final double kBloopSpeed = -0.3;
 
-    public static final double kIdleSpeed = 0.225;
+    public static final double kIdleSpeed = 0.25;
     public static final double kIntakeSpeed = 0.125;
-    public static final double kDriveBackSpeed = 0.08;
+    public static final double kDriveBackSpeed = 0.1;
     
     public static final double kSensorToMechanismRatio = 25.0;
   }

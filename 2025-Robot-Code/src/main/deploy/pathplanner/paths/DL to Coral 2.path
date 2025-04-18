@@ -3,45 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.03483606557377,
-        "y": 2.748309426229507
+        "x": 3.17,
+        "y": 4.18
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.901378790583832,
-        "y": 2.536911328432341
+        "x": 2.9875839144280145,
+        "y": 4.382073059186349
       },
       "isLocked": false,
-      "linkedName": "BL"
+      "linkedName": "DL"
     },
     {
       "anchor": {
-        "x": 4.63125,
-        "y": 2.2602499999999996
+        "x": 0.6473360655737704,
+        "y": 6.80015368852459
       },
       "prevControl": {
-        "x": 4.804479779259727,
-        "y": 2.440503830965187
-      },
-      "nextControl": {
-        "x": 4.331196773499281,
-        "y": 1.9480303354518635
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 1.4505122950819673,
-        "y": 0.6025102459016398
-      },
-      "prevControl": {
-        "x": 2.948745304952488,
-        "y": 1.3823086389930146
+        "x": 1.29757675474726,
+        "y": 6.022258832040179
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Coral 1"
+      "linkedName": "Coral 2 Close"
     }
   ],
   "rotationTargets": [],
@@ -50,7 +34,7 @@
   "eventMarkers": [
     {
       "name": "elevatorstow",
-      "waypointRelativePos": 0.2,
+      "waypointRelativePos": 0.1,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -70,13 +54,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 54.0
+    "rotation": -53.97
   },
   "reversed": false,
-  "folder": "Fast 4pc paths",
+  "folder": "Reef Back Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 119.99999999999999
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

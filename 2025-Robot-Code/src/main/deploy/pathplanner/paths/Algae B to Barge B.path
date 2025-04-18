@@ -3,68 +3,70 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.4505122950819673,
-        "y": 0.6025102459016398
+        "x": 5.094774590163934,
+        "y": 2.9281249999999988
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.8622500000000002,
-        "y": 1.8507499999999992
+        "x": 5.774353260124592,
+        "y": 2.767237006549181
       },
       "isLocked": false,
-      "linkedName": "Coral 1"
+      "linkedName": "Algae B"
     },
     {
       "anchor": {
-        "x": 3.159,
-        "y": 3.87
+        "x": 6.249750000000001,
+        "y": 2.972
       },
       "prevControl": {
-        "x": 2.159,
-        "y": 3.87
+        "x": 6.0526826607916755,
+        "y": 2.8181674162690133
+      },
+      "nextControl": {
+        "x": 6.671128009137082,
+        "y": 3.300931562852491
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.1,
+        "y": 5.6435
+      },
+      "prevControl": {
+        "x": 6.607980447850942,
+        "y": 3.9230809884012183
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DR"
+      "linkedName": "Barge A Middle"
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [
-    {
-      "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.65,
-      "maxWaypointRelativePos": 1.0,
-      "constraints": {
-        "maxVelocity": 3.0,
-        "maxAcceleration": 3.0,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    }
-  ],
+  "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "intake",
-      "waypointRelativePos": 0.0,
+      "name": "startalgae",
+      "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "intake"
+          "name": "startalgae"
         }
       }
     },
     {
-      "name": "elevatorl4",
-      "waypointRelativePos": 0.65,
+      "name": "elevatorstow",
+      "waypointRelativePos": 0.39906542056073335,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "elevatorl4"
+          "name": "elevatorstow"
         }
       }
     }
@@ -82,10 +84,10 @@
     "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Bottom Coral to Reef Paths",
+  "folder": "Algae Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 54.0
+    "rotation": 119.99999999999999
   },
   "useDefaultConstraints": true
 }

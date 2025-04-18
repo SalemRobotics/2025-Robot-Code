@@ -3,42 +3,42 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.4505122950819673,
-        "y": 0.6025102459016398
+        "x": 12.43125,
+        "y": 5.097899590163934
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.8622500000000002,
-        "y": 1.8507499999999992
+        "x": 11.436720361320633,
+        "y": 5.198001815139241
       },
       "isLocked": false,
-      "linkedName": "Coral 1"
+      "linkedName": "SneakLeft"
     },
     {
       "anchor": {
-        "x": 3.159,
-        "y": 3.87
+        "x": 7.1,
+        "y": 5.6435
       },
       "prevControl": {
-        "x": 2.159,
-        "y": 3.87
+        "x": 7.349808014005139,
+        "y": 5.6337042795666505
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DR"
+      "linkedName": "Barge A Middle"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.65,
-      "maxWaypointRelativePos": 1.0,
+      "minWaypointRelativePos": 0.48,
+      "maxWaypointRelativePos": 0.7106699751861033,
       "constraints": {
-        "maxVelocity": 3.0,
-        "maxAcceleration": 3.0,
+        "maxVelocity": 2.0,
+        "maxAcceleration": 4.5,
         "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
+        "maxAngularAcceleration": 400.0,
         "nominalVoltage": 12.0,
         "unlimited": false
       }
@@ -47,26 +47,10 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "intake",
-      "waypointRelativePos": 0.0,
+      "name": "startalgae",
+      "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "intake"
-        }
-      }
-    },
-    {
-      "name": "elevatorl4",
-      "waypointRelativePos": 0.65,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "elevatorl4"
-        }
-      }
+      "command": null
     }
   ],
   "globalConstraints": {
@@ -82,10 +66,10 @@
     "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Bottom Coral to Reef Paths",
+  "folder": "Algae Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 54.0
+    "rotation": -59.99999999999999
   },
   "useDefaultConstraints": true
 }

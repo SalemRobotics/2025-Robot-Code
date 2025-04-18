@@ -3,61 +3,77 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.4505122950819673,
-        "y": 0.6025102459016398
+        "x": 6.942,
+        "y": 7.3
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.1939080080397324,
-        "y": 2.6576774643708543
+        "x": 6.720795356265659,
+        "y": 7.183516071536185
       },
       "isLocked": false,
-      "linkedName": "Coral 1"
+      "linkedName": "Back Reef Start Own"
     },
     {
       "anchor": {
-        "x": 2.7397500000000004,
-        "y": 3.5179999999999993
+        "x": 2.361577868852459,
+        "y": 6.50046106557377
       },
       "prevControl": {
-        "x": 2.3661486845661654,
-        "y": 3.1279924041368403
+        "x": 4.095038349002819,
+        "y": 7.574400489346542
       },
       "nextControl": {
-        "x": 3.3373771596855075,
-        "y": 4.141871282414559
+        "x": 1.8566997282702986,
+        "y": 6.187671391057947
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.159,
-        "y": 3.8725
+        "x": 1.4984631147540983,
+        "y": 5.265727459016393
       },
       "prevControl": {
-        "x": 3.1515128031303465,
-        "y": 3.6226121413853107
+        "x": 1.4799084817385708,
+        "y": 5.727815928972407
+      },
+      "nextControl": {
+        "x": 1.518134668349772,
+        "y": 4.775822964808633
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.17,
+        "y": 4.18
+      },
+      "prevControl": {
+        "x": 2.1505093575225622,
+        "y": 4.165422932702537
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DR"
+      "linkedName": "DL"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.3274161735700178,
-      "rotationDegrees": 40.0
+      "waypointRelativePos": 0.95,
+      "rotationDegrees": -135.0
     }
   ],
   "constraintZones": [
     {
-      "name": "Elevator Constraint",
-      "minWaypointRelativePos": 1.35,
-      "maxWaypointRelativePos": 2.0,
+      "name": "Slow to Score",
+      "minWaypointRelativePos": 2.0,
+      "maxWaypointRelativePos": 3.0,
       "constraints": {
         "maxVelocity": 3.5,
-        "maxAcceleration": 3.35,
+        "maxAcceleration": 3.5,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
@@ -68,19 +84,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "intake",
-      "waypointRelativePos": 0,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "intake"
-        }
-      }
-    },
-    {
       "name": "elevatorl4",
-      "waypointRelativePos": 0.8,
+      "waypointRelativePos": 2.2,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -103,10 +108,10 @@
     "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Fast 4pc paths",
+  "folder": "Reef Back Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 54.0
+    "rotation": -135.0
   },
   "useDefaultConstraints": true
 }

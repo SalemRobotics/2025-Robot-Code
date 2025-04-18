@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.072417156883844,
-        "y": 4.122746814886118
+        "x": 6.994215206514385,
+        "y": 4.061276749782875
       },
       "isLocked": false,
       "linkedName": "Barge A Middle"
     },
     {
       "anchor": {
-        "x": 6.113729508196721,
-        "y": 2.4606045081967203
+        "x": 5.838012295081967,
+        "y": 2.388678278688524
       },
       "prevControl": {
-        "x": 6.91310635601111,
-        "y": 2.7718886120298127
+        "x": 6.737252195650089,
+        "y": 2.5380874316441195
       },
       "nextControl": {
-        "x": 5.567931916888414,
-        "y": 2.2480663110382797
+        "x": 5.356579353782762,
+        "y": 2.3086879580644157
       },
       "isLocked": false,
       "linkedName": null
@@ -36,8 +36,8 @@
         "y": 2.9281249999999988
       },
       "prevControl": {
-        "x": 5.237927682701502,
-        "y": 2.664061752296459
+        "x": 5.191288887643966,
+        "y": 2.6897523953280373
       },
       "nextControl": null,
       "isLocked": false,
@@ -84,7 +84,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 4.73,
-    "maxAcceleration": 4.5,
+    "maxAcceleration": 5.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

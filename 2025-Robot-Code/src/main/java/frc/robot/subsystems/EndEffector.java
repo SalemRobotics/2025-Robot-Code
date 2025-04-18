@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.EndEffectorConstants;
 import frc.robot.Constants.OperatorConstants;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -14,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import static edu.wpi.first.units.Units.Amps;
 
 import java.util.function.BooleanSupplier;
+import java.lang.Runnable;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -25,16 +27,24 @@ public class EndEffector extends SubsystemBase {
     private final DigitalInput mEntranceLineBreaker = new DigitalInput(EndEffectorConstants.kEntranceBreakerPort);
     private final DigitalInput mExitLineBreaker = new DigitalInput(EndEffectorConstants.kExitBreakerPort);
     private final TalonFX mEffectorMotor = new TalonFX(EndEffectorConstants.kMotorPort, "rio");
-    private final TorqueCurrentFOC mTorqueCurrent = new TorqueCurrentFOC(Amps.of(20));
 
-    private final CommandXboxController mControllerToRumble;
-    private final Timer mRumbleTimer = new Timer();
+    private final TorqueCurrentFOC mAlgaeCurrent = new TorqueCurrentFOC(Amps.of(20));
 
     private boolean mCoralInPosition = false;
     private boolean mHasCoral = false;
     private boolean mFirstTime = true;
 
-    public EndEffector(CommandXboxController controller) {
+    private final CommandXboxController mControllerToRumble;
+    private BooleanSupplier mRumbleEnabled = () -> false;
+
+    private final Timer mInPositionRumbleTimer = new Timer();
+    private final Timer mFirstDetectedRumbleTimer = new Timer();
+    private final Trigger mInPositionRumbleTrigger = new Trigger(() -> mInPositionRumbleTimer.isRunning()
+            && !mInPositionRumbleTimer.hasElapsed(1) && mRumbleEnabled.getAsBoolean());
+    private final Trigger mFirstDetectedRumbleTrigger = new Trigger(() -> mFirstDetectedRumbleTimer.isRunning()
+            && !mFirstDetectedRumbleTimer.hasElapsed(0.5) && mFirstTime && mRumbleEnabled.getAsBoolean());
+
+    public EndEffector(CommandXboxController controller, BooleanSupplier rumbleEnabled) {
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.CurrentLimits.withSupplyCurrentLimit(70);
         config.CurrentLimits.withStatorCurrentLimit(120);
@@ -50,6 +60,16 @@ public class EndEffector extends SubsystemBase {
 
         mEffectorMotor.setNeutralMode(NeutralModeValue.Brake);
         mControllerToRumble = controller;
+        mRumbleEnabled = rumbleEnabled;
+
+        mInPositionRumbleTrigger
+                .whileTrue(Commands.run(() -> mControllerToRumble.setRumble(RumbleType.kBothRumble,
+                        OperatorConstants.kCoralRumbleStrength)))
+                .onFalse(Commands.runOnce(() -> mControllerToRumble.setRumble(RumbleType.kBothRumble, 0)));
+        mFirstDetectedRumbleTrigger
+                .whileTrue(Commands.run(() -> mControllerToRumble.setRumble(RumbleType.kBothRumble,
+                        OperatorConstants.kCoralRumbleStrength / 2)))
+                .onFalse(Commands.runOnce(() -> mControllerToRumble.setRumble(RumbleType.kBothRumble, 0)));
     }
 
     @Override
@@ -58,23 +78,77 @@ public class EndEffector extends SubsystemBase {
         SmartDashboard.putBoolean("Exit", exitDetected());
 
         if (mCoralInPosition)
-            mRumbleTimer.start();
+            mInPositionRumbleTimer.start();
         else {
-            mRumbleTimer.stop();
-            mRumbleTimer.reset();
+            mInPositionRumbleTimer.stop();
+            mInPositionRumbleTimer.reset();
         }
-
-        mControllerToRumble.setRumble(RumbleType.kBothRumble,
-                mCoralInPosition && !mRumbleTimer.hasElapsed(0.5) ? OperatorConstants.kCoralRumbleStrength : 0);
+        if (entranceDetected() && !exitDetected() && mFirstTime)
+            mFirstDetectedRumbleTimer.start();
+        else {
+            mFirstDetectedRumbleTimer.stop();
+            mFirstDetectedRumbleTimer.reset();
+        }
     }
 
     public Command algaeIntake() {
         return runOnce(() -> {
             mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
-            mEffectorMotor.setControl(mTorqueCurrent);
+            mEffectorMotor.setControl(mAlgaeCurrent);
         });
     }
 
+    /**
+     * Processes a coral in autonomous or teleop
+     * @param inAuto Whether the given command is to run in teleop or autonomous
+     * @return The command to run in the provided mode.
+     */
+    public Command coralIntake(boolean inAuto) {
+        final Runnable intake = () -> {
+            final boolean entrance = entranceDetected();
+            final boolean exit = exitDetected();
+
+            mHasCoral = entrance || exit;
+            if (!entrance && !exit) {
+                mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
+                mCoralInPosition = false;
+                mFirstTime = true;
+            } else if (entrance && exit) {
+                if (mFirstTime) {
+                    mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed / 2);
+                    mCoralInPosition = false;
+                } else {
+                    mEffectorMotor.stopMotor();
+                    mCoralInPosition = true;
+                }
+            } else if (entrance && !exit) {
+                mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed);
+                mCoralInPosition = false;
+            } else if (!entrance && exit) {
+                mEffectorMotor.set(-EndEffectorConstants.kDriveBackSpeed);
+                mCoralInPosition = false;
+                mFirstTime = false;
+            } else {
+                System.err.println("End effector encountered an invalid state");
+            }
+        };
+        if (inAuto) {
+            return run(intake).finallyDo(() -> {
+                mEffectorMotor.stopMotor();
+                mCoralInPosition = false;
+                mHasCoral = false;
+                mFirstTime = true;
+            });
+        } else {
+            return runOnce(intake).andThen(Commands.waitSeconds(0.04));
+        }
+    }
+
+    /**
+     * @deprecated This command has been deprecated in favor of {@link #coralIntake(boolean)}
+     * @return The command to run or be scheduled
+     */
+    @Deprecated(forRemoval = true)
     public Command teleIntake() {
         return runOnce(() -> {
             if (!entranceDetected() && !exitDetected()) {
@@ -112,6 +186,11 @@ public class EndEffector extends SubsystemBase {
         }).andThen(Commands.waitSeconds(0.05));
     }
 
+    /**
+     * @deprecated This command has been deprecated in favor of {@link #coralIntake(boolean)}
+     * @return The command to run or be scheduled
+     */
+    @Deprecated(forRemoval = true)
     public Command autoIntake() {
         return run(() -> {
             if (!entranceDetected() && !exitDetected()) {
@@ -152,6 +231,7 @@ public class EndEffector extends SubsystemBase {
         });
     }
 
+    
     // getter for mHasCoral
     public boolean hasCoral() {
         return mHasCoral;
@@ -188,6 +268,16 @@ public class EndEffector extends SubsystemBase {
                     : EndEffectorConstants.kDefaultEjectSpeed);
         });
     }
+
+    public Command scoreBloop() {
+        return run(() -> {
+            mHasCoral = false;
+            mCoralInPosition = false;
+            mFirstTime = true;
+            mEffectorMotor.set(EndEffectorConstants.kBloopSpeed);
+        });
+    }
+
     public Command scoreL1() {
         return run(() -> {
             mHasCoral = false;
@@ -196,6 +286,7 @@ public class EndEffector extends SubsystemBase {
             mEffectorMotor.set(EndEffectorConstants.kL1EjectSpeed);
         });
     }
+
     public Command scoreBarge() {
         return run(() -> {
             mHasCoral = false;
@@ -243,6 +334,7 @@ public class EndEffector extends SubsystemBase {
     public Command autoIntakeFast() {
         return Commands.race(Commands.waitSeconds(0.4), Commands.waitUntil(() -> exitDetected()), autoIntake());
     }
+
     public Command autoPostIntake(Command elevatorl3) {
         return autoIntake().alongWith(Commands.waitUntil(this::exitDetected).andThen(elevatorl3));
     }

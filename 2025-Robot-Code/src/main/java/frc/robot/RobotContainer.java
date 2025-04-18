@@ -63,7 +63,7 @@ public class RobotContainer {
         private final CommandXboxController operatorController = new CommandXboxController(1);
 
         private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain(driverController);
-        private final EndEffector endEffector = new EndEffector(driverController);
+        private final EndEffector endEffector = new EndEffector(driverController, () -> SmartDashboard.getBoolean("Rumbling?", false));
         private final Vision vision = new Vision();
         private final Elevator elevator = new Elevator();
         private final AlgaeRemover algaeRemover = new AlgaeRemover();
@@ -85,13 +85,16 @@ public class RobotContainer {
                                                 .toString());
 
                 SmartDashboard.putData(field);
+                SmartDashboard.putBoolean("Rumbling?", true);
 
                 PathfindingCommand.warmupCommand().schedule();
 
-                autoChooser.setDefaultOption("Own Cage 3.5pc", new PathPlannerAuto("Own Cage 3.5pc"));
+                autoChooser.setDefaultOption("Own Cage 3.5pc", new PathPlannerAuto("Opps Cage 3.5pc", true));
                 autoChooser.addOption("Middle 1pc + 3 Barge", new PathPlannerAuto("Middle 1pc + 3 Barge"));
                 autoChooser.addOption("Opps Cage 3.5pc", new PathPlannerAuto("Opps Cage 3.5pc"));
                 autoChooser.addOption("Tush Push", new PathPlannerAuto("Tush Push"));
+                autoChooser.addOption("Evil Auto", new PathPlannerAuto("Evil Algae Yoink"));
+                autoChooser.addOption("Own Cage Sprint", new PathPlannerAuto("Own Cage Reef Back"));
 
                 SmartDashboard.putData("Auto Chooser", autoChooser);
                 SmartDashboard.putString("Aligned X", "Unknown (in initialization)");
@@ -158,12 +161,15 @@ public class RobotContainer {
                 operatorController.y().whileTrue(climber.declimb()).onFalse(climber.stopMotor());
 
                 driverController.a().and(isBargeMode.negate())
-                                .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height)
+                                .whileTrue(endEffector.scoreBloop());
+                
+                
+                /*.whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height)
                                                 .alongWith(Commands.waitSeconds(0.3)
                                                                 .andThen(endEffector.scoreL1())
                                                                 .alongWith(Commands.waitSeconds(0.1)
-                                                                                .andThen(L1MoveCommand()))))
-                                .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+                                                                                .andThen(L1MoveCommand())))) 
+                                .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));*/
                 driverController.x().and(isBargeMode.negate())
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
@@ -228,6 +234,7 @@ public class RobotContainer {
                 // create named commands for autos to use
                 NamedCommands.registerCommand("elevatorl4", elevator.setElevatorTarget(ElevatorConstants.kL4Height));
                 NamedCommands.registerCommand("elevatorl3", elevator.setElevatorTarget(ElevatorConstants.kL3Height));
+                NamedCommands.registerCommand("elevatorl2", elevator.setElevatorTarget(ElevatorConstants.kL2Height));
 
                 NamedCommands.registerCommand("startalgae", algaeRemover.deployArm()
                                 .alongWith(Commands.runOnce(() -> mBargeMode = true), endEffector.algaeIntake()));
@@ -302,9 +309,5 @@ public class RobotContainer {
 
         private Command joystickApproach(Supplier<Pose2d> approachPose) {
                 return DriveCommands.joystickApproach(drivetrain, () -> driverController.getLeftY(), approachPose);
-        }
-
-        private Command L1MoveCommand() {
-                return drivetrain.L1Move(() -> SmartDashboard.getBoolean("L1 Direction", false));
         }
 }

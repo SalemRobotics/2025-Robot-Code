@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "FR 1"
+            "pathName": "Start to DL"
           }
         },
         {
@@ -19,7 +19,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "FR to Coral2 Path"
+            "pathName": "DL to Coral 2"
           }
         },
         {
@@ -31,7 +31,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Coral2 to EL Path"
+            "pathName": "Coral 2 to DR"
           }
         },
         {
@@ -43,7 +43,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "EL to Coral2 Path"
+            "pathName": "DR to Coral 2"
           }
         },
         {
@@ -55,19 +55,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Coral2 to ER Path"
+            "pathName": "Coral 2 to DL"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "score_safe"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "ER to Coral2 Path"
           }
         }
       ]

@@ -59,7 +59,7 @@
     },
     {
       "name": "elevatorl4",
-      "waypointRelativePos": 0.6,
+      "waypointRelativePos": 0.4,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -70,8 +70,8 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.73,
-    "maxAcceleration": 4.5,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -87,5 +87,5 @@
     "velocity": 0,
     "rotation": -53.97262661489641
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }
