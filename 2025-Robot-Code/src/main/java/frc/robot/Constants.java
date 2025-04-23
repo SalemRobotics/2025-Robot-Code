@@ -61,9 +61,9 @@ public final class Constants {
     public static final double kS = 0.25;
     public static final double kV = 1.58;
     public static final double kA = 0.07;
-    public static final double kP = 60.0;
+    public static final double kP = 70.0;
     public static final double kI = 0.0;
-    public static final double kD = 0.5;
+    public static final double kD = 1;
     // Current limits
     public static final double kStatorCurrentLimit = 70;
     public static final double kSupplyCurrentLimit = 120;

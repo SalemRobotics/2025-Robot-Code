@@ -8,15 +8,16 @@ import static frc.robot.Constants.*;
 import static edu.wpi.first.units.Units.*;
 
 import frc.robot.FieldConstants.ReefSide;
-import frc.robot.commands.DriveCommands;
+import frc.robot.commands.AutoAlignCommands;
 import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.RumbleUtil;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.AlgaeRemover;
 import frc.robot.subsystems.Climber;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Drivetrain;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -62,7 +63,7 @@ public class RobotContainer {
         private final CommandXboxController driverController = new CommandXboxController(0);
         private final CommandXboxController operatorController = new CommandXboxController(1);
 
-        private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain(driverController);
+        private final Drivetrain drivetrain = TunerConstants.createDrivetrain(driverController);
         private final EndEffector endEffector = new EndEffector(driverController);
         private final Vision vision = new Vision();
         private final Elevator elevator = new Elevator();
@@ -301,7 +302,7 @@ public class RobotContainer {
         }
 
         private Command joystickApproach(Supplier<Pose2d> approachPose) {
-                return DriveCommands.joystickApproach(drivetrain, () -> driverController.getLeftY(), approachPose);
+                return AutoAlignCommands.joystickApproach(drivetrain, () -> driverController.getLeftY(), approachPose);
         }
 
         private Command L1MoveCommand() {

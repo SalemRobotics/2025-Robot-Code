@@ -56,6 +56,7 @@ public class FieldConstants {
     }
 
     public static class Reef {
+        public static final double faceLength = Units.inchesToMeters(36.792600);
         public static final Translation2d centerOfReef = new Translation2d(Units.inchesToMeters(176.746),
                 Units.inchesToMeters(158.501));
         public static final double faceToZoneLine = Units.inchesToMeters(12); // Side of the reef to the inside of the
@@ -197,8 +198,9 @@ public class FieldConstants {
 
     public static Pose2d getNearestReefBranch(Pose2d currentPose, ReefSide side) {
         return FieldConstants.Reef.branchPositions
-                .get(List.of(FieldConstants.Reef.centerFaces).indexOf(getNearestReefFace(currentPose))
-                        * 2 + (side == ReefSide.LEFT ? 1 : 0))
+                .get(
+                        List.of(FieldConstants.Reef.centerFaces)
+                                .indexOf(getNearestReefFace(currentPose)) * 2 + (side == ReefSide.LEFT ? 1 : 0))
                 .get(FieldConstants.ReefHeight.L1).toPose2d();
     }
 

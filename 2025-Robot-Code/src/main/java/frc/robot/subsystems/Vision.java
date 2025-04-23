@@ -17,32 +17,35 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.VisionHelper;
+import frc.robot.util.VisionHelper;
 import frc.robot.Constants.VisionConstants;
 
 public class Vision extends SubsystemBase {
-    static AprilTagFieldLayout mFieldLayout;
-    static boolean useCustomField = false;
-    static final double linearStdDevBaseline = 0.02;
-    static final double angularStdDevBaseline = 0.06;
+    private final AprilTagFieldLayout m_fieldLayout;
+    private final double linearStdDevBaseline = 0.02;
+    private final double angularStdDevBaseline = 0.06;
+    private final PhotonCamera mCamera1 = new PhotonCamera(VisionConstants.kCamera1Name);
+    private final PhotonCamera mCamera2 = new PhotonCamera(VisionConstants.kCamera2Name);
 
-    public static record PoseObservation(
-            double timestamp, Pose3d pose, double ambiguity, int tagCount, double averageTagDistance) {
+    public static record PoseObservation(double timestamp, Pose3d pose, double ambiguity, int tagCount,
+            double averageTagDistance) {
     }
 
-    static {
+    public Vision() {
+        AprilTagFieldLayout layout;
+        boolean customField = true;
+
         try {
-            mFieldLayout = new AprilTagFieldLayout(
-                    Path.of(Filesystem.getDeployDirectory().getAbsolutePath() + "/weldedlayout.json"));
-            useCustomField = true;
+            layout = new AprilTagFieldLayout(Filesystem.getDeployDirectory().getAbsolutePath() + "/weldedlayout.json");
+            customField = true;
         } catch (Exception e) {
-            // TODO: handle exception
-            mFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+            System.err.println("Error configuring an apriltag layout: " + e.getMessage() + "\n" + e.getStackTrace());
+            layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
         }
-        SmartDashboard.putBoolean("Field Config", useCustomField);
+
+        m_fieldLayout = layout;
+        SmartDashboard.putBoolean("Custom field: ", customField);
     }
-    final PhotonCamera mCamera1 = new PhotonCamera(VisionConstants.kCamera1Name);
-    final PhotonCamera mCamera2 = new PhotonCamera(VisionConstants.kCamera2Name);
 
     public ArrayList<VisionHelper> getVisionResults() {
         ArrayList<VisionHelper> outputs = new ArrayList<>();
@@ -102,7 +105,7 @@ public class Vision extends SubsystemBase {
                 var target = result.targets.get(0);
 
                 // Calculate robot pose
-                var tagPose = mFieldLayout.getTagPose(target.fiducialId);
+                var tagPose = m_fieldLayout.getTagPose(target.fiducialId);
                 if (tagPose.isPresent()) {
                     Transform3d fieldToTarget = new Transform3d(tagPose.get().getTranslation(),
                             tagPose.get().getRotation());

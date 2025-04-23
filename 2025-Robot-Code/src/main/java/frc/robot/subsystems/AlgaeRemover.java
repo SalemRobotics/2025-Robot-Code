@@ -80,4 +80,8 @@ public class AlgaeRemover extends SubsystemBase {
             })
         );
     }
+
+    public boolean hasAlgae() {
+        return false;
+    }
 }
