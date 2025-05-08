@@ -83,6 +83,7 @@ public final class Constants {
   }
 
   public static class AutoConstants {
+    public static PathConstraints kPathConstraints = new PathConstraints(4.73, 5, 540, 720);
     public static final double kTranslationP = 3;
     public static final double kTranslationI = 0;
     public static final double kTranslationD = 0;

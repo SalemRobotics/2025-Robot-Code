@@ -1,14 +1,16 @@
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static frc.robot.util.Utilities.getDistance;
 
+import java.util.Optional;
+import java.util.function.DoubleConsumer;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,8 +20,15 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.robot.generated.TunerConstants;
 import frc.robot.selfdriving.Objective;
+import frc.robot.selfdriving.Quadrant;
+import frc.robot.selfdriving.SelfDriveTarget.CoralStation;
+import frc.robot.selfdriving.SelfDriveTarget.GamePiece;
+import frc.robot.selfdriving.SelfDriveTarget.CoralStation.IntakePosition;
+import frc.robot.selfdriving.SelfDriving;
+import frc.robot.selfdriving.Objective.Intaking;
 import frc.robot.subsystems.AlgaeRemover;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Elevator;
@@ -27,120 +36,306 @@ import frc.robot.subsystems.EndEffector;
 import frc.robot.util.Allocated;
 
 public final class SelfDriveCommands {
-    private static class ShiftingApproachTarget {
-        private final Pose2d targetPose;
-        private final Pose2d startFrom;
-        private final double initialDistance;
-        private Pose2d initalPose;
-        /**
-         * Whether or not the robot has ever been within 0.4m while this object has existed
-         */
-        private boolean hasMadeTarget = false;
-        private boolean wasNearTarget = false;
+	private static class ShiftingApproachTarget {
+		private final Pose2d targetPose;
+		private final Pose2d startFrom;
+		private final double initialDistance;
+		private boolean hasBeenNearStart = false;
 
-        public ShiftingApproachTarget(Pose2d actual, Pose2d startShifting, Pose2d target) {
-            initalPose = actual;
-            targetPose = target;
-            startFrom = startShifting;
-            initialDistance = getDistance(initalPose, targetPose);
-        }
+		public ShiftingApproachTarget(Pose2d actual, Pose2d startShifting, Pose2d target) {
+			/**
+			 * The initial pose of the robot when the command started. This can be used
+			 * to determine how much closer
+			 */
+			targetPose = target;
+			if (getDistance(actual, target) < getDistance(startShifting, target)) {
+				var proj = actual.relativeTo(target).getTranslation().times(0.1);
+				startFrom = new Pose2d(proj, startShifting.getRotation());
+			} else
+				startFrom = startShifting;
+			initialDistance = getDistance(actual, targetPose);
+		}
 
-        public Pose2d getTarget(Pose2d current) {
-            if (!wasNearTarget) wasNearTarget = MathUtil.isNear(0, getDistance(current, startFrom), 0.4);
-            if (hasMadeTarget && !wasNearTarget)
-                return startFrom;
+		/**
+		 * Determines whether or not the robot is near the starting point of this path
+		 * 
+		 * @param actual The actual pose of the robot
+		 * @return
+		 */
+		public boolean isNearStartpoint(Pose2d actual) {
+			return MathUtil.isNear(0, getDistance(actual, startFrom), 1);
+		}
 
-            double newDist = getDistance(current, targetPose);
-            double progress = newDist / initialDistance;
+		public Pose2d getTarget(Pose2d current) {
+			double newDistance = getDistance(current, targetPose);
 
-            // we get the progression from startTarget -> endTarget, adding 0.05 to make
-            // sure if the robot was exactly in the
-            // right position it doesn't stop the robot
-            double t = MathUtil.clamp(progress + 0.05, 0, 1);
-            Translation2d interpolatedTranslation = startFrom.getTranslation().interpolate(targetPose.getTranslation(),
-                    t);
-            Rotation2d interpolatedRotation = startFrom.getRotation().interpolate(targetPose.getRotation(), t);
+			// ensure that we are close enough to the starting point before starting the
+			// curved approach
+			if (!isNearStartpoint(current) && !hasBeenNearStart)
+				return startFrom;
+			else
+				hasBeenNearStart = true;
 
-            var target = new Pose2d(interpolatedTranslation, interpolatedRotation);
-            hasMadeTarget = true;
-            return target;
-        }
-    }
+			// this(newDist / initialDistance) should NEVER be greater than 1
+			double progress = 1 - MathUtil.clamp(newDistance / initialDistance, 0, 1);
 
-    public static Command selfDrivingScore(
-            Objective.Scoring objective,
-            Drivetrain drive,
-            EndEffector endEffector,
-            AlgaeRemover algaeRemover,
-            Elevator elevator) {
-        Supplier<Pose2d> robotPose = () -> drive.getState().Pose;
-        Pose2d scoringPose = objective.getScoringPose();
-        ShiftingApproachTarget targetSupplier = new ShiftingApproachTarget(robotPose.get(), objective.targetQuadrant().middle(), scoringPose);
+			// we get the progression from startTarget -> endTarget, adding 0.05 to make
+			// sure if the robot was exactly in the right position it doesn't stop the robot
+			double clamped = MathUtil.clamp(progress + 0.05, 0, 1);
+			Translation2d interpolatedTranslation = startFrom.getTranslation().interpolate(
+					targetPose.getTranslation(),
+					clamped);
+			Rotation2d interpolatedRotation = startFrom.getRotation().interpolate(targetPose.getRotation(),
+					clamped);
 
-        if (endEffector.hasCoral())
-            return selfDrivingScore(Objective.nearestCoralObjective(robotPose.get(), true), drive, endEffector,
-                    algaeRemover, elevator);
-        else if (algaeRemover.hasAlgae())
-            return selfDrivingScore(Objective.nearestBargeObjective(robotPose.get()), drive, endEffector, algaeRemover,
-                    elevator);
+			var target = new Pose2d(interpolatedTranslation, interpolatedRotation);
 
-        final var velocityConstraints = new TrapezoidProfile.Constraints(8, 20);
+			// TODO: tune this constant to get the greatest and most ACCURATE alignment to
+			// the target while allowing for the greatest distance
+			if (progress < 0.5) {
+				// shift the target to the pose if we aren't halfway there (makes kind of an
+				// J-shape path)
+				// TODO: tune the amount we shift the pose by so that the PID is very agressive
+				var shift = new Transform2d(target, current).times(0.1).times(1 - (progress / 0.5));
 
-        final ProfiledPIDController xController = new ProfiledPIDController(2, 0, 0, velocityConstraints);
-        xController.setTolerance(0.08);
-        final ProfiledPIDController yController = new ProfiledPIDController(2, 0, 0, velocityConstraints);
-        yController.setTolerance(0.08);
+				target = target.plus(shift);
+			}
 
-        final ProfiledPIDController angleController = new ProfiledPIDController(2, 0, 0.1,
-                new TrapezoidProfile.Constraints(8, 20));
-        angleController.setTolerance(Units.degreesToRadians(0.5));
-        angleController.enableContinuousInput(-Math.PI, Math.PI);
+			return target;
+		}
+	}
 
-        final Allocated<Boolean> hasScored = new Allocated<>(false);
-        final Allocated<Boolean> alreadyScheduledPreparation = new Allocated<>(false);
+	private static Command reefApproach(
+			Pose2d scoringPose,
+			Drivetrain drive,
+			boolean preferTopInRepositioning,
+			Pose2d startFrom,
+			DoubleSupplier driverX,
+			DoubleSupplier driverY,
+			DoubleSupplier driverRotX,
+			DoubleSupplier driverRotY,
+			DoubleConsumer updateProgress) {
+		final Supplier<Pose2d> robotPose = () -> drive.getState().Pose;
+		final Pose2d startingPose = robotPose.get();
 
-        return Commands.run(() -> {
-            Pose2d robot = robotPose.get();
-            Pose2d target = targetSupplier.getTarget(robot);
+		final ShiftingApproachTarget targetSupplier = new ShiftingApproachTarget(startingPose, startFrom,
+				scoringPose);
+		final double initialDist = getDistance(startingPose, scoringPose);
 
-            double velocityX = xController.calculate(robot.getX(), target.getX());
-            double velocityY = yController.calculate(robot.getY(), target.getY());
-            double angle = angleController.calculate(robot.getRotation().getRadians(),
-                    target.getRotation().getRadians());
+		final TrapezoidProfile.Constraints pidConstraints = new TrapezoidProfile.Constraints(8, 20);
 
-            SwerveRequest request = new SwerveRequest.FieldCentric()
-                    .withVelocityX(velocityX)
-                    .withVelocityY(velocityY)
-                    .withRotationalRate(angle)
-                    .withDeadband(0.075);
+		final ProfiledPIDController poseController = new ProfiledPIDController(3, 0, 0, pidConstraints);
+		poseController.setTolerance(0.75);
 
-            drive.setControl(request);
+		final ProfiledPIDController angleController = new ProfiledPIDController(2, 0, 0.1, pidConstraints);
+		angleController.setTolerance(Units.degreesToRadians(5));
+		angleController.enableContinuousInput(-Math.PI, Math.PI);
 
-            var progress = getDistance(robot, target);
-            if (objective.startPreparation(progress) && !alreadyScheduledPreparation.get()) {
-                alreadyScheduledPreparation.set(true);
-                objective.preparationCommand(endEffector, elevator, algaeRemover).schedule();
-            }
+		Command cmd = Commands.run(() -> {
+			Pose2d robot = robotPose.get();
+			Pose2d target = targetSupplier.getTarget(robot);
+			double progress = 1 - MathUtil.clamp(getDistance(robot, target) / initialDist, 0, 1);
 
-            if (objective.hasCompleted())
-                hasScored.set(true);
-        }).until(() -> hasScored.get());
-    }
+			updateProgress.accept(progress);
 
-    public static Command selfDrivingIntake(
-            Objective.Intaking objective,
-            Drivetrain drive,
-            EndEffector endEffector,
-            AlgaeRemover algaeRemover,
-            Elevator elevator) {
-        Allocated<Boolean> hasIntook = new Allocated<>(false);
+			double velocityX = poseController.calculate(robot.getX(), scoringPose.getX());
+			double velocityY = poseController.calculate(robot.getY(), scoringPose.getY());
+			Rotation2d rotation = new Rotation2d(angleController.calculate(robot.getRotation().getRadians(),
+					scoringPose.getRotation().getRadians()));
 
-        return Commands.run(() -> {
-            SwerveRequest req = new SwerveRequest.RobotCentric()
-                    .withVelocityX(0.01)
-                    .withVelocityY(0.01);
-            drive.setControl(req);
-            hasIntook.set(true);
-        }).until(() -> hasIntook.get());
-    }
+			final double scale = Math.hypot(velocityX, velocityY);
+			Translation2d direction = target.getTranslation().minus(robot.getTranslation());
+
+			if (progress < 0.8) {
+				Translation2d manual = new Translation2d(
+						driverX.getAsDouble()
+								* TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+						driverY.getAsDouble()
+								* TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))
+						.times(0.2);
+
+				direction = direction.plus(manual);
+
+				Rotation2d manualRotation = new Rotation2d(driverRotX.getAsDouble(),
+						driverRotY.getAsDouble())
+						.times(0.15);
+				rotation = rotation.interpolate(manualRotation,
+						MathUtil.clamp((0.75 - progress) / 0.75, 0, 1));
+			}
+
+			double angular = rotation.getRadians();
+
+			SwerveRequest request = new SwerveRequest.FieldCentric()
+					.withVelocityX(direction.getX() * scale)
+					.withVelocityY(direction.getY() * scale)
+					.withRotationalRate(angular)
+					.withDeadband(0.075);
+
+			drive.setControl(request);
+		}, drive);
+
+		if (initialDist >= 1.5)
+			return Quadrant.fromPose(startingPose)
+					.driveToOther(Quadrant.fromPose(scoringPose), preferTopInRepositioning)
+					.until(() -> getDistance(robotPose.get(), scoringPose) < 1.5).andThen(cmd);
+		else
+			return cmd;
+	}
+
+	public static Command coralStationIntake(
+			CoralStation station,
+			Drivetrain drive,
+			EndEffector endEffector,
+			DoubleSupplier driverX,
+			DoubleSupplier driverY,
+			DoubleSupplier driverRotX,
+			DoubleSupplier driverRotY) {
+		Supplier<Pose2d> robotPose = () -> drive.getState().Pose;
+		Pose2d intakePose = station.getLocation();
+
+		final TrapezoidProfile.Constraints pidConstraints = new TrapezoidProfile.Constraints(8, 20);
+		final ProfiledPIDController alignController = new ProfiledPIDController(5, 0, 0.5, pidConstraints);
+		final ProfiledPIDController angleController = new ProfiledPIDController(2, 0, 0.1, pidConstraints);
+		angleController.enableContinuousInput(-Math.PI, Math.PI);
+		angleController.setTolerance(Units.degreesToRadians(5));
+
+		return Commands.race(
+				Commands.run(() -> {
+					Pose2d robot = robotPose.get();
+					var progress = getDistance(robot, intakePose);
+
+					double velocityX = alignController.calculate(robot.getX(), intakePose.getX());
+					double velocityY = alignController.calculate(robot.getY(), intakePose.getY());
+					Rotation2d rotation = new Rotation2d(
+							angleController.calculate(robot.getRotation().getRadians(),
+									intakePose.getRotation().getRadians()));
+
+					final double scale = Math.hypot(velocityX, velocityY);
+					Translation2d direction = intakePose.getTranslation()
+							.minus(robot.getTranslation());
+
+					if (progress < 0.75) {
+						Translation2d manual = new Translation2d(
+								driverX.getAsDouble() * TunerConstants.kSpeedAt12Volts
+										.in(MetersPerSecond),
+								driverY.getAsDouble() * TunerConstants.kSpeedAt12Volts
+										.in(MetersPerSecond))
+								.times(0.2);
+
+						direction = direction.plus(manual);
+
+						Rotation2d manualRotation = new Rotation2d(driverRotX.getAsDouble(),
+								driverRotY.getAsDouble())
+								.times(0.15);
+						rotation = rotation.interpolate(manualRotation,
+								MathUtil.clamp((0.75 - progress) / 0.75, 0, 1));
+					}
+
+					double angular = rotation.getRadians();
+
+					SwerveRequest request = new SwerveRequest.FieldCentric()
+							.withVelocityX(direction.getX() * scale)
+							.withVelocityY(direction.getY() * scale)
+							.withRotationalRate(angular)
+							.withDeadband(0.075);
+
+					drive.setControl(request);
+				}, drive)
+						.until(() -> MathUtil.isNear(0,
+								getDistance(robotPose.get(), intakePose), 0.05)),
+				endEffector.autoIntake())
+				.andThen(endEffector.shortCircuitingIntake());
+	}
+
+	public static Command selfDrivingScore(
+			Objective.Scoring objective,
+			Drivetrain drive,
+			EndEffector endEffector,
+			AlgaeRemover algaeRemover,
+			Elevator elevator,
+			SelfDriving selfDriver,
+			boolean preferTopInRepositioning,
+			Pose2d startTargetFrom,
+			IntakePosition preferredIntakePosition,
+			DoubleSupplier driverX,
+			DoubleSupplier driverY,
+			DoubleSupplier driverRotX,
+			DoubleSupplier driverRotY) {
+		final Supplier<Pose2d> robotPose = () -> drive.getState().Pose;
+		final Optional<Command> intakeBeforeRunning = endEffector.hasCoral() ? Optional.empty()
+				: Optional.of(selfDrivingIntake(
+						Intaking.nearestCoralStationIntake(robotPose.get(),
+								preferredIntakePosition),
+						drive,
+						endEffector,
+						algaeRemover,
+						elevator,
+						preferTopInRepositioning,
+						driverX, driverY,
+						driverRotX, driverRotY));
+
+		Allocated<Double> progress = new Allocated<>(0d);
+
+		final Command driveCmd = reefApproach(
+				objective.getScoringPose(),
+				drive,
+				preferTopInRepositioning,
+				startTargetFrom,
+				driverX, driverY,
+				driverRotX, driverRotY,
+				progress::set);
+
+		Allocated<Boolean> hasScored = new Allocated<>(false);
+
+		final Command cmd = Commands.race(
+				objective.scoringCommand(hasScored, endEffector, algaeRemover, elevator),
+				driveCmd
+						.until(hasScored::get)
+						.finallyDo(() -> drive.setControl(
+								new SwerveRequest.FieldCentric()
+										.withVelocityX(0)
+										.withVelocityY(0)
+										.withRotationalRate(0))));
+
+		return intakeBeforeRunning.orElseGet(Commands::none)
+				.andThen(cmd);
+	}
+
+	public static Command selfDrivingIntake(
+			Objective.Intaking objective,
+			Drivetrain drive,
+			EndEffector endEffector,
+			AlgaeRemover algaeRemover,
+			Elevator elevator,
+			boolean preferTopInRepositioning,
+			DoubleSupplier driverX,
+			DoubleSupplier driverY,
+			DoubleSupplier driverRotX,
+			DoubleSupplier driverRotY) {
+		Allocated<Double> progress = new Allocated<>(0d);
+
+		var target = objective.getTarget();
+
+		if (target instanceof CoralStation station) {
+			Supplier<Pose2d> robotPose = () -> drive.getState().Pose;
+
+			final Quadrant targetQuad = Quadrant.fromPose(objective.getFeedLocation());
+			final Command reposition = Quadrant.fromPose(robotPose.get()).driveToOther(
+					Quadrant.fromPose(objective.getFeedLocation()), preferTopInRepositioning);
+			return reposition
+					.until(() -> getDistance(robotPose.get(), targetQuad.middle()) <= 1)
+					.andThen(coralStationIntake(station, drive, endEffector, driverX, driverY,
+							driverRotX, driverRotY));
+		} else {
+			// we know as an invariant that this has to be an algae target
+			return reefApproach(
+					objective.getFeedLocation(),
+					drive,
+					preferTopInRepositioning,
+					objective.getStartingPose(),
+					driverX, driverY,
+					driverRotX, driverRotY,
+					progress::set);
+		}
+	}
 }

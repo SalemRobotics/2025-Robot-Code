@@ -57,6 +57,8 @@ public class EndEffector extends SubsystemBase {
         SmartDashboard.putBoolean("Entrance", entranceDetected());
         SmartDashboard.putBoolean("Exit", exitDetected());
 
+        mHasCoral = entranceDetected() || exitDetected();
+
         if (mCoralInPosition)
             mRumbleTimer.start();
         else {
@@ -73,6 +75,52 @@ public class EndEffector extends SubsystemBase {
             mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
             mEffectorMotor.setControl(mTorqueCurrent);
         });
+    }
+
+    private void resetState() {
+        mCoralInPosition = false;
+        mHasCoral = false;
+        mFirstTime = true;
+    }
+
+    /**
+     * Returns a command that runs the coral intake of the robot
+     * @param repeating Whether or not to repeat the command
+     * @return The command to run
+     */
+    public Command coralIntake(boolean repeating) {
+        final Runnable loop = () -> {
+            final boolean entrance = entranceDetected();
+            final boolean exit = exitDetected();
+
+            if (!entrance && !exit) {
+                mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
+                resetState();
+            } else if (entrance && exit) {
+                if (mFirstTime) {
+                    mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed / 2);
+                    mCoralInPosition = false;
+                } else {
+                    mEffectorMotor.stopMotor();
+                    mCoralInPosition = true;
+                }
+            } else if (entrance && !exit) {
+                mEffectorMotor.set(EndEffectorConstants.kIntakeSpeed);
+                mCoralInPosition = false;
+            } else if (!entrance && exit) {
+                mEffectorMotor.set(-EndEffectorConstants.kDriveBackSpeed);
+                mCoralInPosition = false;
+                mFirstTime = false;
+            } else {
+                mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
+                resetState();
+            }
+        };
+        
+        if (repeating)
+            return run(loop).finallyDo(() -> mEffectorMotor.stopMotor());
+        else
+            return runOnce(loop).andThen(Commands.waitSeconds(0.025));
     }
 
     public Command teleIntake() {
@@ -240,7 +288,7 @@ public class EndEffector extends SubsystemBase {
         }
     }
 
-    public Command autoIntakeFast() {
+    public Command shortCircuitingIntake() {
         return Commands.race(Commands.waitSeconds(0.4), Commands.waitUntil(() -> exitDetected()), autoIntake());
     }
     public Command autoPostIntake(Command elevatorl3) {

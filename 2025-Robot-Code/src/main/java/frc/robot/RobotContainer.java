@@ -10,7 +10,7 @@ import static edu.wpi.first.units.Units.*;
 import frc.robot.FieldConstants.ReefSide;
 import frc.robot.commands.AutoAlignCommands;
 import frc.robot.util.AllianceFlipUtil;
-import frc.robot.util.RumbleUtil;
+import frc.robot.generated.Telemetry;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
@@ -246,7 +246,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand("score", endEffector.autoScoreCoral());
                 NamedCommands.registerCommand("score_safe", endEffector.scoreSafe(elevator::isAtHeight));
                 NamedCommands.registerCommand("intake", endEffector.autoIntake());
-                NamedCommands.registerCommand("intake_fast", endEffector.autoIntakeFast());
+                NamedCommands.registerCommand("intake_fast", endEffector.shortCircuitingIntake());
         }
 
         public Command getAutonomousCommand() {

@@ -67,11 +67,13 @@ public class Elevator extends SubsystemBase {
         mElevatorMotorB.setPosition(0);
     }
 
+    public void setTarget(double height) {
+        mSetHeight = height;
+        mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0));
+    }
+
     public Command setElevatorTarget(double height) {
-        return run(() -> {
-            mSetHeight = height;
-            mElevatorMotorA.setControl(mVoltage.withPosition(height).withSlot(0));
-        });
+        return run(() -> setTarget(height));
     }
 
     public boolean isAtHeight() {
