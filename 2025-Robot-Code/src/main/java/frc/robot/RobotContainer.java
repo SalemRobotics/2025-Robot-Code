@@ -246,7 +246,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand("score", endEffector.autoScoreCoral());
                 NamedCommands.registerCommand("score_safe", endEffector.scoreSafe(elevator::isAtHeight));
                 NamedCommands.registerCommand("intake", endEffector.autoIntake());
-                NamedCommands.registerCommand("intake_fast", endEffector.shortCircuitingIntake());
+                NamedCommands.registerCommand("intake_fast", endEffector.shortCircuitingIntake(true));
         }
 
         public Command getAutonomousCommand() {

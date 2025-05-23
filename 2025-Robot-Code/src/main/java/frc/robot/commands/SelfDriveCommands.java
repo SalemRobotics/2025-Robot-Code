@@ -20,14 +20,18 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-
+import frc.robot.FieldConstants;
+import frc.robot.Constants.ElevatorConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.selfdriving.Objective;
 import frc.robot.selfdriving.Quadrant;
+import frc.robot.selfdriving.SelfDriveTarget;
+import frc.robot.selfdriving.SelfDriveTarget.AllianceSide;
 import frc.robot.selfdriving.SelfDriveTarget.CoralStation;
-import frc.robot.selfdriving.SelfDriveTarget.GamePiece;
+import frc.robot.selfdriving.SelfDriveTarget.ReefFace;
 import frc.robot.selfdriving.SelfDriveTarget.CoralStation.IntakePosition;
 import frc.robot.selfdriving.SelfDriving;
+import frc.robot.selfdriving.Objective.CoralObjective;
 import frc.robot.selfdriving.Objective.Intaking;
 import frc.robot.subsystems.AlgaeRemover;
 import frc.robot.subsystems.Drivetrain;
@@ -53,7 +57,8 @@ public final class SelfDriveCommands {
 				startFrom = new Pose2d(proj, startShifting.getRotation());
 			} else
 				startFrom = startShifting;
-			initialDistance = getDistance(actual, targetPose);
+
+			initialDistance = Math.min(getDistance(actual, targetPose), 1.5);
 		}
 
 		/**
@@ -115,8 +120,7 @@ public final class SelfDriveCommands {
 			DoubleSupplier driverRotX,
 			DoubleSupplier driverRotY,
 			DoubleConsumer updateProgress) {
-		final Supplier<Pose2d> robotPose = () -> drive.getState().Pose;
-		final Pose2d startingPose = robotPose.get();
+		final Pose2d startingPose = drive.getPose();
 
 		final ShiftingApproachTarget targetSupplier = new ShiftingApproachTarget(startingPose, startFrom,
 				scoringPose);
@@ -132,7 +136,7 @@ public final class SelfDriveCommands {
 		angleController.enableContinuousInput(-Math.PI, Math.PI);
 
 		Command cmd = Commands.run(() -> {
-			Pose2d robot = robotPose.get();
+			Pose2d robot = drive.getPose();
 			Pose2d target = targetSupplier.getTarget(robot);
 			double progress = 1 - MathUtil.clamp(getDistance(robot, target) / initialDist, 0, 1);
 
@@ -152,13 +156,14 @@ public final class SelfDriveCommands {
 								* TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
 						driverY.getAsDouble()
 								* TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))
-						.times(0.2);
+						.times(0.5);
 
 				direction = direction.plus(manual);
 
 				Rotation2d manualRotation = new Rotation2d(driverRotX.getAsDouble(),
 						driverRotY.getAsDouble())
-						.times(0.15);
+						.times(0.75);
+
 				rotation = rotation.interpolate(manualRotation,
 						MathUtil.clamp((0.75 - progress) / 0.75, 0, 1));
 			}
@@ -177,7 +182,7 @@ public final class SelfDriveCommands {
 		if (initialDist >= 1.5)
 			return Quadrant.fromPose(startingPose)
 					.driveToOther(Quadrant.fromPose(scoringPose), preferTopInRepositioning)
-					.until(() -> getDistance(robotPose.get(), scoringPose) < 1.5).andThen(cmd);
+					.until(() -> getDistance(drive.getPose(), scoringPose) < 1.5).andThen(cmd);
 		else
 			return cmd;
 	}
@@ -190,7 +195,6 @@ public final class SelfDriveCommands {
 			DoubleSupplier driverY,
 			DoubleSupplier driverRotX,
 			DoubleSupplier driverRotY) {
-		Supplier<Pose2d> robotPose = () -> drive.getState().Pose;
 		Pose2d intakePose = station.getLocation();
 
 		final TrapezoidProfile.Constraints pidConstraints = new TrapezoidProfile.Constraints(8, 20);
@@ -201,7 +205,7 @@ public final class SelfDriveCommands {
 
 		return Commands.race(
 				Commands.run(() -> {
-					Pose2d robot = robotPose.get();
+					Pose2d robot = drive.getPose();
 					var progress = getDistance(robot, intakePose);
 
 					double velocityX = alignController.calculate(robot.getX(), intakePose.getX());
@@ -240,13 +244,28 @@ public final class SelfDriveCommands {
 							.withDeadband(0.075);
 
 					drive.setControl(request);
-				}, drive)
-						.until(() -> MathUtil.isNear(0,
-								getDistance(robotPose.get(), intakePose), 0.05)),
-				endEffector.autoIntake())
-				.andThen(endEffector.shortCircuitingIntake());
+				}, drive),
+				endEffector.shortCircuitingIntake(false));
 	}
 
+	/**
+	 * Executes on a {@link frc.robot.selfdriving.Objective.Scoring Scoring Objective} and scores a single game piece 
+	 * @param objective						The objective to accomplish
+	 * @param drive							The robot's drivetrain
+	 * @param endEffector					The robot's end effector
+	 * @param algaeRemover					The robot's algae remover arm
+	 * @param elevator						The robot's elevator
+	 * @param selfDriver					The robot's self driving subsystem
+	 * @param preferTopInRepositioning		Whether or not to travel behind or in front of the reef, from the driver's perspective
+	 * @param startTargetFrom				Where to start a coral score or algae intake projected target from
+	 * @param preferredIntakePosition		
+	 * @param preferredAllianceSide			The preferred alliance side to intake an Algae from
+	 * @param driverX						
+	 * @param driverY
+	 * @param driverRotX
+	 * @param driverRotY
+	 * @return
+	 */
 	public static Command selfDrivingScore(
 			Objective.Scoring objective,
 			Drivetrain drive,
@@ -257,48 +276,83 @@ public final class SelfDriveCommands {
 			boolean preferTopInRepositioning,
 			Pose2d startTargetFrom,
 			IntakePosition preferredIntakePosition,
+			AllianceSide preferredAllianceSide,
 			DoubleSupplier driverX,
 			DoubleSupplier driverY,
 			DoubleSupplier driverRotX,
 			DoubleSupplier driverRotY) {
-		final Supplier<Pose2d> robotPose = () -> drive.getState().Pose;
-		final Optional<Command> intakeBeforeRunning = endEffector.hasCoral() ? Optional.empty()
-				: Optional.of(selfDrivingIntake(
-						Intaking.nearestCoralStationIntake(robotPose.get(),
-								preferredIntakePosition),
-						drive,
-						endEffector,
-						algaeRemover,
-						elevator,
-						preferTopInRepositioning,
-						driverX, driverY,
-						driverRotX, driverRotY));
+		Optional<Command> intakeBeforeRunning = Optional.empty();
 
 		Allocated<Double> progress = new Allocated<>(0d);
 
-		final Command driveCmd = reefApproach(
-				objective.getScoringPose(),
-				drive,
-				preferTopInRepositioning,
-				startTargetFrom,
-				driverX, driverY,
-				driverRotX, driverRotY,
-				progress::set);
+		final Command driveCmd;
+		if (objective instanceof CoralObjective) {
+			if (!endEffector.hasCoral())
+				intakeBeforeRunning = Optional.of(selfDrivingIntake(
+						Intaking.nearestCoralStationIntake(drive.getPose(), preferredIntakePosition), drive,
+						endEffector, algaeRemover, elevator, preferTopInRepositioning, driverX, driverY, driverRotX,
+						driverRotY));
+			driveCmd = reefApproach(
+					objective.getScoringPose(),
+					drive,
+					preferTopInRepositioning,
+					startTargetFrom,
+					driverX, driverY,
+					driverRotX, driverRotY,
+					progress::set);
+		} else {
+			if (!endEffector.hasAlgae()) {
+				var intaking = Intaking.nearestBargeIntake(drive.getPose(), preferredAllianceSide);
+				if (intaking.isEmpty())
+					return Commands.runOnce(() -> SelfDriveTarget.State.markAllAlgaeScored());
+				intakeBeforeRunning = Optional.of(selfDrivingIntake(intaking.get(), drive, endEffector, algaeRemover,
+						elevator, preferTopInRepositioning, driverX, driverY, driverRotX, driverRotY));
+			}
+			Allocated<Boolean> startedScore = new Allocated<>(false);
+
+			driveCmd = Quadrant.fromPose(drive.getPose())
+					.driveToOther(Quadrant.Q4, preferTopInRepositioning)
+					.until(() -> getDistance(drive.getPose(),
+							Quadrant.Q4.middle()) <= (preferTopInRepositioning ? 0.25 : 0.75))
+					.andThen(Commands.run(() -> {
+						final var drivePID = new DriveCommands.DriveCommandPID();
+						final Pose2d currentPose = drive.getPose();
+
+						double x = drivePID.getPositionController().calculate(currentPose.getX(),
+								FieldConstants.startingLineX);
+						double y = driverY.getAsDouble();
+						double rot = drivePID.getRotationController().calculate(currentPose.getRotation().getRadians(),
+								Rotation2d.kZero.getRadians());
+
+						final var req = new SwerveRequest.FieldCentric()
+								.withVelocityX(x)
+								.withVelocityY(y)
+								.withRotationalRate(rot);
+
+						drive.setControl(req);
+					}).until(() -> MathUtil.isNear(FieldConstants.startingLineX, drive.getPose().getX(), 0.05)),
+							elevator.setElevatorTarget(ElevatorConstants.kL4Height)
+									.alongWith(Commands.runOnce(() -> startedScore.set(true)),
+											Commands.waitSeconds(0.7).andThen(
+													endEffector.scoreBarge().alongWith(algaeRemover.stowArm()))))
+					.alongWith(algaeRemover.deployArm().until(startedScore::get));
+		}
 
 		Allocated<Boolean> hasScored = new Allocated<>(false);
 
-		final Command cmd = Commands.race(
-				objective.scoringCommand(hasScored, endEffector, algaeRemover, elevator),
-				driveCmd
-						.until(hasScored::get)
-						.finallyDo(() -> drive.setControl(
-								new SwerveRequest.FieldCentric()
-										.withVelocityX(0)
-										.withVelocityY(0)
-										.withRotationalRate(0))));
-
 		return intakeBeforeRunning.orElseGet(Commands::none)
-				.andThen(cmd);
+				.andThen(driveCmd.alongWith(Commands.waitUntil(() -> objective.runScoreCommand(progress.get()))
+						.andThen(objective.scoringCommand(hasScored, endEffector, algaeRemover, elevator))))
+				.finallyDo(objective.finalizeCommand(endEffector, algaeRemover, elevator)::schedule);
+	}
+
+	private static Command algaeIntakeCommand(SelfDriveTarget target, EndEffector effector, AlgaeRemover remover,
+			Elevator elevator) {
+		if (target instanceof ReefFace face) {
+			return elevator.setElevatorTarget(face.getAlgaeHeight())
+					.alongWith(remover.deployArm(), effector.algaeIntake()).until(effector::hasAlgae);
+		} else
+			return Commands.print("Invalid target type: " + target.getClass().getName());
 	}
 
 	public static Command selfDrivingIntake(
@@ -317,13 +371,11 @@ public final class SelfDriveCommands {
 		var target = objective.getTarget();
 
 		if (target instanceof CoralStation station) {
-			Supplier<Pose2d> robotPose = () -> drive.getState().Pose;
-
 			final Quadrant targetQuad = Quadrant.fromPose(objective.getFeedLocation());
-			final Command reposition = Quadrant.fromPose(robotPose.get()).driveToOther(
+			final Command reposition = Quadrant.fromPose(drive.getPose()).driveToOther(
 					Quadrant.fromPose(objective.getFeedLocation()), preferTopInRepositioning);
 			return reposition
-					.until(() -> getDistance(robotPose.get(), targetQuad.middle()) <= 1)
+					.until(() -> getDistance(drive.getPose(), targetQuad.middle()) <= 1)
 					.andThen(coralStationIntake(station, drive, endEffector, driverX, driverY,
 							driverRotX, driverRotY));
 		} else {
@@ -335,7 +387,9 @@ public final class SelfDriveCommands {
 					objective.getStartingPose(),
 					driverX, driverY,
 					driverRotX, driverRotY,
-					progress::set);
+					progress::set)
+					.alongWith(Commands.waitUntil(() -> progress.get() >= 0.7).andThen(
+							algaeIntakeCommand(objective.getTarget(), endEffector, algaeRemover, elevator)));
 		}
 	}
 }

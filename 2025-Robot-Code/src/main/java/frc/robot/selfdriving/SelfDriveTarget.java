@@ -3,6 +3,7 @@ package frc.robot.selfdriving;
 import static frc.robot.util.Utilities.getDistance;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -89,7 +90,7 @@ public interface SelfDriveTarget {
             }
         }
 
-        private static HashMap<Character, ReefFace> faces = new HashMap<>();
+        public static HashMap<Character, ReefFace> faces = new HashMap<>();
         static {
             int offset = AllianceFlipUtil.shouldFlip() ? 6 : 0;
             int i = 0;
@@ -101,6 +102,11 @@ public interface SelfDriveTarget {
                         FieldConstants.Reef.branchPositions.get(i * 2).get(ReefHeight.L4).toPose2d(),
                         FieldConstants.Reef.branchPositions.get(i * 2 + 1).get(ReefHeight.L4).toPose2d()));
             }
+        }
+
+        public static void markAllAlgaeScored() {
+            for (char c = 'a'; c < 'g'; c++)
+                faces.get(c).setAlgaeStatus(false); 
         }
     }
 
@@ -198,6 +204,13 @@ public interface SelfDriveTarget {
             return hasAlgae;
         }
 
+        public void setAlgaeStatus(boolean available) {
+            var publish = algaeTopic.publish();
+            publish.set(available);
+            publish.close();
+
+            hasAlgae = false;
+        }
         @Override
         public Pose2d getLocation() {
             return centerFace;
@@ -282,4 +295,13 @@ public interface SelfDriveTarget {
     public Pose2d getLocation();
 
     public void updateState();
+
+    public static List<ReefFace> faces = List.of(
+        State.faces.get('a'),
+        State.faces.get('b'),
+        State.faces.get('c'),
+        State.faces.get('d'),
+        State.faces.get('e'),
+        State.faces.get('f')
+    );
 }

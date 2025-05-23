@@ -2,10 +2,12 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.EndEffectorConstants;
 import frc.robot.Constants.OperatorConstants;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -200,6 +202,9 @@ public class EndEffector extends SubsystemBase {
         });
     }
 
+    public boolean hasAlgae() {
+        return !mHasCoral && MathUtil.isNear(0, mEffectorMotor.getVelocity().getValueAsDouble(), 0.05);
+    }
     // getter for mHasCoral
     public boolean hasCoral() {
         return mHasCoral;
@@ -288,8 +293,17 @@ public class EndEffector extends SubsystemBase {
         }
     }
 
-    public Command shortCircuitingIntake() {
-        return Commands.race(Commands.waitSeconds(0.4), Commands.waitUntil(() -> exitDetected()), autoIntake());
+    /**
+     * Creates a command to run coral intake until the robot has a coral
+     * @param withTimeDeadline Whether or not to add a deadline of 0.4 seconds
+     * @return The constructed intake command
+     */
+    public Command shortCircuitingIntake(boolean withTimeDeadline) {
+        ParallelRaceGroup group = new ParallelRaceGroup(Commands.waitUntil(this::exitDetected), autoIntake());
+        if (withTimeDeadline) {
+            group.addCommands(Commands.waitSeconds(0.4));
+        }
+        return group;
     }
     public Command autoPostIntake(Command elevatorl3) {
         return autoIntake().alongWith(Commands.waitUntil(this::exitDetected).andThen(elevatorl3));

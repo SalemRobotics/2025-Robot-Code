@@ -1,9 +1,11 @@
 package frc.robot.selfdriving;
 
+import java.util.Optional;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.FieldConstants;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.selfdriving.SelfDriveTarget.AllianceSide;
@@ -22,8 +24,12 @@ public interface Objective {
     public static interface Scoring extends Objective {
         public Pose2d getScoringPose();
 
+        public boolean runScoreCommand(double progress);
+
         public Command scoringCommand(Allocated<Boolean> marker, EndEffector endEffector, AlgaeRemover remover,
                 Elevator elevator);
+
+        public Command finalizeCommand(EndEffector endEffector, AlgaeRemover remover, Elevator elevator);
 
         public Quadrant targetQuadrant();
 
@@ -66,7 +72,18 @@ public interface Objective {
         public Command scoringCommand(Allocated<Boolean> marker, EndEffector endEffector, AlgaeRemover remover,
                 Elevator elevator) {
             return elevator.setElevatorTarget(height)
-                    .andThen(endEffector.scoreSafe(elevator::isAtHeight));
+                    .andThen(Commands.waitSeconds(0.05), endEffector.scoreSafe(elevator::isAtHeight))
+                    .finallyDo(() -> marker.set(true));
+        }
+
+        @Override
+        public Command finalizeCommand(EndEffector endEffector, AlgaeRemover remover, Elevator elevator) {
+            return elevator.setElevatorTarget(ElevatorConstants.kStowedHeight);
+        }
+
+        @Override
+        public boolean runScoreCommand(double progress) {
+            return progress >= 0.6;
         }
 
         @Override
@@ -84,17 +101,9 @@ public interface Objective {
      * TODO: Other objectives
      * - BargeObjective extends Scoring - barges an algae
      * - L1Objective extends Scoring - scores once on L1
-     * - SuperCycleObjective extends Scoring - grabs an algae from the reef then
+     * MAYBE: - SuperCycleObjective extends Scoring - grabs an algae from the reef then
      * scores on a reef pole
      * Equal to: [Drive up to reef, AlgaeObjective, CoralObjective]
-     * - L1IntakeObjective extends Intaking - gets a coral to score on L1 with
-     * - IceCreamCoralObjective extends Intaking - grabs the coral from the best
-     * determined icecream
-     * - IceCreamAlgaeObjective extends Intaking - grabs an algae from the best
-     * icecream
-     * - CoralStationObjective extends Intaking - intakes a coral from the coral
-     * station (waits until coral is first detected)
-     * - AlgaeObjective extends Intaking - grabs an algae from the reef
      */
 
     public static class Intaking implements Objective {
@@ -145,8 +154,14 @@ public interface Objective {
                     (pose.getY() < FieldConstants.fieldWidth / 2) ? AllianceSide.Right : AllianceSide.Left, position));
         }
 
-        public static Intaking nearestBargeIntake(Pose2d pose, AllianceSide sidePreference) {
-            throw new UnsupportedOperationException("Unimplemented method 'nearestBargeIntake'");
+        public static Optional<Intaking> nearestBargeIntake(Pose2d pose, AllianceSide sidePreference) {
+            for (int face = sidePreference == AllianceSide.Left ? 0 : 3, times = 0; times < 6; face = ++face % 6, times++) {
+                ReefFace reefFace = SelfDriveTarget.faces.get(face);
+                if (reefFace.getAlgaeStatus())
+                    return Optional.of(Intaking.create(reefFace));
+            }
+
+            return Optional.empty();
         }
     }
 }

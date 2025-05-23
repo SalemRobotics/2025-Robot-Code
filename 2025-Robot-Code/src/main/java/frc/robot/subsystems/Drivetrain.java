@@ -380,4 +380,8 @@ private void ConfigureAutoBuilder(){
         PathPlannerPath path = new PathPlannerPath(waypoints, constraints, null, new GoalEndState(0.0, getState().Pose.getRotation()));
         return AutoBuilder.followPath(path);
     }
+
+    public Pose2d getPose() {
+        return getState().Pose;
+    }
 }

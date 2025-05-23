@@ -93,7 +93,7 @@ public class AutoAlignCommands {
 
 		return Commands.run(
 				() -> { // Command
-					Translation2d currentTranslation = drive.getState().Pose.getTranslation();
+					Translation2d currentTranslation = drive.getPose().getTranslation();
 					Translation2d approachTranslation = approachSupplier.get().getTranslation();
 					double distanceToApproach = currentTranslation.getDistance(approachTranslation);
 
@@ -122,7 +122,7 @@ public class AutoAlignCommands {
 							.plus(offsetVector);
 
 					double omega = angleController
-							.calculate(drive.getState().Pose.getRotation().getRadians(),
+							.calculate(drive.getPose().getRotation().getRadians(),
 									approachSupplier.get().getRotation()
 											.rotateBy(Rotation2d.k180deg)
 											.getRadians());
@@ -137,7 +137,7 @@ public class AutoAlignCommands {
 					drive.setControl(request.withSpeeds(speeds));
 				},
 				drive // Requirements
-		).beforeStarting(() -> angleController.reset(drive.getState().Pose.getRotation().getRadians()));
+		).beforeStarting(() -> angleController.reset(drive.getPose().getRotation().getRadians()));
 	}
 
 	public static Command selfdriveApproach(Drivetrain drive, Pose2d target) {
