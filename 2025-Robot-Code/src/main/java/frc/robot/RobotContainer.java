@@ -9,9 +9,11 @@ import static edu.wpi.first.units.Units.*;
 
 import frc.robot.FieldConstants.ReefSide;
 import frc.robot.commands.AutoAlignCommands;
+import frc.robot.commands.SelfDriveCommands;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.generated.Telemetry;
 import frc.robot.generated.TunerConstants;
+import frc.robot.selfdriving.SelfDriving;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
 import frc.robot.subsystems.Vision;
@@ -69,6 +71,7 @@ public class RobotContainer {
         private final Elevator elevator = new Elevator();
         private final AlgaeRemover algaeRemover = new AlgaeRemover();
         private final Climber climber = new Climber();
+        private final SelfDriving selfdrive = new SelfDriving();
 
         private final Field2d field = new Field2d();
 
@@ -223,6 +226,10 @@ public class RobotContainer {
                                 .onFalse(Commands.runOnce(() -> mBargeMode = false));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
+
+
+                operatorController.povUp().onTrue(selfdrive.nearestCoralStationIntake(drivetrain, endEffector, algaeRemover, elevator, driverController));
+                operatorController.povDown().onTrue(selfdrive.nearestCoralScore(drivetrain, endEffector, algaeRemover, elevator, driverController));
         }
 
         private void configureNamedCommands() {

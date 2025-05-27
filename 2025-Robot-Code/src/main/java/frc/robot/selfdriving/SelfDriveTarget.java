@@ -90,7 +90,7 @@ public interface SelfDriveTarget {
             }
         }
 
-        public static HashMap<Character, ReefFace> faces = new HashMap<>();
+        public static final HashMap<Character, ReefFace> faces = new HashMap<>();
         static {
             int offset = AllianceFlipUtil.shouldFlip() ? 6 : 0;
             int i = 0;
@@ -111,6 +111,14 @@ public interface SelfDriveTarget {
     }
 
     public static class ReefPole implements SelfDriveTarget {
+        private static final ReefPole[] poles = new ReefPole[12];
+        static {
+            for (int idx = 0; idx < 6; idx++) {
+                poles[idx * 2] = faces.get(idx).getLeftPole();
+                poles[idx * 2 + 1] = faces.get(idx).getRightPole();
+            }
+        }
+        
         private final Pose2d position;
         private final ReefFace face;
         private final NetworkTable table;
@@ -158,10 +166,26 @@ public interface SelfDriveTarget {
                 return false;
             }
         }
+    
+        public static ReefPole nearestTo(Pose2d pose) {
+            ReefPole nearest = poles[0];
+            double lastDist = Double.MAX_VALUE;
+
+            for (ReefPole pole : poles) {
+                final double dist = getDistance(pose, pole.getLocation());
+                if (dist < lastDist) {
+                    nearest = pole;
+                    lastDist = dist;
+                }
+            }
+
+            return nearest;
+        }
     }
 
     public static class ReefFace implements SelfDriveTarget {
         private static final ReefFace[] faces = new ReefFace[6];
+
         static {
             for (int i = 0; i < 6; i++)
                 faces[i] = new ReefFace(

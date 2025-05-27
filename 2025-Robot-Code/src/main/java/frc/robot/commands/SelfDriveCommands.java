@@ -1,12 +1,13 @@
 package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.util.Utilities.getDistance;
 
 import java.util.Optional;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -22,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.FieldConstants;
 import frc.robot.Constants.ElevatorConstants;
+import frc.robot.commands.DriveCommands.DriveCommandPID;
 import frc.robot.generated.TunerConstants;
 import frc.robot.selfdriving.Objective;
 import frc.robot.selfdriving.Quadrant;
@@ -40,7 +42,14 @@ import frc.robot.subsystems.EndEffector;
 import frc.robot.util.Allocated;
 
 public final class SelfDriveCommands {
-	private static class ShiftingApproachTarget {
+	// TODO: TUNE THESE
+	private static final DriveCommandPID SELF_DRIVE_PID = new DriveCommandPID()
+			.withPositionConstants(2, 0, 1)
+			.withRotationConstants(2, 0, 1);
+	private static final double MAX_ANGULAR_RATE = RotationsPerSecond.of(.75).in(RadiansPerSecond);
+	private static final double MAX_SPEED = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+
+	private static final class ShiftingApproachTarget {
 		private final Pose2d targetPose;
 		private final Pose2d startFrom;
 		private final double initialDistance;
@@ -117,8 +126,7 @@ public final class SelfDriveCommands {
 			Pose2d startFrom,
 			DoubleSupplier driverX,
 			DoubleSupplier driverY,
-			DoubleSupplier driverRotX,
-			DoubleSupplier driverRotY,
+			DoubleSupplier driverRot,
 			DoubleConsumer updateProgress) {
 		final Pose2d startingPose = drive.getPose();
 
@@ -144,36 +152,27 @@ public final class SelfDriveCommands {
 
 			double velocityX = poseController.calculate(robot.getX(), scoringPose.getX());
 			double velocityY = poseController.calculate(robot.getY(), scoringPose.getY());
-			Rotation2d rotation = new Rotation2d(angleController.calculate(robot.getRotation().getRadians(),
-					scoringPose.getRotation().getRadians()));
+			double rotation = angleController.calculate(robot.getRotation().getRadians(), target.getRotation().getRadians());
 
 			final double scale = Math.hypot(velocityX, velocityY);
 			Translation2d direction = target.getTranslation().minus(robot.getTranslation());
 
 			if (progress < 0.8) {
 				Translation2d manual = new Translation2d(
-						driverX.getAsDouble()
-								* TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
-						driverY.getAsDouble()
-								* TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))
+						driverX.getAsDouble() * MAX_SPEED,
+						driverY.getAsDouble() * MAX_SPEED)
 						.times(0.5);
 
 				direction = direction.plus(manual);
 
-				Rotation2d manualRotation = new Rotation2d(driverRotX.getAsDouble(),
-						driverRotY.getAsDouble())
-						.times(0.75);
-
-				rotation = rotation.interpolate(manualRotation,
-						MathUtil.clamp((0.75 - progress) / 0.75, 0, 1));
+				
+				rotation = rotation + (driverRot.getAsDouble() * MAX_ANGULAR_RATE);
 			}
-
-			double angular = rotation.getRadians();
 
 			SwerveRequest request = new SwerveRequest.FieldCentric()
 					.withVelocityX(direction.getX() * scale)
 					.withVelocityY(direction.getY() * scale)
-					.withRotationalRate(angular)
+					.withRotationalRate(rotation)
 					.withDeadband(0.075);
 
 			drive.setControl(request);
@@ -193,77 +192,34 @@ public final class SelfDriveCommands {
 			EndEffector endEffector,
 			DoubleSupplier driverX,
 			DoubleSupplier driverY,
-			DoubleSupplier driverRotX,
-			DoubleSupplier driverRotY) {
+			DoubleSupplier driverRot) {
 		Pose2d intakePose = station.getLocation();
 
-		final TrapezoidProfile.Constraints pidConstraints = new TrapezoidProfile.Constraints(8, 20);
-		final ProfiledPIDController alignController = new ProfiledPIDController(5, 0, 0.5, pidConstraints);
-		final ProfiledPIDController angleController = new ProfiledPIDController(2, 0, 0.1, pidConstraints);
-		angleController.enableContinuousInput(-Math.PI, Math.PI);
-		angleController.setTolerance(Units.degreesToRadians(5));
-
 		return Commands.race(
-				Commands.run(() -> {
-					Pose2d robot = drive.getPose();
-					var progress = getDistance(robot, intakePose);
-
-					double velocityX = alignController.calculate(robot.getX(), intakePose.getX());
-					double velocityY = alignController.calculate(robot.getY(), intakePose.getY());
-					Rotation2d rotation = new Rotation2d(
-							angleController.calculate(robot.getRotation().getRadians(),
-									intakePose.getRotation().getRadians()));
-
-					final double scale = Math.hypot(velocityX, velocityY);
-					Translation2d direction = intakePose.getTranslation()
-							.minus(robot.getTranslation());
-
-					if (progress < 0.75) {
-						Translation2d manual = new Translation2d(
-								driverX.getAsDouble() * TunerConstants.kSpeedAt12Volts
-										.in(MetersPerSecond),
-								driverY.getAsDouble() * TunerConstants.kSpeedAt12Volts
-										.in(MetersPerSecond))
-								.times(0.2);
-
-						direction = direction.plus(manual);
-
-						Rotation2d manualRotation = new Rotation2d(driverRotX.getAsDouble(),
-								driverRotY.getAsDouble())
-								.times(0.15);
-						rotation = rotation.interpolate(manualRotation,
-								MathUtil.clamp((0.75 - progress) / 0.75, 0, 1));
-					}
-
-					double angular = rotation.getRadians();
-
-					SwerveRequest request = new SwerveRequest.FieldCentric()
-							.withVelocityX(direction.getX() * scale)
-							.withVelocityY(direction.getY() * scale)
-							.withRotationalRate(angular)
-							.withDeadband(0.075);
-
-					drive.setControl(request);
-				}, drive),
+				DriveCommands.straightTowards(drive, () -> intakePose, SELF_DRIVE_PID),
 				endEffector.shortCircuitingIntake(false));
 	}
 
 	/**
-	 * Executes on a {@link frc.robot.selfdriving.Objective.Scoring Scoring Objective} and scores a single game piece 
-	 * @param objective						The objective to accomplish
-	 * @param drive							The robot's drivetrain
-	 * @param endEffector					The robot's end effector
-	 * @param algaeRemover					The robot's algae remover arm
-	 * @param elevator						The robot's elevator
-	 * @param selfDriver					The robot's self driving subsystem
-	 * @param preferTopInRepositioning		Whether or not to travel behind or in front of the reef, from the driver's perspective
-	 * @param startTargetFrom				Where to start a coral score or algae intake projected target from
-	 * @param preferredIntakePosition		
-	 * @param preferredAllianceSide			The preferred alliance side to intake an Algae from
-	 * @param driverX						
-	 * @param driverY
-	 * @param driverRotX
-	 * @param driverRotY
+	 * Executes on a {@link frc.robot.selfdriving.Objective.Scoring Scoring
+	 * Objective} and scores a single game piece
+	 * 
+	 * @param objective                The objective to accomplish
+	 * @param drive                    The robot's drivetrain
+	 * @param endEffector              The robot's end effector
+	 * @param algaeRemover             The robot's algae remover arm
+	 * @param elevator                 The robot's elevator
+	 * @param selfDriver               The robot's self driving subsystem
+	 * @param preferTopInRepositioning Whether or not to travel behind or in front
+	 *                                 of the reef, from the driver's perspective
+	 * @param startTargetFrom          Where to start a coral score or algae intake
+	 *                                 projected target from
+	 * @param preferredIntakePosition
+	 * @param preferredAllianceSide    The preferred alliance side to intake an
+	 *                                 Algae from
+	 * @param driverX					Driver override in the X direction (away from drivestation)
+	 * @param driverY					Driver override in the Y direction (size to side)
+	 * @param driverRot					Driver override for rotation
 	 * @return
 	 */
 	public static Command selfDrivingScore(
@@ -272,15 +228,13 @@ public final class SelfDriveCommands {
 			EndEffector endEffector,
 			AlgaeRemover algaeRemover,
 			Elevator elevator,
-			SelfDriving selfDriver,
 			boolean preferTopInRepositioning,
 			Pose2d startTargetFrom,
 			IntakePosition preferredIntakePosition,
 			AllianceSide preferredAllianceSide,
 			DoubleSupplier driverX,
 			DoubleSupplier driverY,
-			DoubleSupplier driverRotX,
-			DoubleSupplier driverRotY) {
+			DoubleSupplier driverRot) {
 		Optional<Command> intakeBeforeRunning = Optional.empty();
 
 		Allocated<Double> progress = new Allocated<>(0d);
@@ -290,15 +244,14 @@ public final class SelfDriveCommands {
 			if (!endEffector.hasCoral())
 				intakeBeforeRunning = Optional.of(selfDrivingIntake(
 						Intaking.nearestCoralStationIntake(drive.getPose(), preferredIntakePosition), drive,
-						endEffector, algaeRemover, elevator, preferTopInRepositioning, driverX, driverY, driverRotX,
-						driverRotY));
+						endEffector, algaeRemover, elevator, preferTopInRepositioning, driverX, driverY, driverRot));
 			driveCmd = reefApproach(
 					objective.getScoringPose(),
 					drive,
 					preferTopInRepositioning,
 					startTargetFrom,
 					driverX, driverY,
-					driverRotX, driverRotY,
+					driverRot,
 					progress::set);
 		} else {
 			if (!endEffector.hasAlgae()) {
@@ -306,7 +259,7 @@ public final class SelfDriveCommands {
 				if (intaking.isEmpty())
 					return Commands.runOnce(() -> SelfDriveTarget.State.markAllAlgaeScored());
 				intakeBeforeRunning = Optional.of(selfDrivingIntake(intaking.get(), drive, endEffector, algaeRemover,
-						elevator, preferTopInRepositioning, driverX, driverY, driverRotX, driverRotY));
+						elevator, preferTopInRepositioning, driverX, driverY, driverRot));
 			}
 			Allocated<Boolean> startedScore = new Allocated<>(false);
 
@@ -330,7 +283,7 @@ public final class SelfDriveCommands {
 								.withRotationalRate(rot);
 
 						drive.setControl(req);
-					}).until(() -> MathUtil.isNear(FieldConstants.startingLineX, drive.getPose().getX(), 0.05)),
+					}, drive).until(() -> MathUtil.isNear(FieldConstants.startingLineX, drive.getPose().getX(), 0.05)),
 							elevator.setElevatorTarget(ElevatorConstants.kL4Height)
 									.alongWith(Commands.runOnce(() -> startedScore.set(true)),
 											Commands.waitSeconds(0.7).andThen(
@@ -343,7 +296,7 @@ public final class SelfDriveCommands {
 		return intakeBeforeRunning.orElseGet(Commands::none)
 				.andThen(driveCmd.alongWith(Commands.waitUntil(() -> objective.runScoreCommand(progress.get()))
 						.andThen(objective.scoringCommand(hasScored, endEffector, algaeRemover, elevator))))
-				.finallyDo(objective.finalizeCommand(endEffector, algaeRemover, elevator)::schedule);
+				.andThen(objective.finalizeCommand(drive, endEffector, algaeRemover, elevator));
 	}
 
 	private static Command algaeIntakeCommand(SelfDriveTarget target, EndEffector effector, AlgaeRemover remover,
@@ -364,8 +317,7 @@ public final class SelfDriveCommands {
 			boolean preferTopInRepositioning,
 			DoubleSupplier driverX,
 			DoubleSupplier driverY,
-			DoubleSupplier driverRotX,
-			DoubleSupplier driverRotY) {
+			DoubleSupplier driverRot) {
 		Allocated<Double> progress = new Allocated<>(0d);
 
 		var target = objective.getTarget();
@@ -377,7 +329,7 @@ public final class SelfDriveCommands {
 			return reposition
 					.until(() -> getDistance(drive.getPose(), targetQuad.middle()) <= 1)
 					.andThen(coralStationIntake(station, drive, endEffector, driverX, driverY,
-							driverRotX, driverRotY));
+							driverRot));
 		} else {
 			// we know as an invariant that this has to be an algae target
 			return reefApproach(
@@ -386,7 +338,7 @@ public final class SelfDriveCommands {
 					preferTopInRepositioning,
 					objective.getStartingPose(),
 					driverX, driverY,
-					driverRotX, driverRotY,
+					driverRot,
 					progress::set)
 					.alongWith(Commands.waitUntil(() -> progress.get() >= 0.7).andThen(
 							algaeIntakeCommand(objective.getTarget(), endEffector, algaeRemover, elevator)));

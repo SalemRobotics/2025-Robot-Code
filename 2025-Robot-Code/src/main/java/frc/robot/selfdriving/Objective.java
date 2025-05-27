@@ -2,18 +2,23 @@ package frc.robot.selfdriving;
 
 import java.util.Optional;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.FieldConstants;
 import frc.robot.Constants.ElevatorConstants;
+import frc.robot.FieldConstants.ReefHeight;
 import frc.robot.selfdriving.SelfDriveTarget.AllianceSide;
 import frc.robot.selfdriving.SelfDriveTarget.CoralStation;
 import frc.robot.selfdriving.SelfDriveTarget.GamePiece;
 import frc.robot.selfdriving.SelfDriveTarget.ReefFace;
+import frc.robot.selfdriving.SelfDriveTarget.ReefPole;
 import frc.robot.selfdriving.SelfDriveTarget.CoralStation.IntakePosition;
 import frc.robot.subsystems.AlgaeRemover;
+import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
 import frc.robot.util.AllianceFlipUtil;
@@ -29,19 +34,25 @@ public interface Objective {
         public Command scoringCommand(Allocated<Boolean> marker, EndEffector endEffector, AlgaeRemover remover,
                 Elevator elevator);
 
-        public Command finalizeCommand(EndEffector endEffector, AlgaeRemover remover, Elevator elevator);
+        public Command finalizeCommand(Drivetrain drive, EndEffector endEffector, AlgaeRemover remover, Elevator elevator);
 
         public Quadrant targetQuadrant();
 
         public boolean hasCompleted();
+
+        public static Scoring nearestCoralPole(Pose2d from, int height) {
+            return new CoralObjective(ReefPole.nearestTo(from), height);
+        }
     }
 
     public static class CoralObjective implements Scoring {
-        private final Pose2d reefPole;
+        private static final SwerveRequest MOVE_BACK_REQUEST = new SwerveRequest.RobotCentric().withVelocityX(-0.75);
+        
+        private final ReefPole reefPole;
         private boolean hasScored;
         private final double height;
 
-        public CoralObjective(Pose2d pole, int level) {
+        public CoralObjective(ReefPole pole, int level) {
             reefPole = pole;
             switch (level) {
                 case 1:
@@ -65,7 +76,7 @@ public interface Objective {
 
         @Override
         public Pose2d getScoringPose() {
-            return reefPole;
+            return reefPole.getLocation();
         }
 
         @Override
@@ -77,8 +88,12 @@ public interface Objective {
         }
 
         @Override
-        public Command finalizeCommand(EndEffector endEffector, AlgaeRemover remover, Elevator elevator) {
-            return elevator.setElevatorTarget(ElevatorConstants.kStowedHeight);
+        public Command finalizeCommand(Drivetrain drive, EndEffector endEffector, AlgaeRemover remover, Elevator elevator) {
+            return Commands.race(
+                Commands.waitSeconds(0.4),
+                drive.applyRequest(() -> MOVE_BACK_REQUEST),
+                elevator.setElevatorTarget(height)
+            );
         }
 
         @Override
@@ -88,7 +103,7 @@ public interface Objective {
 
         @Override
         public Quadrant targetQuadrant() {
-            return Quadrant.fromPose(reefPole);
+            return Quadrant.fromPose(reefPole.getLocation());
         }
 
         @Override
