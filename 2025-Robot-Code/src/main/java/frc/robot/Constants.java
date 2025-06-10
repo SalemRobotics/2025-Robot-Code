@@ -45,7 +45,7 @@ public final class Constants {
     // Height setpoints
     public static final double kStowedHeight = 0;
     public static final double kL1Height = 0.9;
-    public static final double kL2Height = 1.67;
+    public static final double kL2Height = 1.73;
     public static final double kL3Height = 2.82;
     public static final double kL4Height = 4.67;
     public static final double kLowAlgaeHeight = 0.35;
@@ -108,8 +108,8 @@ public final class Constants {
   }
 
   public static class VisionConstants {
-    public static String kCamera1Name = "Left";
-    public static String kCamera2Name = "Right";
+    public static final String kCamera1Name = "Left";
+    public static final String kCamera2Name = "Right";
 
     public static final Transform3d kRobotToCam1 =
       new Transform3d(
@@ -137,11 +137,11 @@ public final class Constants {
 
     public static final double kFastEjectSpeed = 0.9;
     public static final double kAutoEjectSpeed = 1;
-    public static final double kDefaultEjectSpeed = 0.2;
-    public static final double kL1EjectSpeed = 0.3;
+    public static final double kSlowEjectSpeed = 0.2;
+    public static final double kBloopSpeed = 0.3;
+
     public static final double kAlgaeBargeSpeed = 1;
     public static final double kAlgaeProcessorSpeed = 0.3;
-    public static final double kBloopSpeed = -0.3;
 
     public static final double kIdleSpeed = 0.25;
     public static final double kIntakeSpeed = 0.125;

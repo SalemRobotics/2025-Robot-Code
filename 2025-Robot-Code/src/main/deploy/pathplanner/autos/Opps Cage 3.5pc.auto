@@ -69,6 +69,12 @@
           "data": {
             "pathName": "CL to Coral1"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake_fast"
+          }
         }
       ]
     }

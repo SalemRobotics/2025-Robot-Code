@@ -66,6 +66,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final CommandXboxController mControllerToRumble;
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
+    private double BARGE_X_POSITION = AllianceFlipUtil.applyX(7.1);
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -312,6 +313,14 @@ private void ConfigureAutoBuilder(){
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+
+        if (DriverStation.isEnabled()) {
+            SmartDashboard.putBoolean("Near Barge X", MathUtil.isNear(
+                BARGE_X_POSITION, getState().Pose.getX(), 0.05
+            ));
+        } else {
+            SmartDashboard.putBoolean("Near Barge X", false);
+        }
     }
 
     private void startSimThread() {
@@ -366,16 +375,16 @@ private void ConfigureAutoBuilder(){
     public Command L1Move(BooleanSupplier isRight) {
         SwerveRequest.RobotCentric request = new SwerveRequest.RobotCentric();
         return run(() -> {
-            setControl(request.withVelocityY(isRight.getAsBoolean()? -DriveConstants.kL1Speed: DriveConstants.kL1Speed));
+            setControl(request.withVelocityY(isRight.getAsBoolean() ? -DriveConstants.kL1Speed: DriveConstants.kL1Speed));
         });
     }
 
-    public Command AlignAuto(SendableChooser<PathPlannerAuto> autoChooser) {
+    public Command navigateToAuto(SendableChooser<PathPlannerAuto> autoChooser) {
         List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
         getState().Pose,
         autoChooser.getSelected().getStartingPose());
 
-        PathConstraints constraints = new PathConstraints(1.0, 1.0, Math.PI, Math.PI);
+        PathConstraints constraints = new PathConstraints(0.5, 0.5, Math.PI, Math.PI);
 
         PathPlannerPath path = new PathPlannerPath(waypoints, constraints, null, new GoalEndState(0.0, getState().Pose.getRotation()));
         return AutoBuilder.followPath(path);

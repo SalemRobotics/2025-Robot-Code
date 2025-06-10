@@ -20,11 +20,13 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.path.PathPlannerPath;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -38,6 +40,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.net.WebServer;
 
+import java.util.List;
 import java.util.function.Supplier;
 import java.nio.file.Paths;
 import java.lang.Math;
@@ -63,7 +66,8 @@ public class RobotContainer {
         private final CommandXboxController operatorController = new CommandXboxController(1);
 
         private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain(driverController);
-        private final EndEffector endEffector = new EndEffector(driverController, () -> SmartDashboard.getBoolean("Rumbling?", false));
+        private final EndEffector endEffector = new EndEffector(driverController,
+                        () -> SmartDashboard.getBoolean("Rumbling?", false));
         private final Vision vision = new Vision();
         private final Elevator elevator = new Elevator();
         private final AlgaeRemover algaeRemover = new AlgaeRemover();
@@ -95,12 +99,13 @@ public class RobotContainer {
                 autoChooser.addOption("Tush Push", new PathPlannerAuto("Tush Push"));
                 autoChooser.addOption("Evil Auto", new PathPlannerAuto("Evil Algae Yoink"));
                 autoChooser.addOption("Own Cage Sprint", new PathPlannerAuto("Own Cage Reef Back"));
+                autoChooser.addOption("Algae Test", new PathPlannerAuto("Algae Test"));
 
                 SmartDashboard.putData("Auto Chooser", autoChooser);
                 SmartDashboard.putString("Aligned X", "Unknown (in initialization)");
                 SmartDashboard.putString("Aligned Y", "Unknown (in initialization)");
                 SmartDashboard.putBoolean("L1 Direction", true);
-                SmartDashboard.putData("Align Auto", drivetrain.AlignAuto(autoChooser));
+                SmartDashboard.putData("Align Auto", drivetrain.navigateToAuto(autoChooser));
 
                 DriverStation.silenceJoystickConnectionWarning(true);
         }
@@ -119,7 +124,7 @@ public class RobotContainer {
 
         private void configureBindings() {
                 driverController.rightTrigger().and(isBargeMode.negate())
-                                .whileTrue(endEffector.scoreCoral(driverController.y()));
+                                .whileTrue(endEffector.teleScoreCoral(driverController.y()));
                 driverController.rightTrigger().and(isBargeMode).and(elevator.kIsStowed.negate())
                                 .whileTrue(endEffector.scoreBarge().alongWith(algaeRemover.stowArm()));
                 driverController.rightTrigger().and(isBargeMode).and(elevator.kIsStowed)
@@ -160,16 +165,17 @@ public class RobotContainer {
                                 .onFalse(climber.stopMotor());
                 operatorController.y().whileTrue(climber.declimb()).onFalse(climber.stopMotor());
 
-                driverController.a().and(isBargeMode.negate())
-                                .whileTrue(endEffector.scoreBloop());
-                
-                
-                /*.whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height)
-                                                .alongWith(Commands.waitSeconds(0.3)
-                                                                .andThen(endEffector.scoreL1())
-                                                                .alongWith(Commands.waitSeconds(0.1)
-                                                                                .andThen(L1MoveCommand())))) 
-                                .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));*/
+                // driverController.a().and(isBargeMode.negate())
+                // .whileTrue(endEffector.scoreBloop());
+
+                /*
+                 * .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL1Height)
+                 * .alongWith(Commands.waitSeconds(0.3)
+                 * .andThen(endEffector.scoreL1())
+                 * .alongWith(Commands.waitSeconds(0.1)
+                 * .andThen(L1MoveCommand()))))
+                 * .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
+                 */
                 driverController.x().and(isBargeMode.negate())
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL2Height))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
@@ -188,7 +194,7 @@ public class RobotContainer {
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
                 driverController.y().and(isBargeMode)
                                 .whileTrue(elevator.setElevatorTarget(ElevatorConstants.kL4Height)
-                                                .alongWith(Commands.waitSeconds(0.7)
+                                                .alongWith(Commands.waitSeconds(0.6)
                                                                 .andThen(endEffector.scoreBarge()
                                                                                 .alongWith(algaeRemover.stowArm()))))
                                 .onFalse(elevator.setElevatorTarget(ElevatorConstants.kStowedHeight));
@@ -204,6 +210,8 @@ public class RobotContainer {
                 // .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
                 // driverController.start().and(driverController.x())
                 // .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+                driverController.povUp().whileTrue(drivetrain.applyRequest(() -> brake));
 
                 // reset the field-centric heading on start button press
                 driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
@@ -309,5 +317,13 @@ public class RobotContainer {
 
         private Command joystickApproach(Supplier<Pose2d> approachPose) {
                 return DriveCommands.joystickApproach(drivetrain, () -> driverController.getLeftY(), approachPose);
+        }
+
+        public void configDriveSpeed(boolean inTest) {
+                if (inTest) {
+                        MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) / 4;
+                } else {
+                        MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+                }
         }
 }

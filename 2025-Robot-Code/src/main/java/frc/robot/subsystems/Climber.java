@@ -31,22 +31,30 @@ public class Climber extends SubsystemBase {
             System.err.println("Failed to configure elevator motors: " + status.toString());
     }
 
+    /**
+     * Draws the barb back in, pulling the robot up
+     * @return
+     */
     public Command climb() {
         return runOnce(() -> {
             mClimberMotor.set(.75);
         });
     }
 
+    /**
+     * Pushes the barb out and lowers the robot.
+     * @return
+     */
     public Command declimb() {
         return runOnce(() -> {
-            mServo.setAngle(120);
+            mServo.setAngle(100);
             mClimberMotor.set(-0.75);
         });
     }
     public Command stopMotor() {
         return runOnce(() -> {
             mClimberMotor.stopMotor();
-            mServo.setAngle(75);
+            mServo.setAngle(50);
         });
     }
 }

@@ -11,6 +11,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -42,6 +43,7 @@ public class Elevator extends SubsystemBase {
                 .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(ElevatorConstants.kMaxJerk));
 
         Slot0Configs slot0 = mConfig.Slot0;
+        slot0.withGravityType(GravityTypeValue.Elevator_Static);
         slot0.kS = ElevatorConstants.kS;
         slot0.kV = ElevatorConstants.kV;
         slot0.kA = ElevatorConstants.kA;

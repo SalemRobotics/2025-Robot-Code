@@ -7,19 +7,24 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.EndEffectorConstants;
 import frc.robot.Constants.OperatorConstants;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+
 import static edu.wpi.first.units.Units.Amps;
 
-import java.util.function.BooleanSupplier;
 import java.lang.Runnable;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.TorqueCurrentFOC;
+import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -28,7 +33,10 @@ public class EndEffector extends SubsystemBase {
     private final DigitalInput mExitLineBreaker = new DigitalInput(EndEffectorConstants.kExitBreakerPort);
     private final TalonFX mEffectorMotor = new TalonFX(EndEffectorConstants.kMotorPort, "rio");
 
-    private final TorqueCurrentFOC mAlgaeCurrent = new TorqueCurrentFOC(Amps.of(20));
+    static {
+
+    }
+    private final DutyCycleOut mAlgaeControl = new DutyCycleOut(EndEffectorConstants.kIdleSpeed).withEnableFOC(true);
 
     private boolean mCoralInPosition = false;
     private boolean mHasCoral = false;
@@ -45,9 +53,9 @@ public class EndEffector extends SubsystemBase {
             && !mFirstDetectedRumbleTimer.hasElapsed(0.5) && mFirstTime && mRumbleEnabled.getAsBoolean());
 
     public EndEffector(CommandXboxController controller, BooleanSupplier rumbleEnabled) {
-        TalonFXConfiguration config = new TalonFXConfiguration();
-        config.CurrentLimits.withSupplyCurrentLimit(70);
-        config.CurrentLimits.withStatorCurrentLimit(120);
+        final TalonFXConfiguration config = new TalonFXConfiguration();
+        config.CurrentLimits.withSupplyCurrentLimit(120);
+        config.CurrentLimits.withStatorCurrentLimit(70);
 
         StatusCode status = StatusCode.StatusCodeNotInitialized;
         for (int i = 0; i < 5; i++) {
@@ -76,6 +84,7 @@ public class EndEffector extends SubsystemBase {
     public void periodic() {
         SmartDashboard.putBoolean("Entrance", entranceDetected());
         SmartDashboard.putBoolean("Exit", exitDetected());
+        SmartDashboard.putBoolean("Has Algae", hasAlgae());
 
         if (mCoralInPosition)
             mInPositionRumbleTimer.start();
@@ -93,8 +102,7 @@ public class EndEffector extends SubsystemBase {
 
     public Command algaeIntake() {
         return runOnce(() -> {
-            mEffectorMotor.set(EndEffectorConstants.kIdleSpeed);
-            mEffectorMotor.setControl(mAlgaeCurrent);
+            mEffectorMotor.setControl(mAlgaeControl);
         });
     }
 
@@ -238,52 +246,99 @@ public class EndEffector extends SubsystemBase {
     }
 
     // getter for mCoralInPosition
-    public boolean coralInPosition() {
+    public boolean hasCoralInPosition() {
         return mCoralInPosition;
     }
 
-    public boolean entranceDetected() {
+    private boolean entranceDetected() {
         return !mEntranceLineBreaker.get();
     }
 
-    public boolean exitDetected() {
+    private boolean exitDetected() {
         return !mExitLineBreaker.get();
     }
 
+    public boolean hasAlgae() {
+        return DriverStation.isEnabled() && !mHasCoral && MathUtil.isNear(0, mEffectorMotor.getVelocity().getValueAsDouble(), 0.05);
+    }
+
+    /**
+     * Scores a coral given whether or not it is in auto, or the level in teleop
+     * @param inAuto
+     * @param level
+     * @return
+     */
+    public Command scoreCoral(boolean inAuto, int level) {
+        final Function<Runnable, Command> commandFn = inAuto ? this::runOnce : this::run;
+
+        return commandFn.apply(() -> {
+            mHasCoral = false;
+            mCoralInPosition = false;
+            mFirstTime = true;
+
+            double speed;
+
+            if (inAuto) speed = EndEffectorConstants.kAutoEjectSpeed;
+            else switch (level) {
+                case 4: 
+                    speed = EndEffectorConstants.kFastEjectSpeed;
+                    break;
+                case 3:
+                case 2: 
+                    speed = EndEffectorConstants.kSlowEjectSpeed;
+                    break;
+                case 1:
+                    speed = -EndEffectorConstants.kBloopSpeed;
+                    break;
+                default: 
+                    speed = EndEffectorConstants.kIdleSpeed;
+                    break;
+            }
+
+            mEffectorMotor.set(speed);
+        });
+    }
+
+    /**
+     * @deprecated This command has been deprecated in favor of {@link #scoreCoral(boolean,boolean)}
+     * @return The command to be run or scheduled
+     */
+    @Deprecated(forRemoval = true)
     public Command autoScoreCoral() {
         return runOnce(() -> {
             mHasCoral = false;
             mCoralInPosition = false;
             mFirstTime = true;
-            mEffectorMotor.set(EndEffectorConstants.kFastEjectSpeed);
+            mEffectorMotor.set(EndEffectorConstants.kAutoEjectSpeed);
         });
     }
 
-    public Command scoreCoral(BooleanSupplier ejectFast) {
+    /**
+     * @deprecated This command has been deprecated in favor of {@link #scoreCoral(boolean,boolean)}
+     * @return The command to be run or scheduled
+     */
+    @Deprecated(forRemoval = true)
+    public Command teleScoreCoral(BooleanSupplier ejectFast) {
         return run(() -> {
             mHasCoral = false;
             mCoralInPosition = false;
             mFirstTime = true;
             mEffectorMotor.set(ejectFast.getAsBoolean() ? EndEffectorConstants.kFastEjectSpeed
-                    : EndEffectorConstants.kDefaultEjectSpeed);
+                    : EndEffectorConstants.kSlowEjectSpeed);
         });
     }
 
+    /**
+     * @deprecated This command has been deprecated in favor of {@link #scoreCoral(boolean,boolean)}
+     * @return The command to be run or scheduled
+     */
+    @Deprecated(forRemoval = true)
     public Command scoreBloop() {
         return run(() -> {
             mHasCoral = false;
             mCoralInPosition = false;
             mFirstTime = true;
-            mEffectorMotor.set(EndEffectorConstants.kBloopSpeed);
-        });
-    }
-
-    public Command scoreL1() {
-        return run(() -> {
-            mHasCoral = false;
-            mCoralInPosition = false;
-            mFirstTime = true;
-            mEffectorMotor.set(EndEffectorConstants.kL1EjectSpeed);
+            mEffectorMotor.set(-EndEffectorConstants.kBloopSpeed);
         });
     }
 
@@ -332,7 +387,7 @@ public class EndEffector extends SubsystemBase {
     }
 
     public Command autoIntakeFast() {
-        return Commands.race(Commands.waitSeconds(0.4), Commands.waitUntil(() -> exitDetected()), autoIntake());
+        return Commands.race(Commands.waitSeconds(0.5), Commands.waitUntil(() -> exitDetected()), autoIntake());
     }
 
     public Command autoPostIntake(Command elevatorl3) {

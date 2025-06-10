@@ -89,13 +89,16 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
+    m_robotContainer.configDriveSpeed(true);
   }
 
   @Override
   public void testPeriodic() {}
 
   @Override
-  public void testExit() {}
+  public void testExit() {
+    m_robotContainer.configDriveSpeed(false);
+  }
 
   @Override
   public void simulationPeriodic() {}

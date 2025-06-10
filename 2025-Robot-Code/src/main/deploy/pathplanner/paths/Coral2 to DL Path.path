@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.55,
-        "y": 7.457
+        "x": 1.402561475409836,
+        "y": 7.507428278688524
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.6889244093248357,
-        "y": 7.1644419474758685
+        "x": 1.5414858847346715,
+        "y": 7.214870226164392
       },
       "isLocked": false,
       "linkedName": "Coral 2"
@@ -57,7 +57,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 4.73,
-    "maxAcceleration": 5.0,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

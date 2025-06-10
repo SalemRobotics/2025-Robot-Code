@@ -3,61 +3,65 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3306352459016395,
-        "y": 0.5545594262295083
+        "x": 7.115,
+        "y": 5.398
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.074030958859404,
-        "y": 2.609726644698722
-      },
-      "isLocked": false,
-      "linkedName": "Coral 1"
-    },
-    {
-      "anchor": {
-        "x": 2.7397500000000004,
-        "y": 3.5179999999999993
-      },
-      "prevControl": {
-        "x": 2.3661486845661654,
-        "y": 3.1279924041368403
-      },
-      "nextControl": {
-        "x": 3.3373771596855075,
-        "y": 4.141871282414559
+        "x": 5.442418032786885,
+        "y": 5.233911885245901
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.159,
-        "y": 3.8725
+        "x": 5.178688524590156,
+        "y": 5.397592213117073
       },
       "prevControl": {
-        "x": 3.1515128031303465,
-        "y": 3.6226121413853107
+        "x": 5.4022953223401355,
+        "y": 5.285788814242083
+      },
+      "nextControl": {
+        "x": 4.955081726840178,
+        "y": 5.509395611992063
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.402561475409836,
+        "y": 7.507428278688524
+      },
+      "prevControl": {
+        "x": 5.007274590163927,
+        "y": 5.436032786887564
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DR"
+      "linkedName": "Coral 2"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.3274161735700178,
-      "rotationDegrees": 40.0
+      "waypointRelativePos": 0.65,
+      "rotationDegrees": 59.99999999999999
+    },
+    {
+      "waypointRelativePos": 1.35,
+      "rotationDegrees": 59.99999999999999
     }
   ],
   "constraintZones": [
     {
-      "name": "Elevator Constraint",
-      "minWaypointRelativePos": 1.35,
-      "maxWaypointRelativePos": 2.0,
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.2,
+      "maxWaypointRelativePos": 1.4,
       "constraints": {
-        "maxVelocity": 3.5,
-        "maxAcceleration": 3.35,
+        "maxVelocity": 3.0,
+        "maxAcceleration": 2.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
@@ -68,26 +72,16 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "intake",
-      "waypointRelativePos": 0,
+      "name": "shootl1",
+      "waypointRelativePos": 1.0,
       "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "intake"
-        }
-      }
+      "command": null
     },
     {
-      "name": "elevatorl4",
-      "waypointRelativePos": 0.8,
+      "name": "intake",
+      "waypointRelativePos": 1.7609723160026785,
       "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "elevatorl4"
-        }
-      }
+      "command": null
     }
   ],
   "globalConstraints": {
@@ -99,14 +93,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 0.0
+    "velocity": 0.0,
+    "rotation": -53.973
   },
   "reversed": false,
-  "folder": "Fast 4pc paths",
+  "folder": "L1 Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 54.0
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

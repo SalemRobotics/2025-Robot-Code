@@ -3,41 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.706147540983607,
+        "x": 5.706,
         "y": 4.030993852459016
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.498601630795559,
-        "y": 4.356004603611423
+        "x": 6.209631147540984,
+        "y": 3.863165983606558
       },
       "isLocked": false,
       "linkedName": "Algae A"
     },
     {
       "anchor": {
-        "x": 6.545286885245901,
-        "y": 4.342674180327869
+        "x": 6.677151639344262,
+        "y": 4.09093237704918
       },
       "prevControl": {
-        "x": 6.014334131972805,
-        "y": 4.057255424658171
+        "x": 6.4711411582944205,
+        "y": 3.9493001713274136
       },
       "nextControl": {
-        "x": 6.827420230022528,
-        "y": 4.494337671481582
+        "x": 6.883162120394102,
+        "y": 4.232564582770944
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.25,
+        "x": 7.15,
         "y": 4.999999999999999
       },
       "prevControl": {
-        "x": 6.842107411074362,
-        "y": 4.452639565501362
+        "x": 7.000819672131148,
+        "y": 4.534477459016394
       },
       "nextControl": null,
       "isLocked": false,
@@ -62,7 +62,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 2.0,
-    "maxAcceleration": 2.0,
+    "maxAcceleration": 2.25,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

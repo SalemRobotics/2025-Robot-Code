@@ -21,28 +21,28 @@ import frc.robot.VisionHelper;
 import frc.robot.Constants.VisionConstants;
 
 public class Vision extends SubsystemBase {
-    static AprilTagFieldLayout mFieldLayout;
-    static boolean useCustomField = false;
-    static final double linearStdDevBaseline = 0.02;
-    static final double angularStdDevBaseline = 0.06;
-
-    public static record PoseObservation(
-            double timestamp, Pose3d pose, double ambiguity, int tagCount, double averageTagDistance) {
-    }
+    private static AprilTagFieldLayout mFieldLayout;
+    private static boolean useCustomField = false;
+    private static final double linearStdDevBaseline = 0.02;
+    private static final double angularStdDevBaseline = 0.06;
+    private final PhotonCamera mCamera1 = new PhotonCamera(VisionConstants.kCamera1Name);
+    private final PhotonCamera mCamera2 = new PhotonCamera(VisionConstants.kCamera2Name);
 
     static {
         try {
             mFieldLayout = new AprilTagFieldLayout(
-                    Path.of(Filesystem.getDeployDirectory().getAbsolutePath() + "/weldedlayout.json"));
+                    Path.of(Filesystem.getDeployDirectory().getAbsolutePath() + "/andymarklayout.json"));
             useCustomField = true;
         } catch (Exception e) {
             // TODO: handle exception
-            mFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+            mFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
         }
         SmartDashboard.putBoolean("Field Config", useCustomField);
     }
-    final PhotonCamera mCamera1 = new PhotonCamera(VisionConstants.kCamera1Name);
-    final PhotonCamera mCamera2 = new PhotonCamera(VisionConstants.kCamera2Name);
+    
+    public static record PoseObservation(
+            double timestamp, Pose3d pose, double ambiguity, int tagCount, double averageTagDistance) {
+    }
 
     public ArrayList<VisionHelper> getVisionResults() {
         ArrayList<VisionHelper> outputs = new ArrayList<>();

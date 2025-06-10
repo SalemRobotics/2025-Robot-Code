@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import java.util.spi.CurrencyNameProvider;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -60,6 +61,8 @@ public class DriveCommands {
 
         // Squared inputs
         magnitude = magnitude * magnitude;
+
+        magnitude = Math.min(magnitude, 0.4);
 
         return new Pose2d(new Translation2d(), linearDirection)
                 .transformBy(new Transform2d(magnitude, 0.0, new Rotation2d())).getTranslation();
