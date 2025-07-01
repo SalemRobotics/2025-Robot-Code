@@ -54,19 +54,19 @@ public final class Constants {
     public static final CANBus kMotorBus = new CANBus("canivore0");
     public static final double kSensorToMechanismRatio = 9.0;
     public static final double kMaxSpeed = 11;
-    public static final double kMaxAcceleration = 20.0;
+    public static final double kMaxAcceleration = 25.0;
     public static final double kMaxJerk = 100.0;
     public static final double kPositionTolerance = 0.3;
     // PID constants
     public static final double kG = 0.64;
     public static final double kS = 0.25;
     public static final double kV = 1.58;
-    public static final double kA = 0.07;
-    public static final double kP = 60.0;
+    public static final double kA = 0.075;
+    public static final double kP = 22.5;
     public static final double kI = 0.0;
-    public static final double kD = 0.5;
+    public static final double kD = 2.5;      // old: 0.5
     // Current limits
-    public static final double kStatorCurrentLimit = 70;
+    public static final double kStatorCurrentLimit = 80;
     public static final double kSupplyCurrentLimit = 120;
   }
 
