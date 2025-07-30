@@ -1,0 +1,55 @@
+package frc.robot.subsystems.algae_arm;
+
+import static edu.wpi.first.units.Units.*;
+import static frc.robot.subsystems.algae_arm.AlgaeArmConstants.*;
+
+import com.ctre.phoenix6.sim.TalonFXSimState;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import frc.robot.util.io.talon.TalonFXIOImpl;
+
+public class AlgaeArmIOSim extends TalonFXIOImpl {
+  private final SingleJointedArmSim physicsSim;
+  private final TalonFXSimState simState;
+  private double lastTimestamp = Timer.getTimestamp();
+
+  public AlgaeArmIOSim() {
+    super(kMotorID, kBus, kAlgaeArmCallback);
+    simState = talon.getSimState();
+
+    DCMotor motor = DCMotor.getKrakenX60Foc(1).withReduction(kReduction);
+    // the reduction is already accounted for, so set it to 1
+    var linearSystem = LinearSystemId.createSingleJointedArmSystem(motor, kMoi, 1);
+    physicsSim =
+        new SingleJointedArmSim(
+            linearSystem,
+            motor,
+            1,
+            kArmLength.in(Meters),
+            kStowedAngle.in(Radians),
+            kDeployedAngle.in(Radians),
+            true,
+            0);
+  }
+
+  @Override
+  public void updateInputs(TalonFXIOInputs inputs) {
+    simState.setSupplyVoltage(RobotController.getBatteryVoltage());
+    physicsSim.setInputVoltage(simState.getMotorVoltage());
+
+    double newTimestamp = Timer.getTimestamp();
+    physicsSim.update(newTimestamp - lastTimestamp);
+    lastTimestamp = newTimestamp;
+
+    double rotorPosition = Units.radiansToRotations(physicsSim.getAngleRads());
+    simState.setRawRotorPosition(rotorPosition);
+    double rotorVelocity = Units.radiansToRotations(physicsSim.getVelocityRadPerSec());
+    simState.setRotorVelocity(rotorVelocity);
+
+    super.updateInputs(inputs);
+  }
+}
