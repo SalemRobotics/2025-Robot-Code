@@ -8,6 +8,7 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -15,8 +16,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.Mode;
+import frc.robot.FieldConstants.ReefSide;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
@@ -30,6 +33,7 @@ import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.Elevator.Setpoint;
 import frc.robot.subsystems.elevator.ElevatorIO;
+import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
 import frc.robot.subsystems.end_effector.BeamBreakIO;
 import frc.robot.subsystems.end_effector.EndEffector;
@@ -39,6 +43,8 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.io.talon.TalonFXIO;
+import java.util.Set;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -69,6 +75,16 @@ public class RobotContainer {
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
   private final Field2d field = new Field2d();
+
+  private static enum ControlMode {
+    Coral,
+    Algae,
+  }
+
+  private ControlMode controlMode = ControlMode.Coral;
+
+  private final Trigger coralMode = new Trigger(() -> controlMode == ControlMode.Coral);
+  private final Trigger algaeMode = new Trigger(() -> controlMode == ControlMode.Algae);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -111,8 +127,7 @@ public class RobotContainer {
                 new VisionIOPhotonVisionSim(
                     VisionConstants.camera1Name, VisionConstants.robotToCamera1, drive::getPose));
         endEffector = EndEffector.createSim(simState);
-        // TODO: implement this fully
-        elevator = new Elevator(new ElevatorIO() {});
+        elevator = new Elevator(new ElevatorIOSim());
         algaeArm = AlgaeArm.createSim();
         break;
 
@@ -161,6 +176,8 @@ public class RobotContainer {
 
   public void periodic() {
     field.setRobotPose(drive.getPose());
+
+    SmartDashboard.putString("Control Mode", controlMode.toString());
   }
 
   /**
@@ -180,20 +197,40 @@ public class RobotContainer {
 
     controller.rightTrigger().whileTrue(superstructure.scoreCoral());
 
-    controller
-        .x()
-        .whileTrue(elevator.setTarget(Setpoint.L2))
-        .onFalse(Commands.waitSeconds(0.1).andThen(elevator.setTarget(Setpoint.Stowed)));
+    var deferredStow =
+        Commands.defer(
+                () -> Commands.waitSeconds(SmartDashboard.getNumber("Elevator Defer Timeout", 0.1)),
+                Set.of())
+            .andThen(elevator.setTarget(Setpoint.Stowed));
+
+    controller.x().whileTrue(elevator.setTarget(Setpoint.L2)).onFalse(deferredStow);
+
+    controller.b().whileTrue(elevator.setTarget(Setpoint.L3)).onFalse(deferredStow);
+
+    controller.y().whileTrue(elevator.setTarget(Setpoint.L4)).onFalse(deferredStow);
 
     controller
-        .b()
-        .whileTrue(elevator.setTarget(Setpoint.L3))
-        .onFalse(Commands.waitSeconds(0.1).andThen(elevator.setTarget(Setpoint.Stowed)));
+        .leftBumper()
+        .and(coralMode)
+        .whileTrue(
+            joystickApproach(
+                () -> FieldConstants.getNearestReefBranch(drive.getPose(), ReefSide.LEFT)));
+    controller
+        .rightBumper()
+        .and(coralMode)
+        .whileTrue(
+            joystickApproach(
+                () -> FieldConstants.getNearestReefBranch(drive.getPose(), ReefSide.RIGHT)));
 
     controller
-        .y()
-        .whileTrue(elevator.setTarget(Setpoint.L4))
-        .onFalse(Commands.waitSeconds(0.1).andThen(elevator.setTarget(Setpoint.Stowed)));
+        .leftBumper()
+        .or(controller.rightBumper())
+        .and(algaeMode)
+        .whileTrue(joystickApproach(() -> FieldConstants.getNearestReefFace(drive.getPose())));
+  }
+
+  private Command joystickApproach(Supplier<Pose2d> approach) {
+    return DriveCommands.joystickApproach(drive, controller::getLeftY, approach);
   }
 
   /**

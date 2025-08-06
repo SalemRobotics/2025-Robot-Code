@@ -163,65 +163,69 @@ public final class DriveCommands {
     ProfiledPIDController angleController =
         new ProfiledPIDController(
             ANGLE_KP,
-            0,
+            0.0,
             ANGLE_KD,
             new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
     angleController.setTolerance(ANGLE_TOLERANCE);
     angleController.enableContinuousInput(-Math.PI, Math.PI);
-
     ProfiledPIDController alignController =
         new ProfiledPIDController(
-            DRIVE_KP,
-            0,
-            DRIVE_KD,
+            1.0,
+            0.0,
+            0.0,
             new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
-    alignController.setTolerance(LINE_TOLERANCE);
+    alignController.setTolerance(ANGLE_TOLERANCE);
     alignController.setGoal(0);
 
     return Commands.run(
-        () -> {
-          final Pose2d currentPose = drive.getPose();
-          final Pose2d targetPose = approachSupplier.get();
-          Translation2d currentTranslation = currentPose.getTranslation();
-          Translation2d approachTranslation = targetPose.getTranslation();
-          double distanceToApproach = currentTranslation.getDistance(approachTranslation);
+            () -> { // Command
+              Translation2d currentTranslation = drive.getPose().getTranslation();
+              Translation2d approachTranslation = approachSupplier.get().getTranslation();
+              double distanceToApproach = currentTranslation.getDistance(approachTranslation);
 
-          Rotation2d alignmentDirection = targetPose.getRotation();
+              Rotation2d alignmentDirection = approachSupplier.get().getRotation();
 
-          // Find lateral distance to Goal Pose
-          Translation2d goalTranslation =
-              new Translation2d(
-                  alignmentDirection.getCos() * distanceToApproach + approachTranslation.getX(),
-                  alignmentDirection.getSin() * distanceToApproach + approachTranslation.getY());
+              // Find lateral distance to Goal Pose
+              Translation2d goalTranslation =
+                  new Translation2d(
+                      alignmentDirection.getCos() * distanceToApproach + approachTranslation.getX(),
+                      alignmentDirection.getSin() * distanceToApproach
+                          + approachTranslation.getY());
 
-          Translation2d robotToGoal = currentTranslation.minus(goalTranslation);
-          double distanceToGoal = Math.hypot(robotToGoal.getX(), robotToGoal.getY());
+              Translation2d robotToGoal = currentTranslation.minus(goalTranslation);
+              double distanceToGoal = Math.hypot(robotToGoal.getX(), robotToGoal.getY());
 
-          // Calculate lateral linear velocity
-          Translation2d offsetVector =
-              new Translation2d(alignController.calculate(distanceToGoal), 0)
-                  .rotateBy(robotToGoal.getAngle());
+              // Calculate lateral linear velocity
+              Translation2d offsetVector =
+                  new Translation2d(alignController.calculate(distanceToGoal), 0)
+                      .rotateBy(robotToGoal.getAngle());
 
-          // Calculate total linear velocity
-          Translation2d linearVelocity =
-              getLinearVelocityFromJoysticks(0, ySupplier.getAsDouble())
-                  .rotateBy(alignmentDirection)
-                  .plus(offsetVector);
+              // Calculate total linear velocity
+              Translation2d linearVelocity =
+                  getLinearVelocityFromJoysticks(0, ySupplier.getAsDouble())
+                      .rotateBy(approachSupplier.get().getRotation())
+                      .plus(offsetVector);
 
-          double omega =
-              angleController.calculate(
-                  currentPose.getRotation().getRadians(),
-                  alignmentDirection.rotateBy(Rotation2d.k180deg).getRadians());
+              double omega =
+                  angleController.calculate(
+                      drive.getPose().getRotation().getRadians(),
+                      approachSupplier
+                          .get()
+                          .getRotation()
+                          .rotateBy(Rotation2d.k180deg)
+                          .getRadians());
 
-          ChassisSpeeds speeds =
-              new ChassisSpeeds(
-                  linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                  linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                  omega);
+              ChassisSpeeds speeds =
+                  new ChassisSpeeds(
+                      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                      omega);
 
-          drive.runVelocity(speeds);
-        },
-        drive);
+              drive.runVelocity(speeds);
+            },
+            drive // Requirements
+            )
+        .beforeStarting(() -> angleController.reset(drive.getPose().getRotation().getRadians()));
   }
 
   /**
@@ -362,8 +366,8 @@ public final class DriveCommands {
   }
 
   static final RotationFunc standardApproachRotation =
-      (controller, current, pose) -> {
-        final Rotation2d currentRot = current.getRotation(), targetRot = pose.getRotation();
+      (controller, current, target) -> {
+        final Rotation2d currentRot = current.getRotation(), targetRot = target.getRotation();
 
         double pidResult = controller.calculate(currentRot.getRadians(), targetRot.getRadians());
         System.out.println("StraightTowards::rotationFunc: pidResult = " + pidResult);
@@ -371,7 +375,7 @@ public final class DriveCommands {
         double toGoal = targetRot.minus(currentRot).getRadians();
         System.out.println("StraightTowards::rotationFunc: toGoal = " + toGoal);
 
-        double omega = pidResult - toGoal;
+        double omega = toGoal * pidResult;
         System.out.println("StraightTowards::rotationFunc: omega = " + omega);
 
         return omega;

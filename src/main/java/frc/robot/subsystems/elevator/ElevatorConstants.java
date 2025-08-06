@@ -26,7 +26,7 @@ public final class ElevatorConstants {
     public static final Velocity<AngularAccelerationUnit> kMaxJerk =
         RotationsPerSecondPerSecond.per(Second).of(200);
 
-    public static final double kExpo_kV = 0.6;
+    public static final double kExpo_kV = 0.5;
     public static final double kExpo_kA = 0.2;
   }
 
@@ -34,12 +34,12 @@ public final class ElevatorConstants {
   public static final Slot0Configs kRiseGains =
       new Slot0Configs()
           .withGravityType(GravityTypeValue.Elevator_Static)
-          .withKP(50)
-          .withKI(0)
+          .withKP(175)
+          .withKI(10)
           .withKD(30)
           .withKV(2.33)
           .withKA(0.1)
-          .withKG(1.0)
+          .withKG(5)
           .withKS(0.2);
 
   /** Gains for stowing the elevator */

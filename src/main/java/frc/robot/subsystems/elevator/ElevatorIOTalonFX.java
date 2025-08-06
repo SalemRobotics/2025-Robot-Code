@@ -65,7 +65,9 @@ public sealed class ElevatorIOTalonFX implements ElevatorIO permits ElevatorIOSi
 
   /** Control request for moving up to a setpoint, or for stowing the carriage */
   private final MotionMagicExpoTorqueCurrentFOC exponential =
-      new MotionMagicExpoTorqueCurrentFOC(0).withUseTimesync(true).withFeedForward(Amps.of(8));
+      new MotionMagicExpoTorqueCurrentFOC(0)
+          .withUpdateFreqHz(Hertz.of(200))
+          .withFeedForward(Amps.of(8));
   /** Control request for moving between setpoints, where neither is from stow */
   private final DynamicMotionMagicTorqueCurrentFOC trapezoidal =
       new DynamicMotionMagicTorqueCurrentFOC(
