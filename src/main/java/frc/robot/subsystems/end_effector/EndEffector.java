@@ -171,4 +171,13 @@ public class EndEffector extends SubsystemBase {
   public Command scoreBarge() {
     return runOnce(() -> motorIO.setDutyCycle(-kAlgaeBargeSpeed)).beforeStarting(this::resetState);
   }
+
+  public Command scoreProcessor() {
+    return runOnce(() -> motorIO.setDutyCycle(-kAlgaeProcessorSpeed))
+        .beforeStarting(this::resetState);
+  }
+
+  public Command intakeAlgae() {
+    return run(() -> motorIO.setDutyCycle(kIdleSpeed)).beforeStarting(this::resetState);
+  }
 }

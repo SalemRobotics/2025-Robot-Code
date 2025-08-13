@@ -195,7 +195,7 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    controller.rightTrigger().whileTrue(superstructure.scoreCoral());
+    controller.rightTrigger().and(coralMode).whileTrue(superstructure.scoreCoral());
 
     var deferredStow =
         Commands.defer(
@@ -203,11 +203,20 @@ public class RobotContainer {
                 Set.of())
             .andThen(elevator.setTarget(Setpoint.Stowed));
 
-    controller.x().whileTrue(elevator.setTarget(Setpoint.L2)).onFalse(deferredStow);
-
-    controller.b().whileTrue(elevator.setTarget(Setpoint.L3)).onFalse(deferredStow);
-
-    controller.y().whileTrue(elevator.setTarget(Setpoint.L4)).onFalse(deferredStow);
+    controller.x().and(coralMode).whileTrue(elevator.setTarget(Setpoint.L2)).onFalse(deferredStow);
+    controller
+        .x()
+        .and(algaeMode)
+        .whileTrue(elevator.setTarget(Setpoint.AlgaeLow))
+        .onFalse(deferredStow);
+    controller.b().and(coralMode).whileTrue(elevator.setTarget(Setpoint.L3)).onFalse(deferredStow);
+    controller
+        .b()
+        .and(algaeMode)
+        .whileTrue(elevator.setTarget(Setpoint.AlgaeHigh))
+        .onFalse(deferredStow);
+    controller.y().and(coralMode).whileTrue(elevator.setTarget(Setpoint.L4)).onFalse(deferredStow);
+    controller.y().and(algaeMode).whileTrue(superstructure.bargeShot()).onFalse(deferredStow);
 
     controller
         .leftBumper()
@@ -224,13 +233,24 @@ public class RobotContainer {
 
     controller
         .leftBumper()
-        .or(controller.rightBumper())
         .and(algaeMode)
         .whileTrue(joystickApproach(() -> FieldConstants.getNearestReefFace(drive.getPose())));
+    controller
+        .rightBumper()
+        .and(algaeMode)
+        .whileTrue(joystickApproach(() -> FieldConstants.getNearestReefFace(drive.getPose())));
+
+    controller
+        .leftTrigger()
+        .onTrue(Commands.runOnce(() -> controlMode = ControlMode.Algae))
+        .whileTrue(Commands.print("Algae mode!").andThen(superstructure.algaeMode()))
+        .onFalse(Commands.runOnce(() -> controlMode = ControlMode.Coral));
+
+    controller.rightTrigger().and(algaeMode).whileTrue(endEffector.scoreProcessor());
   }
 
   private Command joystickApproach(Supplier<Pose2d> approach) {
-    return DriveCommands.joystickApproach(drive, controller::getLeftY, approach);
+    return new DriveCommands.JoystickApproachCommand(drive, () -> -controller.getLeftY(), approach);
   }
 
   /**

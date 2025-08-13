@@ -48,6 +48,8 @@ public class Vision extends SubsystemBase {
           new Alert(
               "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
     }
+
+    SmartDashboard.putBoolean("Use Vision", true);
   }
 
   /**
@@ -65,6 +67,8 @@ public class Vision extends SubsystemBase {
       io[i].updateInputs(inputs[i]);
       Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
     }
+
+    boolean enableVision = SmartDashboard.getBoolean("Use Vision", true);
 
     // Initialize logging values
     List<Pose3d> allTagPoses = new LinkedList<>();
@@ -137,11 +141,13 @@ public class Vision extends SubsystemBase {
         SmartDashboard.putNumber("Camera " + cameraIndex + " Pose X", observation.pose().getX());
         SmartDashboard.putNumber("Camera " + cameraIndex + " Pose Y", observation.pose().getY());
 
-        // Send vision observation
-        consumer.accept(
-            observation.pose().toPose2d(),
-            observation.timestamp(),
-            VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
+        if (enableVision) {
+          // Send vision observation
+          consumer.accept(
+              observation.pose().toPose2d(),
+              observation.timestamp(),
+              VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
+        }
       }
 
       // Log camera datadata

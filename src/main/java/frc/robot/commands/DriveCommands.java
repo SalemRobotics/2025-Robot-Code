@@ -31,13 +31,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public final class DriveCommands {
   private static final double DEADBAND = 0.1;
   private static final double DRIVE_KP = 2.5;
   private static final double DRIVE_KD = 0.25;
-  private static final double ANGLE_KP = 5.0;
-  private static final double ANGLE_KD = 0.4;
+  private static final double ANGLE_KP = 2.0;
+  private static final double ANGLE_KD = 0.2;
   private static final double ANGLE_MAX_VELOCITY = 8.0;
   private static final double ANGLE_MAX_ACCELERATION = 20.0;
   private static final double ANGLE_TOLERANCE = Units.degreesToRadians(5);
@@ -158,74 +159,109 @@ public final class DriveCommands {
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
   }
 
-  public static Command joystickApproach(
-      Drive drive, DoubleSupplier ySupplier, Supplier<Pose2d> approachSupplier) {
+  public static class JoystickApproachCommand extends Command {
+    Drive drive;
+    DoubleSupplier ySupplier;
+    Supplier<Pose2d> targetSupplier;
+
+    Pose2d targetPose2d;
+    Pose2d currentPose2d;
+    Pose2d relativePose2d;
+    Rotation2d targetRotation2d;
+
+    boolean running = false;
+
+    static final double DEADBAND = 0.1;
+
     ProfiledPIDController angleController =
         new ProfiledPIDController(
             ANGLE_KP,
-            0.0,
+            0,
             ANGLE_KD,
             new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
-    angleController.setTolerance(ANGLE_TOLERANCE);
-    angleController.enableContinuousInput(-Math.PI, Math.PI);
+
     ProfiledPIDController alignController =
-        new ProfiledPIDController(
-            1.0,
-            0.0,
-            0.0,
-            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
-    alignController.setTolerance(ANGLE_TOLERANCE);
-    alignController.setGoal(0);
+        new ProfiledPIDController(ANGLE_KP, 0, ANGLE_KD, new TrapezoidProfile.Constraints(3.7, 4));
 
-    return Commands.run(
-            () -> { // Command
-              Translation2d currentTranslation = drive.getPose().getTranslation();
-              Translation2d approachTranslation = approachSupplier.get().getTranslation();
-              double distanceToApproach = currentTranslation.getDistance(approachTranslation);
+    public JoystickApproachCommand(
+        Drive drive, DoubleSupplier ySupplier, Supplier<Pose2d> targetSupplier) {
+      this.drive = drive;
+      this.ySupplier = ySupplier;
+      this.targetSupplier = targetSupplier;
 
-              Rotation2d alignmentDirection = approachSupplier.get().getRotation();
+      angleController.setTolerance(POSITION_TOLERANCE);
+      angleController.setTolerance(ANGLE_TOLERANCE);
 
-              // Find lateral distance to Goal Pose
-              Translation2d goalTranslation =
-                  new Translation2d(
-                      alignmentDirection.getCos() * distanceToApproach + approachTranslation.getX(),
-                      alignmentDirection.getSin() * distanceToApproach
-                          + approachTranslation.getY());
+      angleController.enableContinuousInput(-Math.PI, Math.PI);
+      alignController.setGoal(0);
 
-              Translation2d robotToGoal = currentTranslation.minus(goalTranslation);
-              double distanceToGoal = Math.hypot(robotToGoal.getX(), robotToGoal.getY());
+      addRequirements(drive);
+    }
 
-              // Calculate lateral linear velocity
-              Translation2d offsetVector =
-                  new Translation2d(alignController.calculate(distanceToGoal), 0)
-                      .rotateBy(robotToGoal.getAngle());
+    // Called when the command is initially scheduled.
+    @Override
+    public void initialize() {
+      alignController.reset(0);
+      angleController.reset(drive.getPose().getRotation().getRadians());
+      targetPose2d = targetSupplier.get();
 
-              // Calculate total linear velocity
-              Translation2d linearVelocity =
-                  getLinearVelocityFromJoysticks(0, ySupplier.getAsDouble())
-                      .rotateBy(approachSupplier.get().getRotation())
-                      .plus(offsetVector);
+      Logger.recordOutput("AutoAlign/Approach/Target", targetPose2d);
+    }
 
-              double omega =
-                  angleController.calculate(
-                      drive.getPose().getRotation().getRadians(),
-                      approachSupplier
-                          .get()
-                          .getRotation()
-                          .rotateBy(Rotation2d.k180deg)
-                          .getRadians());
+    // Called every time the scheduler runs while the command is scheduled.
+    @Override
+    public void execute() {
+      running = true;
+      relativePose2d = drive.getPose().relativeTo(targetPose2d);
+      targetRotation2d = targetPose2d.getRotation();
 
-              ChassisSpeeds speeds =
-                  new ChassisSpeeds(
-                      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                      omega);
+      // Calculate lateral linear velocity
+      Translation2d offsetVector =
+          new Translation2d(0, alignController.calculate(relativePose2d.getY()));
 
-              drive.runVelocity(speeds);
-            },
-            drive // Requirements
-            )
-        .beforeStarting(() -> angleController.reset(drive.getPose().getRotation().getRadians()));
+      // Calculate total linear velocity
+      Translation2d linearVelocity =
+          getLinearVelocityFromJoysticks(-ySupplier.getAsDouble(), 0)
+              .times(drive.getMaxLinearSpeedMetersPerSec())
+              .plus(offsetVector)
+              .rotateBy(targetRotation2d);
+
+      // Calculate angular speed
+      double omega =
+          angleController.calculate(
+              drive.getRotation().getRadians(),
+              targetRotation2d.rotateBy(Rotation2d.k180deg).getRadians());
+
+      // Convert to field relative speeds & send command
+      ChassisSpeeds speeds = new ChassisSpeeds(linearVelocity.getX(), linearVelocity.getY(), omega);
+
+      drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
+    }
+
+    // Called once the command ends or is interrupted.
+    @Override
+    public void end(boolean interrupted) {
+      running = false;
+    }
+
+    // Returns true when withing a lateral tolerance
+    public boolean withinTolerance(double dist) {
+      return running ? Math.abs(relativePose2d.getY()) < dist : false;
+    }
+
+    private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
+      // Apply deadband
+      double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
+      Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
+
+      // Square magnitude for more precise control
+      linearMagnitude = linearMagnitude * linearMagnitude;
+
+      // Return new linear velocity
+      return new Pose2d(new Translation2d(), linearDirection)
+          .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
+          .getTranslation();
+    }
   }
 
   /**

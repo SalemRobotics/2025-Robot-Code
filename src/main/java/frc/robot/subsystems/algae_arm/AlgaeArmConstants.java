@@ -51,6 +51,7 @@ public final class AlgaeArmConstants {
 
   public static final Consumer<TalonFXConfigurator> kAlgaeArmCallback =
       config -> {
+        tryUntilOk(5, () -> config.apply(kSlot0));
         tryUntilOk(5, () -> config.apply(kCurrentLimits));
         tryUntilOk(5, () -> config.apply(kFeedback));
       };

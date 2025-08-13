@@ -9,6 +9,7 @@ public final class EndEffectorConstants {
       kAutoEjectSpeed = 1,
       kSlowEjectSpeed = .3,
       kAlgaeBargeSpeed = 1,
+      kAlgaeProcessorSpeed = 0.3,
       kIdleSpeed = .25,
       kIntakeSpeed = 0.125,
       kDriveBackSpeed = 0.1;

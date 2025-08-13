@@ -26,8 +26,8 @@ public final class ElevatorConstants {
     public static final Velocity<AngularAccelerationUnit> kMaxJerk =
         RotationsPerSecondPerSecond.per(Second).of(200);
 
-    public static final double kExpo_kV = 0.5;
-    public static final double kExpo_kA = 0.2;
+    public static final double kExpo_kV = 0.45;
+    public static final double kExpo_kA = 0.15;
   }
 
   /** Gains for moving the elevator to a setpoint from stow */

@@ -28,4 +28,8 @@ public final class Superstructure {
   public Command scoreCoral() {
     return endEffector.teleScoreCoral(elevator.isAtSetpoint);
   }
+
+  public Command algaeMode() {
+    return endEffector.intakeAlgae().alongWith(algaeArm.deploy());
+  }
 }
