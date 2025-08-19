@@ -25,8 +25,14 @@ public final class Superstructure {
             .andThen(endEffector.scoreBarge(), algaeArm.stow()));
   }
 
-  public Command scoreCoral() {
-    return endEffector.teleScoreCoral(elevator.isAtSetpoint);
+  public Command scoreCoral(boolean inAuto) {
+    if (inAuto) {
+      return elevator
+          .setTarget(Setpoint.L4)
+          .alongWith(endEffector.autoScoreCoral(elevator.isAtSetpoint));
+    } else {
+      return endEffector.teleScoreCoral(elevator::shouldEjectFast);
+    }
   }
 
   public Command algaeMode() {

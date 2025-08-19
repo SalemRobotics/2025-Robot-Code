@@ -95,4 +95,8 @@ public class Elevator extends SubsystemBase {
   public boolean madeProgress(double percentage) {
     return inputs.leaderPosition.gt(currentSetpoint.target.times(percentage));
   }
+
+  public boolean shouldEjectFast() {
+    return currentSetpoint == Setpoint.L4;
+  }
 }

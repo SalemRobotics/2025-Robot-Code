@@ -8,6 +8,8 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathfindingCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -42,9 +44,13 @@ import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import frc.robot.util.Elastic;
+import frc.robot.util.Elastic.Notification;
+import frc.robot.util.Elastic.NotificationLevel;
 import frc.robot.util.io.talon.TalonFXIO;
 import java.util.Set;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -54,6 +60,21 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+  // alert to display if preallocated memory is
+  private static final Notification kFullHeapNotification =
+      new Notification()
+          .withDescription(
+              "Used memory is more than 90% of preallocated memory, should increase amount of preallocated memory")
+          .withLevel(NotificationLevel.WARNING)
+          .withNoAutoDismiss();
+
+  private static final Notification kUnusedHeapNotification =
+      new Notification()
+          .withDescription(
+              "Used memory is less than 50% of preallocated memory, should reduce amount of preallocated memory")
+          .withLevel(NotificationLevel.WARNING)
+          .withNoAutoDismiss();
+
   // Subsystems
   private final Drive drive;
 
@@ -88,6 +109,22 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    Logger.runEveryN(
+        10,
+        () -> {
+          var rt = Runtime.getRuntime();
+
+          var usedMem = (double) (rt.totalMemory() - rt.freeMemory());
+
+          if (usedMem >= 0.9 * Constants.TotalMemory) {
+            Elastic.sendNotification(kFullHeapNotification);
+          } else if (usedMem <= 0.5 * Constants.TotalMemory) {
+            Elastic.sendNotification(kUnusedHeapNotification);
+          }
+
+          Logger.recordOutput("Robot/Utilized Memory Percent", usedMem / rt.totalMemory());
+        });
+
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
@@ -150,6 +187,8 @@ public class RobotContainer {
 
     superstructure = new Superstructure(endEffector, elevator, algaeArm);
 
+    PathfindingCommand.warmupCommand().schedule();
+
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -195,7 +234,7 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    controller.rightTrigger().and(coralMode).whileTrue(superstructure.scoreCoral());
+    controller.rightTrigger().and(coralMode).whileTrue(superstructure.scoreCoral(false));
 
     var deferredStow =
         Commands.defer(
@@ -247,6 +286,15 @@ public class RobotContainer {
         .onFalse(Commands.runOnce(() -> controlMode = ControlMode.Coral));
 
     controller.rightTrigger().and(algaeMode).whileTrue(endEffector.scoreProcessor());
+  }
+
+  private void configureAutoCommands() {
+    // use NamedCommands for commands run outside of paths, EventTriggers for inside
+    // of paths only.
+
+    NamedCommands.registerCommand("elevator_l3", elevator.setTarget(Setpoint.L3));
+    NamedCommands.registerCommand("elevator_l4", elevator.setTarget(Setpoint.L4));
+    NamedCommands.registerCommand("score_coral", superstructure.scoreCoral(true));
   }
 
   private Command joystickApproach(Supplier<Pose2d> approach) {

@@ -7,13 +7,12 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.swerve.SwerveModuleConstants;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
+import com.ctre.phoenix6.SignalLogger;
+import edu.wpi.first.util.ClassPreloader;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.autopilot.Quadrant;
-import frc.robot.generated.TunerConstants;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -32,12 +31,25 @@ public class Robot extends LoggedRobot {
   private final RobotContainer robotContainer;
 
   public Robot() {
+    ClassPreloader.preload(
+        "frc.robot.RobotContainer",
+        "frc.robot.subsystems.drive.Drive",
+        "frc.robot.subsystems.drive.Module",
+        "frc.robot.subsystems.elevator.Elevator",
+        "frc.robot.subsystems.vision.Vision",
+        "frc.robot.subsystems.end_effector.EndEffector",
+        "frc.robot.subsystems.algae_arm.AlgaeArm",
+        "frc.robot.subsystems.Superstructure");
+
+    DriverStation.silenceJoystickConnectionWarning(true);
+
     // Record metadata
     Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
     Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
     Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
     Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
     Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+
     switch (BuildConstants.DIRTY) {
       case 0:
         Logger.recordMetadata("GitDirty", "All changes committed");
@@ -56,6 +68,8 @@ public class Robot extends LoggedRobot {
         // Running on a real robot, log to a USB stick ("/U/logs")
         Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
+        // disable redundant logging from CTRE
+        SignalLogger.enableAutoLogging(false);
         break;
 
       case SIM:
@@ -74,22 +88,6 @@ public class Robot extends LoggedRobot {
 
     // Start AdvantageKit logger
     Logger.start();
-
-    // Check for valid swerve config
-    var modules =
-        new SwerveModuleConstants[] {
-          TunerConstants.FrontLeft,
-          TunerConstants.FrontRight,
-          TunerConstants.BackLeft,
-          TunerConstants.BackRight
-        };
-    for (var constants : modules) {
-      if (constants.DriveMotorType != DriveMotorArrangement.TalonFX_Integrated
-          || constants.SteerMotorType != SteerMotorArrangement.TalonFX_Integrated) {
-        throw new RuntimeException(
-            "You are using an unsupported swerve configuration, which this template does not support without manual customization. The 2025 release of Phoenix supports some swerve configurations which were not available during 2025 beta testing, preventing any development and support from the AdvantageKit developers.");
-      }
-    }
 
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
