@@ -18,7 +18,7 @@ public class AlgaeArmIOSim extends TalonFXIOImpl {
   private double lastTimestamp = Timer.getTimestamp();
 
   public AlgaeArmIOSim() {
-    super(kMotorID, kBus, kAlgaeArmCallback);
+    super(kMotorID, kBus, kAlgaeArmConfig);
     simState = talon.getSimState();
 
     DCMotor motor = DCMotor.getKrakenX60Foc(1).withReduction(kReduction);

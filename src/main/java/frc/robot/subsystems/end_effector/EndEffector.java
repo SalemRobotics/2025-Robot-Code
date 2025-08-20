@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Amps;
 import static frc.robot.subsystems.end_effector.EndEffectorConstants.*;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -14,7 +15,6 @@ import frc.robot.util.io.talon.TalonFXIO;
 import frc.robot.util.io.talon.TalonFXIOImpl;
 import frc.robot.util.io.talon.TalonFXIOInputsAutoLogged;
 import frc.robot.util.io.talon.TalonFXIOSimImpl;
-import frc.robot.util.phoenix.PhoenixUtil;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -46,13 +46,7 @@ public class EndEffector extends SubsystemBase {
 
     return new EndEffector(
         new TalonFXIOImpl(
-            kMotorID,
-            kMotorBus,
-            config ->
-                PhoenixUtil.tryUntilOk(
-                    5,
-                    () -> config.apply(configs),
-                    "Could not apply end effector motor current limits")),
+            kMotorID, kMotorBus, new TalonFXConfiguration().withCurrentLimits(configs)),
         new BeamBreakIODIO(kEntranceBreakerID),
         new BeamBreakIODIO(kExitBreakerID),
         true);

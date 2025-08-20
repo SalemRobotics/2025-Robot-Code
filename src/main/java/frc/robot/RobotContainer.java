@@ -26,6 +26,8 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.algae_arm.AlgaeArm;
+import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.climber.ServoIO;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -84,6 +86,7 @@ public class RobotContainer {
   private final EndEffector endEffector;
   private final Elevator elevator;
   private final AlgaeArm algaeArm;
+  private final Climber climber;
 
   private final Superstructure superstructure;
 
@@ -183,6 +186,12 @@ public class RobotContainer {
         elevator = new Elevator(new ElevatorIO() {});
         algaeArm = new AlgaeArm(new TalonFXIO() {});
         break;
+    }
+
+    if (Constants.currentMode == Mode.REAL) {
+      climber = Climber.createReal();
+    } else {
+      climber = new Climber(new TalonFXIO() {}, new ServoIO() {});
     }
 
     superstructure = new Superstructure(endEffector, elevator, algaeArm);
@@ -286,6 +295,9 @@ public class RobotContainer {
         .onFalse(Commands.runOnce(() -> controlMode = ControlMode.Coral));
 
     controller.rightTrigger().and(algaeMode).whileTrue(endEffector.scoreProcessor());
+
+    controller.povDown().whileTrue(climber.deploy()).onFalse(climber.stop());
+    controller.povUp().whileTrue(climber.retract()).onFalse(climber.stop());
   }
 
   private void configureAutoCommands() {

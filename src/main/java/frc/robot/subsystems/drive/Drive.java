@@ -178,18 +178,17 @@ public class Drive extends SubsystemBase {
   public void periodic() {
     watchdog.reset();
 
-    watchdog.addEpoch("Waiting for odom lock");
     odometryLock.lock(); // Prevents odometry updates while reading data
+    watchdog.addEpoch("Waiting for odom lock");
     try {
       gyroIO.updateInputs(gyroInputs);
       Logger.processInputs("Drive/Gyro", gyroInputs);
 
       int moduleNum = 0;
       for (var module : modules) {
-        watchdog.addEpoch("Module " + moduleNum++ + " periodic");
         module.periodic();
+        watchdog.addEpoch("Module " + moduleNum++ + " periodic");
       }
-      watchdog.addEpoch("Checking if disabled");
     } finally {
       odometryLock.unlock();
     }
@@ -203,19 +202,17 @@ public class Drive extends SubsystemBase {
       Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
       Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
     }
+    watchdog.addEpoch("Checking if disabled");
 
     // Update odometry
     double[] sampleTimestamps =
         modules[0].getOdometryTimestamps(); // All signals are sampled together
     int sampleCount = sampleTimestamps.length;
     for (int i = 0; i < sampleCount; i++) {
-      watchdog.addEpoch("Processing sample " + i);
       // Read wheel positions and deltas from each module
       SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
       SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-        watchdog.addEpoch("Processing sample " + i + " for module " + moduleIndex);
-
         modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
         moduleDeltas[moduleIndex] =
             new SwerveModulePosition(
@@ -223,9 +220,10 @@ public class Drive extends SubsystemBase {
                     - lastModulePositions[moduleIndex].distanceMeters,
                 modulePositions[moduleIndex].angle);
         lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
+
+        watchdog.addEpoch("Processing sample " + i + " for module " + moduleIndex);
       }
 
-      watchdog.addEpoch("Updating gyro for sample" + i);
       // Update gyro angle
       if (gyroInputs.connected) {
         // Use the real gyro angle
@@ -235,10 +233,11 @@ public class Drive extends SubsystemBase {
         Twist2d twist = kinematics.toTwist2d(moduleDeltas);
         rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
       }
+      watchdog.addEpoch("Updating gyro for sample" + i);
 
-      watchdog.addEpoch("Adding sample " + i + " to pose estimator");
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+      watchdog.addEpoch("Adding sample " + i + " to pose estimator");
     }
 
     // Update gyro alert

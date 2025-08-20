@@ -1,10 +1,12 @@
 package frc.robot.util.io.talon;
 
+import static frc.robot.util.phoenix.PhoenixUtil.tryUntilOk;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.TalonFXConfigurator;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -14,7 +16,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import java.util.function.Consumer;
 
 public class TalonFXIOImpl implements TalonFXIO {
   protected final TalonFX talon;
@@ -60,10 +61,10 @@ public class TalonFXIOImpl implements TalonFXIO {
         };
   }
 
-  public TalonFXIOImpl(int port, CANBus bus, Consumer<TalonFXConfigurator> config) {
+  public TalonFXIOImpl(int port, CANBus bus, TalonFXConfiguration config) {
     this(port, bus);
 
-    config.accept(talon.getConfigurator());
+    tryUntilOk(5, () -> talon.getConfigurator().apply(config));
   }
 
   @Override

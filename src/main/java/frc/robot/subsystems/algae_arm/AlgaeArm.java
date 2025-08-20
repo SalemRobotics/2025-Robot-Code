@@ -39,7 +39,7 @@ public class AlgaeArm extends SubsystemBase {
   }
 
   public static AlgaeArm createReal() {
-    return new AlgaeArm(new TalonFXIOImpl(kMotorID, kBus, kAlgaeArmCallback));
+    return new AlgaeArm(new TalonFXIOImpl(kMotorID, kBus, kAlgaeArmConfig));
   }
 
   public static AlgaeArm createSim() {
