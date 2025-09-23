@@ -17,12 +17,15 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicExpoTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.subsystems.elevator.Elevator.Setpoint;
+import lombok.val;
 
 public sealed class ElevatorIOTalonFX implements ElevatorIO permits ElevatorIOSim {
   protected final TalonFX leader = new TalonFX(kLeaderId, kMotorBus);
@@ -66,7 +69,7 @@ public sealed class ElevatorIOTalonFX implements ElevatorIO permits ElevatorIOSi
   /** Control request for moving up to a setpoint, or for stowing the carriage */
   private final MotionMagicExpoTorqueCurrentFOC exponential =
       new MotionMagicExpoTorqueCurrentFOC(0)
-          .withUpdateFreqHz(Hertz.of(200))
+          .withUpdateFreqHz(1000)
           .withFeedForward(Amps.of(8));
   /** Control request for moving between setpoints, where neither is from stow */
   private final DynamicMotionMagicTorqueCurrentFOC trapezoidal =
@@ -75,7 +78,7 @@ public sealed class ElevatorIOTalonFX implements ElevatorIO permits ElevatorIOSi
               Trapezoidal.kMaxVelocity,
               Trapezoidal.kMaxAcceleration,
               Trapezoidal.kMaxJerk)
-          .withUseTimesync(true)
+          .withUpdateFreqHz(1000)
           .withFeedForward(Amps.of(8));
 
   public ElevatorIOTalonFX() {
@@ -107,7 +110,9 @@ public sealed class ElevatorIOTalonFX implements ElevatorIO permits ElevatorIOSi
 
     tryUntilOk(5, () -> leader.getConfigurator().apply(config));
     tryUntilOk(5, () -> follower.getConfigurator().apply(config));
-    tryUntilOk(5, () -> follower.setControl(new Follower(kLeaderId, true)));
+    tryUntilOk(5, () -> follower.setControl(
+        new Follower(kLeaderId, true)
+          .withUpdateFreqHz(1000)));
 
     leader.setPosition(0);
     leader.setNeutralMode(NeutralModeValue.Brake);
@@ -148,20 +153,15 @@ public sealed class ElevatorIOTalonFX implements ElevatorIO permits ElevatorIOSi
   }
 
   @Override
-  public void setTarget(Angle angle, boolean useTrapezoidal) {
-    ControlRequest req;
+  public void setTarget(Setpoint setpoint) {
+    final ControlRequest request;
 
-    if (useTrapezoidal) {
-      req = trapezoidal.withPosition(angle).withSlot(2);
+    if (setpoint == Setpoint.Stowed) {
+      request = trapezoidal.withPosition(setpoint.target);
     } else {
-      req = exponential.withPosition(angle).withSlot(0);
+      request = exponential.withPosition(setpoint.target);
     }
 
-    leader.setControl(req);
-  }
-
-  @Override
-  public void stow() {
-    leader.setControl(exponential.withPosition(0).withSlot(1));
+    leader.setControl(request);
   }
 }

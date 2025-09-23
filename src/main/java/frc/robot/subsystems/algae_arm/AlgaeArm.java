@@ -50,7 +50,8 @@ public class AlgaeArm extends SubsystemBase {
     return Commands.sequence(
         runOnce(() -> io.setDutyCycle(.8)),
         Commands.waitUntil(hasDeployed),
-        runOnce(() -> io.stopMotor()));
+        runOnce(() -> io.stopMotor()),
+        Commands.idle(this));
   }
 
   public Command stow() {

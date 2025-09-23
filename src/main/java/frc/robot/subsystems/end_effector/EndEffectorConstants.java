@@ -10,9 +10,9 @@ public final class EndEffectorConstants {
       kSlowEjectSpeed = .3,
       kAlgaeBargeSpeed = 1,
       kAlgaeProcessorSpeed = 0.3,
-      kIdleSpeed = .25,
-      kIntakeSpeed = 0.125,
-      kDriveBackSpeed = 0.1;
+      kIdleSpeed = .175,
+      kIntakeSpeed = 0.1,
+      kDriveBackSpeed = 0.075;
 
   // TODO: TUNE THIS VALUE (ASK MARK/BRENNAN)
   public static final double kSystemMOI = 0.02;

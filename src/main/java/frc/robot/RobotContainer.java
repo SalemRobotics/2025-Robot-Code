@@ -219,6 +219,7 @@ public class RobotContainer {
 
     // Configure the button bindings
     configureButtonBindings();
+    configureAutoCommands();
     SmartDashboard.putData("Field", field);
   }
 
@@ -301,12 +302,13 @@ public class RobotContainer {
   }
 
   private void configureAutoCommands() {
-    // use NamedCommands for commands run outside of paths, EventTriggers for inside
-    // of paths only.
-
+    NamedCommands.registerCommand("elevator_stow", elevator.setTarget(Setpoint.Stowed));
     NamedCommands.registerCommand("elevator_l3", elevator.setTarget(Setpoint.L3));
     NamedCommands.registerCommand("elevator_l4", elevator.setTarget(Setpoint.L4));
+    NamedCommands.registerCommand("coral_intake", endEffector.autoIntake(true));
+    NamedCommands.registerCommand("coral_jog", superstructure.intakeCoralThenL3());
     NamedCommands.registerCommand("score_coral", superstructure.scoreCoral(true));
+    NamedCommands.registerCommand("score_barge", superstructure.bargeShot());
   }
 
   private Command joystickApproach(Supplier<Pose2d> approach) {

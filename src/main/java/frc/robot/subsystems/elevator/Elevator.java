@@ -2,6 +2,9 @@ package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Rotations;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -11,7 +14,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends SubsystemBase {
   public static enum Setpoint {
-    Stowed(0),
+    Stowed(0.25),
     L2(1.67),
     L3(2.82),
     L4(4.7),
@@ -56,7 +59,8 @@ public class Elevator extends SubsystemBase {
 
   private final ElevatorIO io;
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
-  private Setpoint lastSetpoint = Setpoint.Stowed, currentSetpoint = Setpoint.Stowed;
+  private Setpoint currentSetpoint = Setpoint.Stowed;
+  private final Map<Setpoint, Command> cachedCommands = new HashMap<>(Setpoint.values().length);
 
   public final Trigger isAtSetpoint =
       new Trigger(() -> inputs.leaderPosition.isNear(currentSetpoint.target, Rotations.of(0.05)));
@@ -73,23 +77,14 @@ public class Elevator extends SubsystemBase {
     SmartDashboard.putNumber("Elevator Setpoint", currentSetpoint.target.in(Rotations));
   }
 
-  private void setRotationalTarget(Angle rots) {
-    io.setTarget(rots, lastSetpoint.isElevated() && currentSetpoint.isElevated());
-  }
-
-  private void newSetpoint(Setpoint setpoint) {
-    lastSetpoint = currentSetpoint;
-    currentSetpoint = setpoint;
-  }
-
   public Command setTarget(Setpoint setpoint) {
-    return runOnce(() -> setRotationalTarget(setpoint.target))
-        .beforeStarting(() -> newSetpoint(setpoint));
+    return cachedCommands.computeIfAbsent(setpoint, s -> runOnce(
+      () -> io.setTarget(setpoint)
+    ).beforeStarting(() -> currentSetpoint = s));
   }
 
   public Command stow() {
-    return runOnce(() -> setRotationalTarget(Setpoint.Stowed.target))
-        .beforeStarting(() -> newSetpoint(Setpoint.Stowed));
+    return setTarget(Setpoint.Stowed);
   }
 
   public boolean madeProgress(double percentage) {

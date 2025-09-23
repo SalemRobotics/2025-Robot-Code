@@ -38,4 +38,8 @@ public final class Superstructure {
   public Command algaeMode() {
     return endEffector.intakeAlgae().alongWith(algaeArm.deploy());
   }
+
+  public Command intakeCoralThenL3() {
+    return endEffector.autoIntake(true).andThen(elevator.setTarget(Setpoint.L3));
+  }
 }

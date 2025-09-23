@@ -16,7 +16,7 @@ public final class ElevatorConstants {
 
   public static final class Trapezoidal {
     public static final AngularVelocity kMaxVelocity = RotationsPerSecond.of(15);
-    public static final AngularAcceleration kMaxAcceleration = RotationsPerSecondPerSecond.of(35);
+    public static final AngularAcceleration kMaxAcceleration = RotationsPerSecondPerSecond.of(40);
     public static final Velocity<AngularAccelerationUnit> kMaxJerk =
         RotationsPerSecondPerSecond.per(Second).of(100);
   }

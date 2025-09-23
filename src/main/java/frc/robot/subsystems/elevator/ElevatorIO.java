@@ -8,6 +8,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.*;
+import frc.robot.subsystems.elevator.Elevator.Setpoint;
+
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ElevatorIO {
@@ -31,7 +33,5 @@ public interface ElevatorIO {
 
   default void updateInputs(ElevatorIOInputs inputs) {}
 
-  default void setTarget(Angle angle, boolean useTrapezoidal) {}
-
-  default void stow() {}
+  default void setTarget(Setpoint setpoint) {}
 }

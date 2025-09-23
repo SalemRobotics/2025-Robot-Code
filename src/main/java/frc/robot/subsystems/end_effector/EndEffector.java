@@ -34,6 +34,7 @@ public class EndEffector extends SubsystemBase {
 
     setDefaultCommand(teleIntake());
     jogDuringIntake = jog;
+    SmartDashboard.putBoolean("Demo Intake", false);
   }
 
   public static EndEffector createReal() {

@@ -1,0 +1,91 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.025681818181818,
+        "y": 5.27643465909091
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 4.851084662804219,
+        "y": 5.455364347331992
+      },
+      "isLocked": false,
+      "linkedName": "Branch J"
+    },
+    {
+      "anchor": {
+        "x": 4.337642045454546,
+        "y": 6.024303977272727
+      },
+      "prevControl": {
+        "x": 4.736059652283863,
+        "y": 5.725808536121974
+      },
+      "nextControl": {
+        "x": 3.8236001165089073,
+        "y": 6.409425442088779
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.6153977272727271,
+        "y": 7.300667613636364
+      },
+      "prevControl": {
+        "x": 2.239728575541882,
+        "y": 7.020369433743416
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [
+    {
+      "name": "Elevator slow",
+      "minWaypointRelativePos": 0,
+      "maxWaypointRelativePos": 0.6,
+      "constraints": {
+        "maxVelocity": 4.73,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "elevator_stow",
+      "waypointRelativePos": 0.36075322101090235,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.73,
+    "maxAcceleration": 5.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -54.0
+  },
+  "reversed": false,
+  "folder": "To Coral Station",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -119.99999999999999
+  },
+  "useDefaultConstraints": true
+}
