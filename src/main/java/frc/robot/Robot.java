@@ -12,7 +12,10 @@ import edu.wpi.first.util.ClassPreloader;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.autopilot.Quadrant;
+import frc.robot.util.Elastic;
+import frc.robot.util.Elastic.Notification;
+import frc.robot.util.Elastic.NotificationLevel;
+import lombok.val;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -30,7 +33,23 @@ public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private final RobotContainer robotContainer;
 
-  public Robot() {
+  // alert to display if preallocated memory is
+  private static final Notification kFullHeapNotification =
+      new Notification()
+          .withDescription(
+              "Used memory is more than 90% of preallocated memory, should increase amount of preallocated memory")
+          .withLevel(NotificationLevel.WARNING)
+          .withNoAutoDismiss();
+
+  private static final Notification kUnusedHeapNotification =
+      new Notification()
+          .withDescription(
+              "Used memory is less than 50% of preallocated memory, should reduce amount of preallocated memory")
+          .withLevel(NotificationLevel.WARNING)
+          .withNoAutoDismiss();
+
+  public Robot() {    
+    // Preload subsystem classes
     ClassPreloader.preload(
         "frc.robot.RobotContainer",
         "frc.robot.subsystems.drive.Drive",
@@ -97,6 +116,24 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically during all modes. */
   @Override
   public void robotPeriodic() {
+    val rt = Runtime.getRuntime();
+
+    val usedMem = (double)(rt.totalMemory() - rt.freeMemory());
+
+    Logger.recordOutput("Robot/Utilized Memory %", usedMem / (double)rt.totalMemory());
+    Logger.runEveryN(
+        // run every second
+        2500,
+        () -> {
+          if (usedMem >= 0.9 * Constants.TotalMemory) {
+            // If memory utilization is too high, send an alert to increase allocated heap size in JVM args
+            Elastic.sendNotification(kFullHeapNotification);
+          } else if (usedMem <= 0.5 * Constants.TotalMemory) {
+            // If memory utilization is too low, send an alert to decrease allocated heap size in JVM args
+            Elastic.sendNotification(kUnusedHeapNotification);
+          }
+        });
+
     // Optionally switch the thread to high priority to improve loop
     // timing (see the template project documentation for details)
     // Threads.setCurrentThreadPriority(true, 99);
@@ -117,19 +154,10 @@ public class Robot extends LoggedRobot {
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
-    new Thread(
-        () -> {
-          System.out.println("Initializing inter-quadrant pathfinds");
-
-          Quadrant.initializeAllPaths();
-
-          System.out.println("Finished initializing inter-quadrant pathfinds");
-        });
+    // Trigger a GC upon disable to ensure that all unnecessary objects are cleaned up.
+    // This is especially important after auto.
+    System.gc();
   }
-
-  /** This function is called periodically when disabled. */
-  @Override
-  public void disabledPeriodic() {}
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
@@ -142,10 +170,6 @@ public class Robot extends LoggedRobot {
     }
   }
 
-  /** This function is called periodically during autonomous. */
-  @Override
-  public void autonomousPeriodic() {}
-
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
@@ -156,11 +180,9 @@ public class Robot extends LoggedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
-  }
 
-  /** This function is called periodically during operator control. */
-  @Override
-  public void teleopPeriodic() {}
+    robotContainer.stowElevator();
+  }
 
   /** This function is called once when test mode is enabled. */
   @Override
@@ -168,16 +190,4 @@ public class Robot extends LoggedRobot {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
   }
-
-  /** This function is called periodically during test mode. */
-  @Override
-  public void testPeriodic() {}
-
-  /** This function is called once when the robot is first started up. */
-  @Override
-  public void simulationInit() {}
-
-  /** This function is called periodically whilst in simulation. */
-  @Override
-  public void simulationPeriodic() {}
 }

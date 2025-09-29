@@ -9,6 +9,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -26,8 +27,10 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.algae_arm.AlgaeArm;
+import frc.robot.subsystems.algae_arm.AlgaeArmIOSim;
+import frc.robot.subsystems.algae_arm.AlgaeArmIOTalonFX;
 import frc.robot.subsystems.climber.Climber;
-import frc.robot.subsystems.climber.ServoIO;
+import frc.robot.subsystems.climber.ClimberIOReal;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -42,17 +45,11 @@ import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
 import frc.robot.subsystems.end_effector.BeamBreakIO;
 import frc.robot.subsystems.end_effector.EndEffector;
 import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOPhotonVision;
-import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
-import frc.robot.util.Elastic;
-import frc.robot.util.Elastic.Notification;
-import frc.robot.util.Elastic.NotificationLevel;
+import frc.robot.subsystems.vision.VisionIO.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIO.VisionIOPhotonVisionSim;
 import frc.robot.util.io.talon.TalonFXIO;
 import java.util.Set;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -62,21 +59,6 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-  // alert to display if preallocated memory is
-  private static final Notification kFullHeapNotification =
-      new Notification()
-          .withDescription(
-              "Used memory is more than 90% of preallocated memory, should increase amount of preallocated memory")
-          .withLevel(NotificationLevel.WARNING)
-          .withNoAutoDismiss();
-
-  private static final Notification kUnusedHeapNotification =
-      new Notification()
-          .withDescription(
-              "Used memory is less than 50% of preallocated memory, should reduce amount of preallocated memory")
-          .withLevel(NotificationLevel.WARNING)
-          .withNoAutoDismiss();
-
   // Subsystems
   private final Drive drive;
 
@@ -112,22 +94,6 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    Logger.runEveryN(
-        10,
-        () -> {
-          var rt = Runtime.getRuntime();
-
-          var usedMem = (double) (rt.totalMemory() - rt.freeMemory());
-
-          if (usedMem >= 0.9 * Constants.TotalMemory) {
-            Elastic.sendNotification(kFullHeapNotification);
-          } else if (usedMem <= 0.5 * Constants.TotalMemory) {
-            Elastic.sendNotification(kUnusedHeapNotification);
-          }
-
-          Logger.recordOutput("Robot/Utilized Memory Percent", usedMem / rt.totalMemory());
-        });
-
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
@@ -140,14 +106,13 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackRight));
         vision =
             new Vision(
-                drive::addVisionMeasurement,
-                new VisionIOPhotonVision(
-                    VisionConstants.camera0Name, VisionConstants.robotToCamera0),
-                new VisionIOPhotonVision(
-                    VisionConstants.camera1Name, VisionConstants.robotToCamera1));
+                drive,
+                new VisionIOPhotonVision(0, drive::getPoseAtTime),
+                new VisionIOPhotonVision(1, drive::getPoseAtTime));
         endEffector = EndEffector.createReal();
         elevator = new Elevator(new ElevatorIOTalonFX());
-        algaeArm = AlgaeArm.createReal();
+        algaeArm = new AlgaeArm(new AlgaeArmIOTalonFX());
+        climber = new Climber(new ClimberIOReal());
         break;
 
       case SIM:
@@ -161,14 +126,16 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.BackRight));
         vision =
             new Vision(
-                drive::addVisionMeasurement,
-                new VisionIOPhotonVisionSim(
-                    VisionConstants.camera0Name, VisionConstants.robotToCamera0, drive::getPose),
-                new VisionIOPhotonVisionSim(
-                    VisionConstants.camera1Name, VisionConstants.robotToCamera1, drive::getPose));
+                drive,
+                new VisionIOPhotonVisionSim(0, drive::getPoseAtTime, drive::getPose),
+                new VisionIOPhotonVisionSim(0, drive::getPoseAtTime, drive::getPose));
+
         endEffector = EndEffector.createSim(simState);
         elevator = new Elevator(new ElevatorIOSim());
-        algaeArm = AlgaeArm.createSim();
+        algaeArm = new AlgaeArm(new AlgaeArmIOSim());
+        // We don't simulate the climber due to the complexity of how it works and the ramifications it
+        // has on the rest of the robot
+        climber = new Climber(inputs -> {});
         break;
 
       default:
@@ -180,46 +147,44 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+        vision = new Vision(drive, inputs -> {}, inputs -> {});
         endEffector =
             new EndEffector(new TalonFXIO() {}, new BeamBreakIO() {}, new BeamBreakIO() {}, false);
         elevator = new Elevator(new ElevatorIO() {});
-        algaeArm = new AlgaeArm(new TalonFXIO() {});
+        algaeArm = new AlgaeArm(inputs -> {});
+        climber = new Climber(inputs -> {});
         break;
-    }
-
-    if (Constants.currentMode == Mode.REAL) {
-      climber = Climber.createReal();
-    } else {
-      climber = new Climber(new TalonFXIO() {}, new ServoIO() {});
     }
 
     superstructure = new Superstructure(endEffector, elevator, algaeArm);
 
+    configureAutoCommands();
     PathfindingCommand.warmupCommand().schedule();
-
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-    // Set up SysId routines
-    autoChooser.addOption(
-        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption(
-        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption("Opps Side 4pc", new PathPlannerAuto("Own Side 4pc", true));
+
+    if (Constants.DEVBOT) {
+      // Set up SysId routines
+      autoChooser.addOption(
+          "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+      autoChooser.addOption(
+          "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+      autoChooser.addOption(
+          "Drive SysId (Quasistatic Forward)",
+          drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+      autoChooser.addOption(
+          "Drive SysId (Quasistatic Reverse)",
+          drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+      autoChooser.addOption(
+          "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+      autoChooser.addOption(
+          "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    }
 
     // Configure the button bindings
     configureButtonBindings();
-    configureAutoCommands();
     SmartDashboard.putData("Field", field);
   }
 
@@ -297,16 +262,17 @@ public class RobotContainer {
 
     controller.rightTrigger().and(algaeMode).whileTrue(endEffector.scoreProcessor());
 
-    controller.povDown().whileTrue(climber.deploy()).onFalse(climber.stop());
-    controller.povUp().whileTrue(climber.retract()).onFalse(climber.stop());
+    controller.povDown().whileTrue(climber.deploy());
+    controller.povUp().whileTrue(climber.retract());
   }
 
   private void configureAutoCommands() {
     NamedCommands.registerCommand("elevator_stow", elevator.setTarget(Setpoint.Stowed));
     NamedCommands.registerCommand("elevator_l3", elevator.setTarget(Setpoint.L3));
     NamedCommands.registerCommand("elevator_l4", elevator.setTarget(Setpoint.L4));
-    NamedCommands.registerCommand("coral_intake", endEffector.autoIntake(true));
-    NamedCommands.registerCommand("coral_jog", superstructure.intakeCoralThenL3());
+    NamedCommands.registerCommand(
+        "coral_intake", Commands.race(endEffector.autoIntake(), Commands.waitSeconds(1)));
+    NamedCommands.registerCommand("coral_jog", endEffector.autoIntake());
     NamedCommands.registerCommand("score_coral", superstructure.scoreCoral(true));
     NamedCommands.registerCommand("score_barge", superstructure.bargeShot());
   }
@@ -322,5 +288,9 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  public void stowElevator() {
+    elevator.setTarget(Setpoint.Stowed).schedule();
   }
 }

@@ -7,36 +7,39 @@ import static edu.wpi.first.units.Units.Rotations;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.Constants;
 
 public final class AlgaeArmConstants {
-  public static final int kMotorID = 21;
-  public static final CANBus kBus = Constants.kRIOBus;
-  public static final int kReduction = 25;
+  public static final int MOTOR_ID = 21;
+  public static final CANBus MOTOR_BUS = Constants.kRIOBus;
+  public static final int SYSTEM_REDUCTION = 25;
 
-  public static final Angle kStowedAngle = Rotations.of(0);
-  public static final Angle kDeployedAngle = Rotations.of(0.283);
+  public static final Angle STOWED_ANGLE = Rotations.of(0);
+  public static final Angle DEPLOYED_ANGLE = Rotations.of(0.283);
   // TODO: CORRECT THIS VALUE WITH CAD
   public static final Distance kArmLength = Inches.of(9);
   // TODO: CORRECT THIS VALUE (ASK BRENNAN/MARK)
   public static final double kMoi = 0.4;
 
-  public static final CurrentLimitsConfigs kCurrentLimits =
+  public static final CurrentLimitsConfigs CURRENT_LIMITS =
       new CurrentLimitsConfigs()
           .withStatorCurrentLimit(Amps.of(10))
           .withStatorCurrentLimitEnable(true)
           .withSupplyCurrentLimit(Amps.of(40))
           .withSupplyCurrentLimitEnable(true);
-  public static final FeedbackConfigs kFeedback =
-      new FeedbackConfigs().withSensorToMechanismRatio(kReduction);
-  public static final MotionMagicConfigs kMotionMagic = new MotionMagicConfigs();
-  public static final Slot0Configs kSlot0 =
+  public static final FeedbackConfigs FEEDBACK_CONFIGS =
+      new FeedbackConfigs().withSensorToMechanismRatio(SYSTEM_REDUCTION);
+  public static final MotorOutputConfigs MOTOR_OUTPUT = 
+      new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake);
+  public static final Slot0Configs SLOT_0 =
       new Slot0Configs()
           .withKP(10)
           .withKI(0)
@@ -47,10 +50,10 @@ public final class AlgaeArmConstants {
           .withKG(0.5)
           .withGravityType(GravityTypeValue.Arm_Cosine);
 
-  public static final TalonFXConfiguration kAlgaeArmConfig =
+  public static final TalonFXConfiguration MOTOR_CONFIG =
       new TalonFXConfiguration()
-          .withCurrentLimits(kCurrentLimits)
-          .withFeedback(kFeedback)
-          .withMotionMagic(kMotionMagic)
-          .withSlot0(kSlot0);
+          .withCurrentLimits(CURRENT_LIMITS)
+          .withFeedback(FEEDBACK_CONFIGS)
+          .withMotorOutput(MOTOR_OUTPUT)
+          .withSlot0(SLOT_0);
 }

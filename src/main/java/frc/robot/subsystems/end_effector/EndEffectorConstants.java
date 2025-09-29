@@ -1,10 +1,11 @@
 package frc.robot.subsystems.end_effector;
 
 import com.ctre.phoenix6.CANBus;
+import frc.robot.Constants;
 
 public final class EndEffectorConstants {
   public static final int kMotorID = 20, kExitBreakerID = 0, kEntranceBreakerID = 1;
-  public static final CANBus kMotorBus = new CANBus("rio");
+  public static final CANBus kMotorBus = Constants.kRIOBus;
   public static final double kFastEjectSpeed = .9,
       kAutoEjectSpeed = 1,
       kSlowEjectSpeed = .3,

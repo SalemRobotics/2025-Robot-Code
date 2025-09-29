@@ -16,10 +16,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
-import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.PathPlannerLogging;
-import com.pathplanner.lib.util.swerve.SwerveSetpoint;
-import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
@@ -36,27 +33,25 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.Watchdog;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.vision.Vision.VisionConsumer;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Drive extends SubsystemBase {
+public class Drive extends SubsystemBase implements VisionConsumer {
   // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY =
       new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 100.0;
@@ -72,20 +67,28 @@ public class Drive extends SubsystemBase {
   // PathPlanner config constants
   private static final double ROBOT_MASS_KG = 74.088;
   private static final double ROBOT_MOI = 6.883;
-  private static final double WHEEL_COF = 1.43;
-  private static final RobotConfig PP_CONFIG =
-      new RobotConfig(
-          ROBOT_MASS_KG,
-          ROBOT_MOI,
-          new ModuleConfig(
-              TunerConstants.FrontLeft.WheelRadius,
-              TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
-              WHEEL_COF,
-              DCMotor.getKrakenX60Foc(1)
-                  .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
-              TunerConstants.FrontLeft.SlipCurrent,
-              1),
-          getModuleTranslations());
+  private static final double WHEEL_COF = 1.2;
+  private static RobotConfig PP_CONFIG;
+
+  static {
+    try {
+      PP_CONFIG = RobotConfig.fromGUISettings();
+    } catch (Exception e) {
+      PP_CONFIG =
+          new RobotConfig(
+              ROBOT_MASS_KG,
+              ROBOT_MOI,
+              new ModuleConfig(
+                  TunerConstants.FrontLeft.WheelRadius,
+                  TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+                  WHEEL_COF,
+                  DCMotor.getKrakenX60Foc(1)
+                      .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
+                  TunerConstants.FrontLeft.SlipCurrent,
+                  1),
+              getModuleTranslations());
+    }
+  }
 
   static final Lock odometryLock = new ReentrantLock();
   private final GyroIO gyroIO;
@@ -95,9 +98,8 @@ public class Drive extends SubsystemBase {
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
-  private final SwerveDriveKinematics kinematics =
-      new SwerveDriveKinematics(getModuleTranslations());
-  private Rotation2d rawGyroRotation = new Rotation2d();
+  private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
+  private Rotation2d rawGyroRotation = Rotation2d.kZero;
   private SwerveModulePosition[] lastModulePositions = // For delta tracking
       new SwerveModulePosition[] {
         new SwerveModulePosition(),
@@ -105,15 +107,8 @@ public class Drive extends SubsystemBase {
         new SwerveModulePosition(),
         new SwerveModulePosition()
       };
-  private final SwerveDrivePoseEstimator poseEstimator =
-      new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
-  private final SwerveSetpointGenerator setpointGenerator;
-  private SwerveSetpoint previousSetpoint;
-  private final Timer sinceLastSetpoint = new Timer();
-
-  private final Watchdog watchdog =
-      new Watchdog(
-          0.01, () -> System.err.println("Drive.periodic() exceeded allotted time (10ms)"));
+  private SwerveDrivePoseEstimator poseEstimator =
+      new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
 
   public Drive(
       GyroIO gyroIO,
@@ -136,14 +131,15 @@ public class Drive extends SubsystemBase {
     // Configure AutoBuilder for PathPlanner
     AutoBuilder.configure(
         this::getPose,
-        this::setPose,
+        this::setPoseIfSim,
         this::getChassisSpeeds,
         this::runVelocity,
         new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+            new PIDConstants(6.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
+
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {
@@ -165,44 +161,30 @@ public class Drive extends SubsystemBase {
                 (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
-
-    setpointGenerator =
-        new SwerveSetpointGenerator(TunerConstants.kAutoConfig, RotationsPerSecond.of(10));
-    previousSetpoint =
-        new SwerveSetpoint(getChassisSpeeds(), getModuleStates(), DriveFeedforwards.zeros(4));
-
-    sinceLastSetpoint.start();
   }
 
   @Override
   public void periodic() {
-    watchdog.reset();
-
     odometryLock.lock(); // Prevents odometry updates while reading data
-    watchdog.addEpoch("Waiting for odom lock");
-    try {
-      gyroIO.updateInputs(gyroInputs);
-      Logger.processInputs("Drive/Gyro", gyroInputs);
-
-      int moduleNum = 0;
-      for (var module : modules) {
-        module.periodic();
-        watchdog.addEpoch("Module " + moduleNum++ + " periodic");
-      }
-    } finally {
-      odometryLock.unlock();
+    gyroIO.updateInputs(gyroInputs);
+    Logger.processInputs("Drive/Gyro", gyroInputs);
+    for (var module : modules) {
+      module.periodic();
     }
+    odometryLock.unlock();
 
     // Stop moving when disabled
     if (DriverStation.isDisabled()) {
       for (var module : modules) {
         module.stop();
       }
-      // Log empty setpoint states when disabled
+    }
+
+    // Log empty setpoint states when disabled
+    if (DriverStation.isDisabled()) {
       Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
       Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
     }
-    watchdog.addEpoch("Checking if disabled");
 
     // Update odometry
     double[] sampleTimestamps =
@@ -220,8 +202,6 @@ public class Drive extends SubsystemBase {
                     - lastModulePositions[moduleIndex].distanceMeters,
                 modulePositions[moduleIndex].angle);
         lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
-
-        watchdog.addEpoch("Processing sample " + i + " for module " + moduleIndex);
       }
 
       // Update gyro angle
@@ -233,17 +213,13 @@ public class Drive extends SubsystemBase {
         Twist2d twist = kinematics.toTwist2d(moduleDeltas);
         rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
       }
-      watchdog.addEpoch("Updating gyro for sample" + i);
 
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
-      watchdog.addEpoch("Adding sample " + i + " to pose estimator");
     }
 
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
-
-    Logger.runEveryN(10, watchdog::printEpochs);
   }
 
   /**
@@ -252,17 +228,14 @@ public class Drive extends SubsystemBase {
    * @param speeds Speeds in meters/sec
    */
   public void runVelocity(ChassisSpeeds speeds) {
-    Time elapsed = Seconds.of(sinceLastSetpoint.get());
-    sinceLastSetpoint.reset();
-
     // Calculate module setpoints
-    previousSetpoint =
-        setpointGenerator.generateSetpoint(
-            previousSetpoint, speeds, elapsed, Volts.of(RobotController.getBatteryVoltage()));
-    SwerveModuleState[] setpointStates = previousSetpoint.moduleStates();
+    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
+    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, TunerConstants.kSpeedAt12Volts);
 
     // Log unoptimized setpoints and setpoint speeds
     Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
+    Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
 
     // Send setpoints to modules
     for (int i = 0; i < 4; i++) {
@@ -271,6 +244,10 @@ public class Drive extends SubsystemBase {
 
     // Log optimized setpoints (runSetpoint mutates each state)
     Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
+  }
+
+  public void runFieldCentric(ChassisSpeeds speeds) {
+    runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getRotation()));
   }
 
   /** Runs the drive in a straight line with the specified drive output. */
@@ -359,6 +336,10 @@ public class Drive extends SubsystemBase {
     return poseEstimator.getEstimatedPosition();
   }
 
+  public Pose2d getPoseAtTime(double timestamp) {
+    return poseEstimator.sampleAt(timestamp).orElseGet(this::getPose);
+  }
+
   /** Returns the current odometry rotation. */
   public Rotation2d getRotation() {
     return getPose().getRotation();
@@ -369,13 +350,17 @@ public class Drive extends SubsystemBase {
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
 
+  /** Resets the current odometry pose if in simulation */
+  public void setPoseIfSim(Pose2d pose) {
+    if (RobotBase.isSimulation()) {
+      setPose(pose);
+    }
+  }
+
+  @Override
   /** Adds a new timestamped vision measurement. */
-  public void addVisionMeasurement(
-      Pose2d visionRobotPoseMeters,
-      double timestampSeconds,
-      Matrix<N3, N1> visionMeasurementStdDevs) {
-    poseEstimator.addVisionMeasurement(
-        visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+  public void addVisionPose(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {
+    poseEstimator.addVisionMeasurement(pose, timestamp, stdDevs);
   }
 
   /** Returns the maximum linear speed in meters per sec. */

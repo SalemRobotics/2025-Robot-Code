@@ -7,8 +7,6 @@
 
 package frc.robot.commands;
 
-import static frc.robot.util.PositionUtils.getDistance;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -25,6 +23,9 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.Allocated;
+import lombok.val;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -42,12 +43,17 @@ public final class DriveCommands {
   private static final double ANGLE_MAX_VELOCITY = 8.0;
   private static final double ANGLE_MAX_ACCELERATION = 20.0;
   private static final double ANGLE_TOLERANCE = Units.degreesToRadians(5);
-  private static final double LINE_TOLERANCE = 0.05;
   private static final double POSITION_TOLERANCE = Units.inchesToMeters(1);
   private static final double FF_START_DELAY = 2.0; // Secs
   private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
+  private static final TrapezoidProfile.Constraints DRIVE_CONSTRAINTS = new TrapezoidProfile.Constraints(
+    Units.degreesToRadians(540), 
+    Units.degreesToRadians(720));
+  private static final TrapezoidProfile.Constraints ANGLE_CONSTRAINTS = new TrapezoidProfile.Constraints(
+    4.73, 
+    5);
 
   private DriveCommands() {}
 
@@ -222,7 +228,7 @@ public final class DriveCommands {
       // Calculate total linear velocity
       Translation2d linearVelocity =
           getLinearVelocityFromJoysticks(-ySupplier.getAsDouble(), 0)
-              .times(drive.getMaxLinearSpeedMetersPerSec())
+              .times(drive.getMaxLinearSpeedMetersPerSec() / 2)
               .plus(offsetVector)
               .rotateBy(targetRotation2d);
 
@@ -394,86 +400,6 @@ public final class DriveCommands {
                               + formatter.format(Units.metersToInches(wheelRadius))
                               + " inches");
                     })));
-  }
-
-  @FunctionalInterface
-  interface RotationFunc {
-    public double getRotation(ProfiledPIDController controller, Pose2d current, Pose2d target);
-  }
-
-  static final RotationFunc standardApproachRotation =
-      (controller, current, target) -> {
-        final Rotation2d currentRot = current.getRotation(), targetRot = target.getRotation();
-
-        double pidResult = controller.calculate(currentRot.getRadians(), targetRot.getRadians());
-        System.out.println("StraightTowards::rotationFunc: pidResult = " + pidResult);
-
-        double toGoal = targetRot.minus(currentRot).getRadians();
-        System.out.println("StraightTowards::rotationFunc: toGoal = " + toGoal);
-
-        double omega = toGoal * pidResult;
-        System.out.println("StraightTowards::rotationFunc: omega = " + omega);
-
-        return omega;
-      };
-
-  public static Command straightTowards(Drive drive, Supplier<Pose2d> target) {
-    return straightTowards(drive, target, standardApproachRotation);
-  }
-
-  public static Command straightTowards(
-      Drive drive, Supplier<Pose2d> targetSupplier, RotationFunc rotationFunc) {
-    final ProfiledPIDController alignController =
-        new ProfiledPIDController(
-            DRIVE_KP,
-            0,
-            DRIVE_KD,
-            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
-    alignController.setTolerance(LINE_TOLERANCE);
-    alignController.setGoal(0);
-
-    final ProfiledPIDController angleController =
-        new ProfiledPIDController(
-            DRIVE_KP,
-            0,
-            DRIVE_KD,
-            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
-    angleController.setTolerance(ANGLE_TOLERANCE);
-    angleController.enableContinuousInput(-Math.PI, Math.PI);
-
-    return Commands.run(
-            () -> {
-              final Pose2d robotPose = drive.getPose(), targetPose = targetSupplier.get();
-
-              var robotToGoal = targetPose.minus(robotPose).getTranslation();
-
-              double pidX = alignController.calculate(robotToGoal.getX());
-              double pidY = alignController.calculate(robotToGoal.getY());
-
-              System.out.println("StraightTowards::cmd: pidScalars = (" + pidX + ", " + pidY + ")");
-
-              var pidTranslation =
-                  new Translation2d(pidX * robotToGoal.getX(), pidY * robotToGoal.getY());
-
-              var resultVector = robotToGoal.plus(pidTranslation);
-
-              System.out.println(
-                  "StraightTowards::cmd: final vector = ("
-                      + resultVector.getX()
-                      + ", "
-                      + resultVector.getY()
-                      + ")");
-
-              final ChassisSpeeds speeds =
-                  new ChassisSpeeds(
-                      resultVector.getX(),
-                      resultVector.getY(),
-                      rotationFunc.getRotation(angleController, robotPose, targetPose));
-
-              drive.runVelocity(speeds);
-            },
-            drive)
-        .until(() -> getDistance(drive, targetSupplier.get()) < POSITION_TOLERANCE);
   }
 
   private static class WheelRadiusCharacterizationState {

@@ -9,7 +9,6 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.*;
 import frc.robot.subsystems.elevator.Elevator.Setpoint;
-
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ElevatorIO {

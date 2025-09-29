@@ -3,53 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.035,
-        "y": 5.25
-      },
-      "prevControl": null,
-      "nextControl": {
-        "x": 4.91825858778626,
-        "y": 5.585768129770992
-      },
-      "isLocked": false,
-      "linkedName": "Branch J"
-    },
-    {
-      "anchor": {
-        "x": 4.337642045454546,
-        "y": 6.024303977272727
-      },
-      "prevControl": {
-        "x": 5.017651888559972,
-        "y": 5.377055366251678
-      },
-      "nextControl": {
-        "x": 3.711164038856905,
-        "y": 6.620599786394851
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
         "x": 1.6153977272727271,
         "y": 7.300667613636364
       },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.3322726019898568,
+        "y": 6.725789978541568
+      },
+      "isLocked": false,
+      "linkedName": "Left CS Outside"
+    },
+    {
+      "anchor": {
+        "x": 3.935,
+        "y": 5.25
+      },
       "prevControl": {
-        "x": 1.7799223233224872,
-        "y": 7.112434626902733
+        "x": 3.034358556076907,
+        "y": 5.992592821541219
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Left CS Outside"
+      "linkedName": "Branch K"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [
     {
-      "name": "Elevator slow",
-      "minWaypointRelativePos": 0,
-      "maxWaypointRelativePos": 0.6,
+      "name": "Elevator Slow",
+      "minWaypointRelativePos": 0.6,
+      "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 4.73,
         "maxAcceleration": 3.0,
@@ -63,13 +47,24 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "elevator_stow",
-      "waypointRelativePos": 0.4,
+      "name": "coral_jog",
+      "waypointRelativePos": 0.0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "elevator_stow"
+          "name": "coral_jog"
+        }
+      }
+    },
+    {
+      "name": "elevator_l4",
+      "waypointRelativePos": 0.8,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevator_l4"
         }
       }
     }
@@ -84,13 +79,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -54.0
+    "rotation": -59.99999999999999
   },
   "reversed": false,
-  "folder": "To Coral Station",
+  "folder": "To Reef",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -119.99999999999999
+    "rotation": -54.0
   },
   "useDefaultConstraints": true
 }

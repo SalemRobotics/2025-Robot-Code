@@ -21,15 +21,13 @@ public final class Superstructure {
   public Command bargeShot() {
     return Commands.parallel(
         elevator.setTarget(Setpoint.Barge),
-        Commands.waitUntil(() -> elevator.madeProgress(.75))
-            .andThen(endEffector.scoreBarge(), algaeArm.stow()));
+        Commands.waitSeconds(0.35).andThen(endEffector.scoreBarge(), algaeArm.stow()));
   }
 
   public Command scoreCoral(boolean inAuto) {
     if (inAuto) {
-      return elevator
-          .setTarget(Setpoint.L4)
-          .alongWith(endEffector.autoScoreCoral(elevator.isAtSetpoint));
+      return Commands.print("Scoring coral")
+          .andThen(endEffector.autoScoreCoral(elevator.isAtSetpoint));
     } else {
       return endEffector.teleScoreCoral(elevator::shouldEjectFast);
     }
@@ -37,9 +35,5 @@ public final class Superstructure {
 
   public Command algaeMode() {
     return endEffector.intakeAlgae().alongWith(algaeArm.deploy());
-  }
-
-  public Command intakeCoralThenL3() {
-    return endEffector.autoIntake(true).andThen(elevator.setTarget(Setpoint.L3));
   }
 }

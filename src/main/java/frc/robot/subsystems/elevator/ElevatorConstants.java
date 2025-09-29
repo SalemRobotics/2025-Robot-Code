@@ -15,8 +15,8 @@ public final class ElevatorConstants {
   public static final CANBus kMotorBus = new CANBus("canivore0");
 
   public static final class Trapezoidal {
-    public static final AngularVelocity kMaxVelocity = RotationsPerSecond.of(15);
-    public static final AngularAcceleration kMaxAcceleration = RotationsPerSecondPerSecond.of(40);
+    public static final AngularVelocity kMaxVelocity = RotationsPerSecond.of(10);
+    public static final AngularAcceleration kMaxAcceleration = RotationsPerSecondPerSecond.of(25);
     public static final Velocity<AngularAccelerationUnit> kMaxJerk =
         RotationsPerSecondPerSecond.per(Second).of(100);
   }

@@ -8,7 +8,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotSimState;
 import frc.robot.util.io.talon.TalonFXIO;
@@ -131,17 +130,8 @@ public class EndEffector extends SubsystemBase {
     return runOnce(this::jogCoral).andThen(Commands.waitSeconds(0.02));
   }
 
-  public Command autoIntake(boolean withTimeDeadline) {
-    ParallelRaceGroup group =
-        new ParallelRaceGroup(
-            Commands.waitUntil(() -> !exitIO.isBroken()),
-            run(this::jogCoral).finallyDo(this::resetState));
-
-    if (withTimeDeadline) {
-      group.addCommands(Commands.waitSeconds(0.4));
-    }
-
-    return group;
+  public Command autoIntake() {
+    return run(this::jogCoral).finallyDo(this::resetState);
   }
 
   public Command teleScoreCoral(BooleanSupplier ejectFast) {
@@ -156,10 +146,13 @@ public class EndEffector extends SubsystemBase {
 
   public Command autoScoreCoral(BooleanSupplier elevatorIsAtHeight) {
     return Commands.sequence(
-        Commands.waitUntil(elevatorIsAtHeight),
-        Commands.waitSeconds(0.1),
+        // Commands.waitUntil(elevatorIsAtHeight),
+        // Commands.print("Elevator is at height"),
+        Commands.waitSeconds(0.25),
         runOnce(() -> motorIO.setDutyCycle(kAutoEjectSpeed)),
+        Commands.print("Motor is set to " + kAutoEjectSpeed),
         Commands.race(Commands.waitSeconds(0.2), Commands.waitUntil(() -> !exitIO.isBroken())),
+        Commands.print("Coral out"),
         runOnce(this::resetState));
   }
 

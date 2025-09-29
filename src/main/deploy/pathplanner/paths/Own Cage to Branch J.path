@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.15,
+        "x": 7.0,
         "y": 6.15
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.37915404232744,
-        "y": 6.249942107667359
+        "x": 6.031808434661551,
+        "y": 5.688957694627683
       },
       "isLocked": false,
       "linkedName": "Own Cage"
     },
     {
       "anchor": {
-        "x": 5.025681818181818,
-        "y": 5.27643465909091
+        "x": 5.035,
+        "y": 5.25
       },
       "prevControl": {
-        "x": 5.4052670752795935,
-        "y": 5.43522218089631
+        "x": 5.510795884425652,
+        "y": 5.488459919417843
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,10 +33,15 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "elevator_l3",
-      "waypointRelativePos": 0.8,
+      "name": "elevator_l4",
+      "waypointRelativePos": 0.4,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevator_l4"
+        }
+      }
     }
   ],
   "globalConstraints": {

@@ -27,6 +27,18 @@
           "data": {
             "name": "coral_intake"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left CS to Branch K"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "score_coral"
+          }
         }
       ]
     }

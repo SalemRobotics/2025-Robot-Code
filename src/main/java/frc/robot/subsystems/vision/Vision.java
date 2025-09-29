@@ -1,192 +1,143 @@
-// Copyright (c) 2021-2025 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
 package frc.robot.subsystems.vision;
 
-import static frc.robot.subsystems.vision.VisionConstants.*;
+import static frc.robot.subsystems.vision.VisionConstants.APRILTAG_LAYOUT;
+import static frc.robot.subsystems.vision.VisionConstants.CAMERA_NAMES;
+import static frc.robot.subsystems.vision.VisionConstants.angularStdDevBaseline;
+import static frc.robot.subsystems.vision.VisionConstants.cameraStdDevFactors;
+import static frc.robot.subsystems.vision.VisionConstants.linearStdDevBaseline;
+import static frc.robot.subsystems.vision.VisionConstants.maxAmbiguity;
+import static frc.robot.subsystems.vision.VisionConstants.maxZError;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.concurrent.locks.Lock;
+import lombok.val;
 import org.littletonrobotics.junction.Logger;
 
-public class Vision extends SubsystemBase {
+public final class Vision extends SubsystemBase {
+  static boolean visionEnabled = true;
+
+  public static final void enable() {
+    visionEnabled = true;
+  }
+
+  public static final void disable() {
+    visionEnabled = false;
+  }
+
   private final VisionConsumer consumer;
-  private final VisionIO[] io;
-  private final VisionIOInputsAutoLogged[] inputs;
-  private final Alert[] disconnectedAlerts;
+  private final VisionIO[] cameras;
+  private final VisionIOInputsAutoLogged[] cameraInputs;
+  private final String[] logKeys;
+  private final Lock odometryLock;
+  private final int numCameras;
+
+  private final ArrayList<Pose3d> allRobotPoses = new ArrayList<>();
+  private final ArrayList<Pose3d> allAcceptedPoses = new ArrayList<>();
+  private final ArrayList<Pose3d> cameraRobotPoses = new ArrayList<>();
+  private final ArrayList<Pose3d> cameraAcceptedPoses = new ArrayList<>();
 
   public Vision(VisionConsumer consumer, VisionIO... io) {
     this.consumer = consumer;
-    this.io = io;
+    cameras = io;
 
-    // Initialize inputs
-    this.inputs = new VisionIOInputsAutoLogged[io.length];
-    for (int i = 0; i < inputs.length; i++) {
-      inputs[i] = new VisionIOInputsAutoLogged();
+    numCameras = io.length;
+
+    cameraInputs = new VisionIOInputsAutoLogged[numCameras];
+    logKeys = new String[numCameras];
+    for (int i = 0; i < numCameras; i++) {
+      cameraInputs[i] = new VisionIOInputsAutoLogged();
+      logKeys[i] = "Vision/" + CAMERA_NAMES[i];
     }
 
-    // Initialize disconnected alerts
-    this.disconnectedAlerts = new Alert[io.length];
-    for (int i = 0; i < inputs.length; i++) {
-      disconnectedAlerts[i] =
-          new Alert(
-              "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
-    }
-
-    SmartDashboard.putBoolean("Use Vision", true);
-  }
-
-  /**
-   * Returns the X angle to the best target, which can be used for simple servoing with vision.
-   *
-   * @param cameraIndex The index of the camera to use.
-   */
-  public Rotation2d getTargetX(int cameraIndex) {
-    return inputs[cameraIndex].latestTargetObservation.tx();
+    odometryLock = VisionOdometry.getInstance().globalLock;
   }
 
   @Override
   public void periodic() {
-    for (int i = 0; i < io.length; i++) {
-      io[i].updateInputs(inputs[i]);
-      Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
+    odometryLock.lock();
+
+    try {
+      for (int i = 0; i < numCameras; i++) {
+        val inputs = cameraInputs[i];
+        cameras[i].updateInputs(inputs);
+        Logger.processInputs(logKeys[i], inputs);
+      }
+    } finally {
+      odometryLock.unlock();
     }
 
-    boolean enableVision = SmartDashboard.getBoolean("Use Vision", true);
+    Logger.recordOutput("Vision/Enabled", visionEnabled);
 
-    // Initialize logging values
-    List<Pose3d> allTagPoses = new LinkedList<>();
-    List<Pose3d> allRobotPoses = new LinkedList<>();
-    List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
-    List<Pose3d> allRobotPosesRejected = new LinkedList<>();
-
-    // Loop over cameras
-    for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
-      // Update disconnected alert
-      disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
-
-      // Initialize logging values
-      List<Pose3d> tagPoses = new LinkedList<>();
-      List<Pose3d> robotPoses = new LinkedList<>();
-      List<Pose3d> robotPosesAccepted = new LinkedList<>();
-      List<Pose3d> robotPosesRejected = new LinkedList<>();
-
-      // Add tag poses
-      for (int tagId : inputs[cameraIndex].tagIds) {
-        var tagPose = aprilTagLayout.getTagPose(tagId);
-        if (tagPose.isPresent()) {
-          tagPoses.add(tagPose.get());
-        }
+    for (int cameraIdx = 0; cameraIdx < numCameras; cameraIdx++) {
+      val inputs = cameraInputs[cameraIdx];
+      // skip processing inputs if the camera is disconnected
+      if (!inputs.connected) {
+        continue;
       }
 
-      // Loop over pose observations
-      for (var observation : inputs[cameraIndex].poseObservations) {
-        // Check whether to reject pose
-        boolean rejectPose =
-            observation.tagCount() == 0 // Must have at least one tag
-                || (observation.tagCount() == 1
-                    && observation.ambiguity() > maxAmbiguity) // Cannot be high ambiguity
-                || Math.abs(observation.pose().getZ())
-                    > maxZError // Must have realistic Z coordinate
+      cameraRobotPoses.clear();
+      cameraAcceptedPoses.clear();
 
-                // Must be within the field boundaries
-                || observation.pose().getX() < 0.0
-                || observation.pose().getX() > aprilTagLayout.getFieldLength()
-                || observation.pose().getY() < 0.0
-                || observation.pose().getY() > aprilTagLayout.getFieldWidth();
+      for (var observation : inputs.poseObservations) {
+        val tagsUsed = observation.tagsUsed();
+        val pose = observation.pose();
 
-        // Add pose to log
-        robotPoses.add(observation.pose());
-        if (rejectPose) {
-          robotPosesRejected.add(observation.pose());
-        } else {
-          robotPosesAccepted.add(observation.pose());
-        }
+        boolean reject =
+            tagsUsed.length == 0
+                || (tagsUsed.length == 1 && observation.averageAmbiguity() > maxAmbiguity)
+                || Math.abs(pose.getZ()) > maxZError
+                || pose.getX() < 0
+                || pose.getX() > APRILTAG_LAYOUT.getFieldLength()
+                || pose.getY() < 0
+                || pose.getY() > APRILTAG_LAYOUT.getFieldWidth();
 
-        // Skip if rejected
-        if (rejectPose) {
+        cameraRobotPoses.add(pose);
+        if (reject) {
           continue;
         }
 
-        // Calculate standard deviations
-        double stdDevFactor =
-            (Math.pow(observation.averageTagDistance(), 2.0)) / observation.tagCount();
+        cameraAcceptedPoses.add(pose);
+
+        double stdDevFactor = Math.pow(observation.averageDistance(), 2) / tagsUsed.length;
         double linearStdDev = linearStdDevBaseline * stdDevFactor;
         double angularStdDev = angularStdDevBaseline * stdDevFactor;
-        if (observation.type() == PoseObservationType.MEGATAG_2) {
-          linearStdDev *= linearStdDevMegatag2Factor;
-          angularStdDev *= angularStdDevMegatag2Factor;
-        }
-        if (cameraIndex < cameraStdDevFactors.length) {
-          linearStdDev *= cameraStdDevFactors[cameraIndex];
-          angularStdDev *= cameraStdDevFactors[cameraIndex];
+
+        if (cameraIdx < cameraStdDevFactors.length) {
+          linearStdDev *= cameraStdDevFactors[cameraIdx];
+          angularStdDev *= cameraStdDevFactors[cameraIdx];
         }
 
-        SmartDashboard.putNumber("Camera " + cameraIndex + " Pose X", observation.pose().getX());
-        SmartDashboard.putNumber("Camera " + cameraIndex + " Pose Y", observation.pose().getY());
-
-        if (enableVision) {
-          // Send vision observation
-          consumer.accept(
-              observation.pose().toPose2d(),
+        if (visionEnabled) {
+          consumer.addVisionPose(
+              pose.toPose2d(),
               observation.timestamp(),
               VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
         }
       }
 
-      // Log camera datadata
       Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/TagPoses",
-          tagPoses.toArray(new Pose3d[tagPoses.size()]));
+          logKeys[cameraIdx] + "/RobotPoses", cameraRobotPoses.toArray(Pose3d[]::new));
       Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPoses",
-          robotPoses.toArray(new Pose3d[robotPoses.size()]));
-      Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesAccepted",
-          robotPosesAccepted.toArray(new Pose3d[robotPosesAccepted.size()]));
-      Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesRejected",
-          robotPosesRejected.toArray(new Pose3d[robotPosesRejected.size()]));
-      allTagPoses.addAll(tagPoses);
-      allRobotPoses.addAll(robotPoses);
-      allRobotPosesAccepted.addAll(robotPosesAccepted);
-      allRobotPosesRejected.addAll(robotPosesRejected);
+          logKeys[cameraIdx] + "/RobotPosesAccepted", cameraRobotPoses.toArray(Pose3d[]::new));
+
+      allRobotPoses.addAll(cameraRobotPoses);
+      allAcceptedPoses.addAll(cameraAcceptedPoses);
     }
 
-    // Log summary data
+    Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(Pose3d[]::new));
     Logger.recordOutput(
-        "Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
-    Logger.recordOutput(
-        "Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[allRobotPoses.size()]));
-    Logger.recordOutput(
-        "Vision/Summary/RobotPosesAccepted",
-        allRobotPosesAccepted.toArray(new Pose3d[allRobotPosesAccepted.size()]));
-    Logger.recordOutput(
-        "Vision/Summary/RobotPosesRejected",
-        allRobotPosesRejected.toArray(new Pose3d[allRobotPosesRejected.size()]));
+        "Vision/Summary/RobotPosesAccepted", allAcceptedPoses.toArray(Pose3d[]::new));
   }
 
   @FunctionalInterface
-  public static interface VisionConsumer {
-    public void accept(
-        Pose2d visionRobotPoseMeters,
-        double timestampSeconds,
-        Matrix<N3, N1> visionMeasurementStdDevs);
+  public interface VisionConsumer {
+    public void addVisionPose(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs);
   }
 }

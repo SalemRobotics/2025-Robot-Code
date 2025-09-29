@@ -17,15 +17,12 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicExpoTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.subsystems.elevator.Elevator.Setpoint;
-import lombok.val;
 
 public sealed class ElevatorIOTalonFX implements ElevatorIO permits ElevatorIOSim {
   protected final TalonFX leader = new TalonFX(kLeaderId, kMotorBus);
@@ -68,9 +65,7 @@ public sealed class ElevatorIOTalonFX implements ElevatorIO permits ElevatorIOSi
 
   /** Control request for moving up to a setpoint, or for stowing the carriage */
   private final MotionMagicExpoTorqueCurrentFOC exponential =
-      new MotionMagicExpoTorqueCurrentFOC(0)
-          .withUpdateFreqHz(1000)
-          .withFeedForward(Amps.of(8));
+      new MotionMagicExpoTorqueCurrentFOC(0).withUpdateFreqHz(1000).withFeedForward(Amps.of(8));
   /** Control request for moving between setpoints, where neither is from stow */
   private final DynamicMotionMagicTorqueCurrentFOC trapezoidal =
       new DynamicMotionMagicTorqueCurrentFOC(
@@ -110,9 +105,7 @@ public sealed class ElevatorIOTalonFX implements ElevatorIO permits ElevatorIOSi
 
     tryUntilOk(5, () -> leader.getConfigurator().apply(config));
     tryUntilOk(5, () -> follower.getConfigurator().apply(config));
-    tryUntilOk(5, () -> follower.setControl(
-        new Follower(kLeaderId, true)
-          .withUpdateFreqHz(1000)));
+    tryUntilOk(5, () -> follower.setControl(new Follower(kLeaderId, true).withUpdateFreqHz(1000)));
 
     leader.setPosition(0);
     leader.setNeutralMode(NeutralModeValue.Brake);
