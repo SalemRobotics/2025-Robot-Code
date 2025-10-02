@@ -20,17 +20,15 @@ public final class Constants {
 
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
-  public static final boolean DEVBOT = false;
+  public static final boolean DEVBOT = RobotBase.isSimulation() ? true : false;
 
   public static final double TotalMemory = 100 * 1024 * 1024;
 
   public static enum Mode {
     /** Running on a real robot. */
     REAL,
-
-    /** Running a physics simulator. */
+    /** Running a physics or match simulator. */
     SIM,
-
     /** Replaying from a log file. */
     REPLAY
   }

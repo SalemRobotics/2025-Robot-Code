@@ -10,20 +10,20 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import lombok.val;
+import frc.robot.util.io.talon.TalonFXIOImpl;
 
-public final class AlgaeArmIOSim extends AlgaeArmIOTalonFX {
+public class AlgaeArmIOSim extends TalonFXIOImpl {
   private final SingleJointedArmSim physicsSim;
   private final TalonFXSimState simState;
   private double lastTimestamp = Timer.getTimestamp();
 
   public AlgaeArmIOSim() {
-    super();
+    super(MOTOR_ID, MOTOR_BUS, MOTOR_CONFIG);
     simState = talon.getSimState();
 
-    DCMotor motor = DCMotor.getKrakenX60Foc(1).withReduction(SYSTEM_REDUCTION);
+    DCMotor motor = DCMotor.getKrakenX60Foc(1).withReduction(25);
     // the reduction is already accounted for, so set it to 1
-    val linearSystem = LinearSystemId.createSingleJointedArmSystem(motor, kMoi, 1);
+    var linearSystem = LinearSystemId.createSingleJointedArmSystem(motor, kMoi, 1);
     physicsSim =
         new SingleJointedArmSim(
             linearSystem,
@@ -37,7 +37,7 @@ public final class AlgaeArmIOSim extends AlgaeArmIOTalonFX {
   }
 
   @Override
-  public void updateInputs(AlgaeArmIOInputs inputs) {
+  public void updateInputs(TalonFXIOInputs inputs) {
     simState.setSupplyVoltage(RobotController.getBatteryVoltage());
     physicsSim.setInputVoltage(simState.getMotorVoltage());
 

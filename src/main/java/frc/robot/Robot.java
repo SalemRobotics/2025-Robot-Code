@@ -48,7 +48,7 @@ public class Robot extends LoggedRobot {
           .withLevel(NotificationLevel.WARNING)
           .withNoAutoDismiss();
 
-  public Robot() {    
+  public Robot() {
     // Preload subsystem classes
     ClassPreloader.preload(
         "frc.robot.RobotContainer",
@@ -118,18 +118,20 @@ public class Robot extends LoggedRobot {
   public void robotPeriodic() {
     val rt = Runtime.getRuntime();
 
-    val usedMem = (double)(rt.totalMemory() - rt.freeMemory());
+    val usedMem = (double) (rt.totalMemory() - rt.freeMemory());
 
-    Logger.recordOutput("Robot/Utilized Memory %", usedMem / (double)rt.totalMemory());
+    Logger.recordOutput("Robot/Utilized Memory %", usedMem / (double) rt.totalMemory());
     Logger.runEveryN(
         // run every second
         2500,
         () -> {
           if (usedMem >= 0.9 * Constants.TotalMemory) {
-            // If memory utilization is too high, send an alert to increase allocated heap size in JVM args
+            // If memory utilization is too high, send an alert to increase allocated heap size in
+            // JVM args
             Elastic.sendNotification(kFullHeapNotification);
           } else if (usedMem <= 0.5 * Constants.TotalMemory) {
-            // If memory utilization is too low, send an alert to decrease allocated heap size in JVM args
+            // If memory utilization is too low, send an alert to decrease allocated heap size in
+            // JVM args
             Elastic.sendNotification(kUnusedHeapNotification);
           }
         });
@@ -157,6 +159,16 @@ public class Robot extends LoggedRobot {
     // Trigger a GC upon disable to ensure that all unnecessary objects are cleaned up.
     // This is especially important after auto.
     System.gc();
+  }
+
+  @Override
+  public void disabledPeriodic() {
+    robotContainer.disabledPeriodic();
+  }
+
+  @Override
+  public void disabledExit() {
+    Logger.recordOutput("Robot/Near Auto Start", false);
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */

@@ -22,14 +22,15 @@ public class Climber extends SubsystemBase {
 
   public Command deploy() {
     return runOnce(io::deploy)
-      .andThen(Commands.idle(this))
-      .finallyDo(io::stop)
-      .withName("Deploy Climber");
+        .andThen(Commands.idle(this))
+        .finallyDo(io::stop)
+        .withName("Deploy Climber");
   }
+
   public Command retract() {
     return runOnce(io::retract)
-      .andThen(Commands.idle(this))
-      .finallyDo(io::stop)
-      .withName("Retract Climber");
+        .andThen(Commands.idle(this))
+        .finallyDo(io::stop)
+        .withName("Retract Climber");
   }
 }

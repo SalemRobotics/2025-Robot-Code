@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotSimState;
 import frc.robot.util.io.talon.TalonFXIO;
 import frc.robot.util.io.talon.TalonFXIOImpl;
 import frc.robot.util.io.talon.TalonFXIOInputsAutoLogged;
@@ -52,11 +51,11 @@ public class EndEffector extends SubsystemBase {
         true);
   }
 
-  public static EndEffector createSim(RobotSimState state) {
+  public static EndEffector createSim() {
     return new EndEffector(
         new TalonFXIOSimImpl(kMotorID, kMotorBus, true, kSystemMOI, 1),
-        new BeamBreakIOSupplierSim(state::hasCoral),
-        new BeamBreakIOSupplierSim(state::hasCoral),
+        new BeamBreakIOSupplierSim(() -> false),
+        new BeamBreakIOSupplierSim(() -> false),
         false);
   }
 

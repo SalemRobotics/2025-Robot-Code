@@ -7,6 +7,9 @@
 
 package frc.robot;
 
+import static frc.robot.subsystems.vision.VisionConstants.CAMERA_NAMES;
+import static frc.robot.subsystems.vision.VisionConstants.ROBOT_TO_CAMERAS;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -21,14 +24,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants.Mode;
 import frc.robot.FieldConstants.ReefSide;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.DriveCommands.JoystickApproachCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.algae_arm.AlgaeArm;
-import frc.robot.subsystems.algae_arm.AlgaeArmIOSim;
-import frc.robot.subsystems.algae_arm.AlgaeArmIOTalonFX;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIOReal;
 import frc.robot.subsystems.drive.Drive;
@@ -45,11 +46,14 @@ import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
 import frc.robot.subsystems.end_effector.BeamBreakIO;
 import frc.robot.subsystems.end_effector.EndEffector;
 import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionIO.VisionIOPhotonVision;
-import frc.robot.subsystems.vision.VisionIO.VisionIOPhotonVisionSim;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import frc.robot.util.PositionUtils;
 import frc.robot.util.io.talon.TalonFXIO;
 import java.util.Set;
 import java.util.function.Supplier;
+import lombok.val;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -71,9 +75,6 @@ public class RobotContainer {
   private final Climber climber;
 
   private final Superstructure superstructure;
-
-  private final RobotSimState simState =
-      Constants.currentMode == Mode.SIM ? new RobotSimState() : null;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -107,11 +108,11 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive,
-                new VisionIOPhotonVision(0, drive::getPoseAtTime),
-                new VisionIOPhotonVision(1, drive::getPoseAtTime));
+                new VisionIOPhotonVision(CAMERA_NAMES[0], ROBOT_TO_CAMERAS[0]),
+                new VisionIOPhotonVision(CAMERA_NAMES[1], ROBOT_TO_CAMERAS[1]));
         endEffector = EndEffector.createReal();
         elevator = new Elevator(new ElevatorIOTalonFX());
-        algaeArm = new AlgaeArm(new AlgaeArmIOTalonFX());
+        algaeArm = AlgaeArm.createReal();
         climber = new Climber(new ClimberIOReal());
         break;
 
@@ -127,13 +128,14 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive,
-                new VisionIOPhotonVisionSim(0, drive::getPoseAtTime, drive::getPose),
-                new VisionIOPhotonVisionSim(0, drive::getPoseAtTime, drive::getPose));
+                new VisionIOPhotonVisionSim(CAMERA_NAMES[0], ROBOT_TO_CAMERAS[0], drive::getPose),
+                new VisionIOPhotonVisionSim(CAMERA_NAMES[1], ROBOT_TO_CAMERAS[1], drive::getPose));
 
-        endEffector = EndEffector.createSim(simState);
+        endEffector = EndEffector.createSim();
         elevator = new Elevator(new ElevatorIOSim());
-        algaeArm = new AlgaeArm(new AlgaeArmIOSim());
-        // We don't simulate the climber due to the complexity of how it works and the ramifications it
+        algaeArm = AlgaeArm.createSim();
+        // We don't simulate the climber due to the complexity of how it works and the ramifications
+        // it
         // has on the rest of the robot
         climber = new Climber(inputs -> {});
         break;
@@ -151,7 +153,7 @@ public class RobotContainer {
         endEffector =
             new EndEffector(new TalonFXIO() {}, new BeamBreakIO() {}, new BeamBreakIO() {}, false);
         elevator = new Elevator(new ElevatorIO() {});
-        algaeArm = new AlgaeArm(inputs -> {});
+        algaeArm = new AlgaeArm(new TalonFXIO() {});
         climber = new Climber(inputs -> {});
         break;
     }
@@ -186,12 +188,26 @@ public class RobotContainer {
     // Configure the button bindings
     configureButtonBindings();
     SmartDashboard.putData("Field", field);
+    SmartDashboard.putData(
+        "Pathfind To Auto", DriveCommands.pathfindToAuto(drive, autoChooser::get));
   }
 
   public void periodic() {
     field.setRobotPose(drive.getPose());
 
-    SmartDashboard.putString("Control Mode", controlMode.toString());
+    Logger.recordOutput("Robot/Control Mode", controlMode);
+  }
+
+  public void disabledPeriodic() {
+    val auto = autoChooser.get();
+
+    if (auto instanceof PathPlannerAuto a) {
+      Logger.recordOutput(
+          "Robot/Near Auto Start",
+          PositionUtils.isNear(drive.getPose(), a.getStartingPose(), 0.04));
+    } else {
+      Logger.recordOutput("Robot/Near Auto Start", false);
+    }
   }
 
   /**
@@ -263,7 +279,7 @@ public class RobotContainer {
     controller.rightTrigger().and(algaeMode).whileTrue(endEffector.scoreProcessor());
 
     controller.povDown().whileTrue(climber.deploy());
-    controller.povUp().whileTrue(climber.retract());
+    controller.povUp().whileTrue(climber.retract().alongWith(algaeArm.deploy()));
   }
 
   private void configureAutoCommands() {
@@ -278,7 +294,7 @@ public class RobotContainer {
   }
 
   private Command joystickApproach(Supplier<Pose2d> approach) {
-    return new DriveCommands.JoystickApproachCommand(drive, () -> -controller.getLeftY(), approach);
+    return new JoystickApproachCommand(drive, () -> -controller.getLeftY(), approach);
   }
 
   /**
@@ -290,6 +306,10 @@ public class RobotContainer {
     return autoChooser.get();
   }
 
+  /**
+   * Start the command to stow the elevator. This is so that autonomous doesn't exit with the
+   * elevator setpoint non-stowed
+   */
   public void stowElevator() {
     elevator.setTarget(Setpoint.Stowed).schedule();
   }

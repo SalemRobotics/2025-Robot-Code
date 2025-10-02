@@ -8,20 +8,36 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.031808434661551,
-        "y": 5.688957694627683
+        "x": 5.849087030710886,
+        "y": 5.944372766023675
       },
       "isLocked": false,
       "linkedName": "Own Cage"
     },
     {
       "anchor": {
-        "x": 5.035,
-        "y": 5.25
+        "x": 5.584,
+        "y": 5.945
       },
       "prevControl": {
-        "x": 5.510795884425652,
-        "y": 5.488459919417843
+        "x": 5.798306238353328,
+        "y": 6.073735528129753
+      },
+      "nextControl": {
+        "x": 5.291531837432583,
+        "y": 5.76931195816531
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.96,
+        "y": 5.19
+      },
+      "prevControl": {
+        "x": 5.093145881788202,
+        "y": 5.401594362313466
       },
       "nextControl": null,
       "isLocked": false,
@@ -46,7 +62,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 3.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

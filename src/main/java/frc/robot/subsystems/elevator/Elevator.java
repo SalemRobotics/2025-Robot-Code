@@ -59,7 +59,7 @@ public class Elevator extends SubsystemBase {
   private Setpoint currentSetpoint = Setpoint.Stowed;
 
   public final Trigger isAtSetpoint =
-      new Trigger(() -> inputs.leaderPosition.isNear(currentSetpoint.target, Rotations.of(0.1)));
+      new Trigger(() -> inputs.leaderPosition.isNear(currentSetpoint.target, Rotations.of(0.075)));
 
   public Elevator(ElevatorIO motorIO) {
     io = motorIO;

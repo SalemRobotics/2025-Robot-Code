@@ -15,6 +15,7 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
@@ -46,6 +47,7 @@ import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.vision.Vision.VisionConsumer;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.Statics;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -68,27 +70,29 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   private static final double ROBOT_MASS_KG = 74.088;
   private static final double ROBOT_MOI = 6.883;
   private static final double WHEEL_COF = 1.2;
-  private static RobotConfig PP_CONFIG;
-
-  static {
-    try {
-      PP_CONFIG = RobotConfig.fromGUISettings();
-    } catch (Exception e) {
-      PP_CONFIG =
-          new RobotConfig(
-              ROBOT_MASS_KG,
-              ROBOT_MOI,
-              new ModuleConfig(
-                  TunerConstants.FrontLeft.WheelRadius,
-                  TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
-                  WHEEL_COF,
-                  DCMotor.getKrakenX60Foc(1)
-                      .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
-                  TunerConstants.FrontLeft.SlipCurrent,
-                  1),
-              getModuleTranslations());
-    }
-  }
+  private static final RobotConfig PP_CONFIG =
+      Statics.initOrDefault(
+          RobotConfig::fromGUISettings,
+          () ->
+              new RobotConfig(
+                  ROBOT_MASS_KG,
+                  ROBOT_MOI,
+                  new ModuleConfig(
+                      TunerConstants.FrontLeft.WheelRadius,
+                      TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+                      WHEEL_COF,
+                      DCMotor.getKrakenX60Foc(1)
+                          .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
+                      TunerConstants.FrontLeft.SlipCurrent,
+                      2),
+                  getModuleTranslations()));
+  public static final PathConstraints PP_CONSTRAINTS =
+      new PathConstraints(
+          MetersPerSecond.of(4.73),
+          MetersPerSecondPerSecond.of(5),
+          DegreesPerSecond.of(540),
+          DegreesPerSecondPerSecond.of(720),
+          Volts.of(12));
 
   static final Lock odometryLock = new ReentrantLock();
   private final GyroIO gyroIO;
@@ -359,7 +363,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
   @Override
   /** Adds a new timestamped vision measurement. */
-  public void addVisionPose(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {
+  public void addVisionMeasurement(Pose2d pose, double timestamp, Matrix<N3, N1> stdDevs) {
     poseEstimator.addVisionMeasurement(pose, timestamp, stdDevs);
   }
 

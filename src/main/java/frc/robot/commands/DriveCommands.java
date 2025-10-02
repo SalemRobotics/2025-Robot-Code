@@ -7,6 +7,10 @@
 
 package frc.robot.commands;
 
+import static frc.robot.subsystems.drive.Drive.PP_CONSTRAINTS;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -23,15 +27,13 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.util.Allocated;
-import lombok.val;
-
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import lombok.val;
 import org.littletonrobotics.junction.Logger;
 
 public final class DriveCommands {
@@ -43,17 +45,12 @@ public final class DriveCommands {
   private static final double ANGLE_MAX_VELOCITY = 8.0;
   private static final double ANGLE_MAX_ACCELERATION = 20.0;
   private static final double ANGLE_TOLERANCE = Units.degreesToRadians(5);
+  private static final double LINE_TOLERANCE = 0.05;
   private static final double POSITION_TOLERANCE = Units.inchesToMeters(1);
   private static final double FF_START_DELAY = 2.0; // Secs
   private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
-  private static final TrapezoidProfile.Constraints DRIVE_CONSTRAINTS = new TrapezoidProfile.Constraints(
-    Units.degreesToRadians(540), 
-    Units.degreesToRadians(720));
-  private static final TrapezoidProfile.Constraints ANGLE_CONSTRAINTS = new TrapezoidProfile.Constraints(
-    4.73, 
-    5);
 
   private DriveCommands() {}
 
@@ -228,7 +225,7 @@ public final class DriveCommands {
       // Calculate total linear velocity
       Translation2d linearVelocity =
           getLinearVelocityFromJoysticks(-ySupplier.getAsDouble(), 0)
-              .times(drive.getMaxLinearSpeedMetersPerSec() / 2)
+              .times(drive.getMaxLinearSpeedMetersPerSec())
               .plus(offsetVector)
               .rotateBy(targetRotation2d);
 
@@ -400,6 +397,19 @@ public final class DriveCommands {
                               + formatter.format(Units.metersToInches(wheelRadius))
                               + " inches");
                     })));
+  }
+
+  public static Command pathfindToAuto(Drive drive, Supplier<Command> autoSupplier) {
+    return drive.defer(
+        () -> {
+          val auto = autoSupplier.get();
+
+          if (auto instanceof PathPlannerAuto a) {
+            return AutoBuilder.pathfindToPose(a.getStartingPose(), PP_CONSTRAINTS);
+          } else {
+            return Commands.none();
+          }
+        });
   }
 
   private static class WheelRadiusCharacterizationState {

@@ -3,32 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.965,
-        "y": 5.19
+        "x": 4.005,
+        "y": 5.15
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.84825858778626,
-        "y": 5.525768129770992
+        "x": 3.248855152232501,
+        "y": 5.8234050800915345
       },
       "isLocked": false,
-      "linkedName": "Branch J"
-    },
-    {
-      "anchor": {
-        "x": 4.337642045454546,
-        "y": 6.024303977272727
-      },
-      "prevControl": {
-        "x": 5.017651888559972,
-        "y": 5.377055366251678
-      },
-      "nextControl": {
-        "x": 3.711164038856905,
-        "y": 6.620599786394851
-      },
-      "isLocked": false,
-      "linkedName": null
+      "linkedName": "Branch K"
     },
     {
       "anchor": {
@@ -36,8 +20,8 @@
         "y": 7.4
       },
       "prevControl": {
-        "x": 1.61452459604976,
-        "y": 7.211767013266369
+        "x": 1.7577511668472265,
+        "y": 7.068527226356515
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,26 +29,12 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [
-    {
-      "name": "Elevator slow",
-      "minWaypointRelativePos": 0,
-      "maxWaypointRelativePos": 0.6,
-      "constraints": {
-        "maxVelocity": 4.73,
-        "maxAcceleration": 3.0,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    }
-  ],
+  "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
       "name": "elevator_stow",
-      "waypointRelativePos": 0.4,
+      "waypointRelativePos": 0.1,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -90,7 +60,7 @@
   "folder": "To Coral Station",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -119.99999999999999
+    "rotation": -59.99999999999999
   },
   "useDefaultConstraints": true
 }

@@ -26,7 +26,7 @@ public final class VisionConstants {
 
   public static final PoseStrategy MULTI_TAG_POSE_STRATEGY =
       PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
-  public static final PoseStrategy SINGLE_TAG_POSE_STRATEGY = PoseStrategy.CONSTRAINED_SOLVEPNP;
+  public static final PoseStrategy SINGLE_TAG_POSE_STRATEGY = PoseStrategy.PNP_DISTANCE_TRIG_SOLVE;
 
   public static final String[] CAMERA_NAMES = new String[] {"Left", "Right"};
   public static final Transform3d[] ROBOT_TO_CAMERAS =

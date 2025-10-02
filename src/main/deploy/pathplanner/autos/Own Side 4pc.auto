@@ -39,6 +39,36 @@
           "data": {
             "name": "score_coral"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Branch K to Left CS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "coral_intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left CS to Branch L"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "score_coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Branch L to Left CS"
+          }
         }
       ]
     }

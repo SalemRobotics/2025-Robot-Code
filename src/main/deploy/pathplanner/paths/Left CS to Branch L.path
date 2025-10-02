@@ -8,63 +8,33 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.2601284158419173,
-        "y": 6.792802327309882
+        "x": 1.9424841780334252,
+        "y": 6.824329313184941
       },
       "isLocked": false,
       "linkedName": "Left CS Outside"
     },
     {
       "anchor": {
-        "x": 3.3305113636363637,
-        "y": 6.094105113636363
+        "x": 3.692533396946565,
+        "y": 5.088382633587786
       },
       "prevControl": {
-        "x": 3.169357917234621,
-        "y": 6.285232209341919
-      },
-      "nextControl": {
-        "x": 3.4916648100381065,
-        "y": 5.902978017930808
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 4.005,
-        "y": 5.15
-      },
-      "prevControl": {
-        "x": 2.9816800023468852,
-        "y": 6.569473380310416
+        "x": 3.149674538700275,
+        "y": 5.708378454126026
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Branch K"
+      "linkedName": "Branch L"
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [
-    {
-      "name": "Elevator Slow",
-      "minWaypointRelativePos": 1.2,
-      "maxWaypointRelativePos": 2.0,
-      "constraints": {
-        "maxVelocity": 4.73,
-        "maxAcceleration": 3.0,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    }
-  ],
+  "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
       "name": "coral_jog",
-      "waypointRelativePos": 0.0,
+      "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -75,7 +45,7 @@
     },
     {
       "name": "elevator_l4",
-      "waypointRelativePos": 0.5,
+      "waypointRelativePos": 0.4,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",

@@ -12,7 +12,6 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.Constants;
@@ -37,7 +36,7 @@ public final class AlgaeArmConstants {
           .withSupplyCurrentLimitEnable(true);
   public static final FeedbackConfigs FEEDBACK_CONFIGS =
       new FeedbackConfigs().withSensorToMechanismRatio(SYSTEM_REDUCTION);
-  public static final MotorOutputConfigs MOTOR_OUTPUT = 
+  public static final MotorOutputConfigs MOTOR_OUTPUT =
       new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake);
   public static final Slot0Configs SLOT_0 =
       new Slot0Configs()
