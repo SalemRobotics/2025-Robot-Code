@@ -6,23 +6,19 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
+import frc.robot.util.Statics;
 import java.nio.file.Paths;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 public final class VisionConstants {
-  private static AprilTagFieldLayout getLayout() {
-    try {
-      return new AprilTagFieldLayout(
-          Paths.get(Filesystem.getDeployDirectory().getAbsolutePath(), "reeftags.json"));
-    } catch (Exception e) {
-      e.printStackTrace();
-      return AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
-    }
-  }
-
   public static final double CAMERA_FPS = 30;
 
-  public static final AprilTagFieldLayout APRILTAG_LAYOUT = getLayout();
+  public static final AprilTagFieldLayout APRILTAG_LAYOUT =
+      Statics.initOrDefault(
+          () ->
+              new AprilTagFieldLayout(
+                  Paths.get(Filesystem.getDeployDirectory().getAbsolutePath(), "reeftags.json")),
+          () -> AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded));
 
   public static final PoseStrategy MULTI_TAG_POSE_STRATEGY =
       PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;

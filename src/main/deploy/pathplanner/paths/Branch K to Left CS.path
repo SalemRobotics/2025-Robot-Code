@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.005,
-        "y": 5.15
+        "x": 3.99,
+        "y": 5.165
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.248855152232501,
-        "y": 5.8234050800915345
+        "x": 3.2338551522325014,
+        "y": 5.838405080091534
       },
       "isLocked": false,
       "linkedName": "Branch K"
@@ -46,7 +46,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 4.73,
-    "maxAcceleration": 2.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

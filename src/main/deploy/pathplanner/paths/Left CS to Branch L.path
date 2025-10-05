@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9424841780334252,
-        "y": 6.824329313184941
+        "x": 1.9735168585623293,
+        "y": 6.855508222945173
       },
       "isLocked": false,
       "linkedName": "Left CS Outside"
     },
     {
       "anchor": {
-        "x": 3.692533396946565,
-        "y": 5.088382633587786
+        "x": 3.7,
+        "y": 5.09
       },
       "prevControl": {
-        "x": 3.149674538700275,
-        "y": 5.708378454126026
+        "x": 3.1382777720233292,
+        "y": 5.691401169532676
       },
       "nextControl": null,
       "isLocked": false,
@@ -29,7 +29,21 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Slow for Elevator",
+      "minWaypointRelativePos": 0.6,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 4.0,
+        "maxAcceleration": 2.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
@@ -57,7 +71,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 4.73,
-    "maxAcceleration": 2.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

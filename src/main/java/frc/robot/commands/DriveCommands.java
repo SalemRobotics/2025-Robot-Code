@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.AllianceFlipUtil;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -51,6 +52,10 @@ public final class DriveCommands {
   private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
+  private static final TrapezoidProfile.Constraints ANGLE_CONSTRAINTS =
+      new TrapezoidProfile.Constraints(Units.degreesToRadians(540), Units.degreesToRadians(720));
+  private static final TrapezoidProfile.Constraints DRIVE_CONSTRAINTS =
+      new TrapezoidProfile.Constraints(4.73, 5);
 
   private DriveCommands() {}
 
@@ -163,9 +168,9 @@ public final class DriveCommands {
   }
 
   public static class JoystickApproachCommand extends Command {
-    Drive drive;
-    DoubleSupplier ySupplier;
-    Supplier<Pose2d> targetSupplier;
+    private final Drive drive;
+    private final DoubleSupplier ySupplier;
+    private final Supplier<Pose2d> targetSupplier;
 
     Pose2d targetPose2d;
     Pose2d currentPose2d;
@@ -251,20 +256,33 @@ public final class DriveCommands {
     public boolean withinTolerance(double dist) {
       return running ? Math.abs(relativePose2d.getY()) < dist : false;
     }
+  }
 
-    private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
-      // Apply deadband
-      double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
-      Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
+  public static Command driveToAutoStart(Drive drive, Supplier<Command> commandSupplier) {
+    return drive
+        .defer(
+            () -> {
+              val autoCommand = commandSupplier.get();
 
-      // Square magnitude for more precise control
-      linearMagnitude = linearMagnitude * linearMagnitude;
+              if (autoCommand instanceof PathPlannerAuto auto) {
+                val autoStart = auto.getStartingPose();
 
-      // Return new linear velocity
-      return new Pose2d(new Translation2d(), linearDirection)
-          .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
-          .getTranslation();
-    }
+                Logger.recordOutput("AutoAlign/DriveToAuto/Enabled", true);
+
+                Logger.recordOutput("AutoAlign/DriveToAuto/AutoStart", autoStart);
+
+                val startPose = AllianceFlipUtil.apply(auto.getStartingPose());
+
+                Logger.recordOutput("AutoAlign/DriveToAuto/Target", startPose);
+                return AutoBuilder.pathfindToPose(startPose, PP_CONSTRAINTS);
+              }
+
+              Logger.recordOutput("AutoAlign/DriveToAuto/Enabled", false);
+
+              return Commands.none();
+            })
+        .withName("Drive To Auto Start")
+        .finallyDo(() -> Logger.recordOutput("AutoAlign/DriveToAuto/Enabled", false));
   }
 
   /**
@@ -397,19 +415,6 @@ public final class DriveCommands {
                               + formatter.format(Units.metersToInches(wheelRadius))
                               + " inches");
                     })));
-  }
-
-  public static Command pathfindToAuto(Drive drive, Supplier<Command> autoSupplier) {
-    return drive.defer(
-        () -> {
-          val auto = autoSupplier.get();
-
-          if (auto instanceof PathPlannerAuto a) {
-            return AutoBuilder.pathfindToPose(a.getStartingPose(), PP_CONSTRAINTS);
-          } else {
-            return Commands.none();
-          }
-        });
   }
 
   private static class WheelRadiusCharacterizationState {

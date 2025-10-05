@@ -69,6 +69,12 @@
           "data": {
             "pathName": "Branch L to Left CS"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "coral_intake"
+          }
         }
       ]
     }

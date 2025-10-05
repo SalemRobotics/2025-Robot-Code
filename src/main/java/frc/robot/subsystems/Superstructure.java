@@ -26,8 +26,7 @@ public final class Superstructure {
 
   public Command scoreCoral(boolean inAuto) {
     if (inAuto) {
-      return Commands.print("Scoring coral")
-          .andThen(endEffector.autoScoreCoral(elevator.isAtSetpoint));
+      return endEffector.autoScoreCoral(elevator.isAtSetpoint);
     } else {
       return endEffector.teleScoreCoral(elevator::shouldEjectFast);
     }

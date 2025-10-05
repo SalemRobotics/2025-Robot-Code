@@ -129,8 +129,12 @@ public class EndEffector extends SubsystemBase {
     return runOnce(this::jogCoral).andThen(Commands.waitSeconds(0.02));
   }
 
-  public Command autoIntake() {
+  public Command autoJogCoral() {
     return run(this::jogCoral).finallyDo(this::resetState);
+  }
+
+  public Command autoIntake() {
+    return autoJogCoral().raceWith(Commands.waitUntil(() -> exitInputs.isBroken));
   }
 
   public Command teleScoreCoral(BooleanSupplier ejectFast) {
@@ -149,9 +153,7 @@ public class EndEffector extends SubsystemBase {
         // Commands.print("Elevator is at height"),
         Commands.waitSeconds(0.25),
         runOnce(() -> motorIO.setDutyCycle(kAutoEjectSpeed)),
-        Commands.print("Motor is set to " + kAutoEjectSpeed),
         Commands.race(Commands.waitSeconds(0.2), Commands.waitUntil(() -> !exitIO.isBroken())),
-        Commands.print("Coral out"),
         runOnce(this::resetState));
   }
 
@@ -161,6 +163,7 @@ public class EndEffector extends SubsystemBase {
 
   public Command scoreProcessor() {
     return runOnce(() -> motorIO.setDutyCycle(-kAlgaeProcessorSpeed))
+        .andThen(Commands.idle(this))
         .beforeStarting(this::resetState);
   }
 

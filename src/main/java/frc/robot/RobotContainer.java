@@ -160,13 +160,16 @@ public class RobotContainer {
 
     superstructure = new Superstructure(endEffector, elevator, algaeArm);
 
+    // configure auto commands BEFORE auto initializations :P
     configureAutoCommands();
     PathfindingCommand.warmupCommand().schedule();
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
+    // Only need to initialize mirrored paths because own side is included by buildAutoChooser
     autoChooser.addOption("Opps Side 4pc", new PathPlannerAuto("Own Side 4pc", true));
 
+    // Only initialize dev autos while working with a devbot
     if (Constants.DEVBOT) {
       // Set up SysId routines
       autoChooser.addOption(
@@ -189,7 +192,7 @@ public class RobotContainer {
     configureButtonBindings();
     SmartDashboard.putData("Field", field);
     SmartDashboard.putData(
-        "Pathfind To Auto", DriveCommands.pathfindToAuto(drive, autoChooser::get));
+        "Pathfind To Auto", DriveCommands.driveToAutoStart(drive, autoChooser::get));
   }
 
   public void periodic() {
@@ -211,10 +214,10 @@ public class RobotContainer {
   }
 
   /**
-   * Use this method to define your button->command mappings. Buttons can be created by
+   * Use this method to define your button to command mappings. Buttons can be created by
    * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
+   * edu.wpi.first.wpilibj.Joystick Joystick} or {@link XboxController}), and then passing it to a
+   * {@link edu.wpi.first.wpilibj2.command.button.JoystickButton JoystickButton}.
    */
   private void configureButtonBindings() {
     // Default command, normal field-relative drive
@@ -225,14 +228,17 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
+    // Initialize coral scoring
     controller.rightTrigger().and(coralMode).whileTrue(superstructure.scoreCoral(false));
 
+    // deferred stow command (so the setpoint can be changed)
     var deferredStow =
         Commands.defer(
                 () -> Commands.waitSeconds(SmartDashboard.getNumber("Elevator Defer Timeout", 0.1)),
                 Set.of())
             .andThen(elevator.setTarget(Setpoint.Stowed));
 
+    // Initialize elevator setpoints
     controller.x().and(coralMode).whileTrue(elevator.setTarget(Setpoint.L2)).onFalse(deferredStow);
     controller
         .x()
@@ -248,6 +254,7 @@ public class RobotContainer {
     controller.y().and(coralMode).whileTrue(elevator.setTarget(Setpoint.L4)).onFalse(deferredStow);
     controller.y().and(algaeMode).whileTrue(superstructure.bargeShot()).onFalse(deferredStow);
 
+    // Initialize coral mode auto align
     controller
         .leftBumper()
         .and(coralMode)
@@ -261,6 +268,7 @@ public class RobotContainer {
             joystickApproach(
                 () -> FieldConstants.getNearestReefBranch(drive.getPose(), ReefSide.RIGHT)));
 
+    // Initialize algae mode auto align
     controller
         .leftBumper()
         .and(algaeMode)
@@ -270,6 +278,7 @@ public class RobotContainer {
         .and(algaeMode)
         .whileTrue(joystickApproach(() -> FieldConstants.getNearestReefFace(drive.getPose())));
 
+    // Initialize barge algae mode & processor scoring
     controller
         .leftTrigger()
         .onTrue(Commands.runOnce(() -> controlMode = ControlMode.Algae))
@@ -278,17 +287,19 @@ public class RobotContainer {
 
     controller.rightTrigger().and(algaeMode).whileTrue(endEffector.scoreProcessor());
 
+    // Initialize climbing commands
     controller.povDown().whileTrue(climber.deploy());
-    controller.povUp().whileTrue(climber.retract().alongWith(algaeArm.deploy()));
+    controller.povUp().whileTrue(climber.retract()).onTrue(algaeArm.drop());
   }
 
+  // Auto NamedCommands instantiations
   private void configureAutoCommands() {
     NamedCommands.registerCommand("elevator_stow", elevator.setTarget(Setpoint.Stowed));
     NamedCommands.registerCommand("elevator_l3", elevator.setTarget(Setpoint.L3));
     NamedCommands.registerCommand("elevator_l4", elevator.setTarget(Setpoint.L4));
     NamedCommands.registerCommand(
-        "coral_intake", Commands.race(endEffector.autoIntake(), Commands.waitSeconds(1)));
-    NamedCommands.registerCommand("coral_jog", endEffector.autoIntake());
+        "coral_intake", Commands.race(endEffector.autoIntake(), Commands.waitSeconds(0.5)));
+    NamedCommands.registerCommand("coral_jog", endEffector.autoJogCoral());
     NamedCommands.registerCommand("score_coral", superstructure.scoreCoral(true));
     NamedCommands.registerCommand("score_barge", superstructure.bargeShot());
   }
