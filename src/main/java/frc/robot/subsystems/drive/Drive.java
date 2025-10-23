@@ -34,11 +34,13 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -67,7 +69,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
               Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
 
   // PathPlanner config constants
-  private static final double ROBOT_MASS_KG = 74.088;
+  private static final double ROBOT_MASS_KG = Units.lbsToKilograms(140);
   private static final double ROBOT_MOI = 6.883;
   private static final double WHEEL_COF = 1.2;
   private static final RobotConfig PP_CONFIG =
@@ -165,6 +167,8 @@ public class Drive extends SubsystemBase implements VisionConsumer {
                 (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+
+    SmartDashboard.putData("Swerve Drive", new SwerveWidget(this));
   }
 
   @Override
@@ -229,7 +233,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   /**
    * Runs the drive at the desired velocity.
    *
-   * @param speeds Speeds in meters/sec
+   * @param speeds Speeds in meters/second
    */
   public void runVelocity(ChassisSpeeds speeds) {
     // Calculate module setpoints
@@ -293,7 +297,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
   /** Returns the module states (turn angles and drive velocities) for all of the modules. */
   @AutoLogOutput(key = "SwerveStates/Measured")
-  private SwerveModuleState[] getModuleStates() {
+  SwerveModuleState[] getModuleStates() {
     SwerveModuleState[] states = new SwerveModuleState[4];
     for (int i = 0; i < 4; i++) {
       states[i] = modules[i].getState();
@@ -302,7 +306,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   }
 
   /** Returns the module positions (turn angles and drive positions) for all of the modules. */
-  private SwerveModulePosition[] getModulePositions() {
+  SwerveModulePosition[] getModulePositions() {
     SwerveModulePosition[] states = new SwerveModulePosition[4];
     for (int i = 0; i < 4; i++) {
       states[i] = modules[i].getPosition();
@@ -325,13 +329,13 @@ public class Drive extends SubsystemBase implements VisionConsumer {
     return values;
   }
 
-  /** Returns the average velocity of the modules in rotations/sec (Phoenix native units). */
+  /** Returns the average velocity of the modules in rotations/second (Phoenix native units). */
   public double getFFCharacterizationVelocity() {
     double output = 0.0;
     for (int i = 0; i < 4; i++) {
-      output += modules[i].getFFCharacterizationVelocity() / 4.0;
+      output += modules[i].getFFCharacterizationVelocity();
     }
-    return output;
+    return output / 4;
   }
 
   /** Returns the current odometry pose. */
@@ -367,12 +371,12 @@ public class Drive extends SubsystemBase implements VisionConsumer {
     poseEstimator.addVisionMeasurement(pose, timestamp, stdDevs);
   }
 
-  /** Returns the maximum linear speed in meters per sec. */
+  /** Returns the maximum linear speed in meters per second. */
   public double getMaxLinearSpeedMetersPerSec() {
     return TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
   }
 
-  /** Returns the maximum angular speed in radians per sec. */
+  /** Returns the maximum angular speed in radians per second. */
   public double getMaxAngularSpeedRadPerSec() {
     return getMaxLinearSpeedMetersPerSec() / DRIVE_BASE_RADIUS;
   }

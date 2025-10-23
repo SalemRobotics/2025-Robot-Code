@@ -15,6 +15,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -25,8 +26,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.FieldConstants.ReefSide;
+import frc.robot.autopilot.AutopilotCommands;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.DriveCommands.JoystickApproachCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.algae_arm.AlgaeArm;
@@ -199,6 +200,8 @@ public class RobotContainer {
     field.setRobotPose(drive.getPose());
 
     Logger.recordOutput("Robot/Control Mode", controlMode);
+
+    SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
   }
 
   public void disabledPeriodic() {
@@ -277,19 +280,31 @@ public class RobotContainer {
         .rightBumper()
         .and(algaeMode)
         .whileTrue(joystickApproach(() -> FieldConstants.getNearestReefFace(drive.getPose())));
+    controller
+        .a()
+        .and(algaeMode)
+        .whileTrue(AutopilotCommands.driveToBarge(drive, () -> -controller.getLeftX()));
 
     // Initialize barge algae mode & processor scoring
     controller
         .leftTrigger()
         .onTrue(Commands.runOnce(() -> controlMode = ControlMode.Algae))
         .whileTrue(Commands.print("Algae mode!").andThen(superstructure.algaeMode()))
-        .onFalse(Commands.runOnce(() -> controlMode = ControlMode.Coral));
+        .onFalse(
+            Commands.runOnce(() -> controlMode = ControlMode.Coral).alongWith(algaeArm.stow()));
 
     controller.rightTrigger().and(algaeMode).whileTrue(endEffector.scoreProcessor());
 
     // Initialize climbing commands
     controller.povDown().whileTrue(climber.deploy());
     controller.povUp().whileTrue(climber.retract()).onTrue(algaeArm.drop());
+
+    controller
+        .povLeft()
+        .whileTrue(AutopilotCommands.intakeCoral(true, drive, elevator, endEffector));
+    controller
+        .povRight()
+        .whileTrue(AutopilotCommands.intakeCoral(false, drive, elevator, endEffector));
   }
 
   // Auto NamedCommands instantiations
@@ -305,7 +320,7 @@ public class RobotContainer {
   }
 
   private Command joystickApproach(Supplier<Pose2d> approach) {
-    return new JoystickApproachCommand(drive, () -> -controller.getLeftY(), approach);
+    return new DriveCommands.JoystickApproachCommand(drive, () -> -controller.getLeftY(), approach);
   }
 
   /**

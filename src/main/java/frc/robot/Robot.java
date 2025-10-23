@@ -194,6 +194,13 @@ public class Robot extends LoggedRobot {
     }
 
     robotContainer.stowElevator();
+
+    Elastic.selectTab("Teleoperated");
+  }
+
+  @Override
+  public void teleopExit() {
+    Elastic.selectTab("Autonomous");
   }
 
   /** This function is called once when test mode is enabled. */

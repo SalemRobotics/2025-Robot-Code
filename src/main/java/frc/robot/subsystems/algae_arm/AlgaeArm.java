@@ -48,15 +48,21 @@ public class AlgaeArm extends SubsystemBase {
 
   public Command deploy() {
     return Commands.sequence(
-        runOnce(() -> io.setDutyCycle(.8)),
-        Commands.waitUntil(hasDeployed),
-        runOnce(() -> io.stopMotor()));
+            runOnce(() -> io.setDutyCycle(1)),
+            Commands.waitUntil(hasDeployed),
+            runOnce(() -> io.stopMotor()))
+        .withName("Deploy Algae Arm");
+  }
+
+  public Command drop() {
+    return runOnce(this::removeDefaultCommand).andThen(deploy()).withName("Drop Algae Arm");
   }
 
   public Command stow() {
     return Commands.sequence(
-        runOnce(() -> io.setDutyCycle(-.8)),
-        Commands.waitUntil(hasStowed),
-        runOnce(() -> io.stopMotor()));
+            runOnce(() -> io.setDutyCycle(-1)),
+            Commands.waitUntil(hasStowed),
+            runOnce(() -> io.stopMotor()))
+        .withName("Stow Algae Arm");
   }
 }

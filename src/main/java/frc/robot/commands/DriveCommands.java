@@ -38,22 +38,19 @@ import lombok.val;
 import org.littletonrobotics.junction.Logger;
 
 public final class DriveCommands {
-  private static final double DEADBAND = 0.1;
-  private static final double DRIVE_KP = 2.5;
-  private static final double DRIVE_KD = 0.25;
-  private static final double ANGLE_KP = 2.0;
-  private static final double ANGLE_KD = 0.2;
-  private static final double ANGLE_MAX_VELOCITY = 8.0;
-  private static final double ANGLE_MAX_ACCELERATION = 20.0;
-  private static final double ANGLE_TOLERANCE = Units.degreesToRadians(5);
-  private static final double LINE_TOLERANCE = 0.05;
-  private static final double POSITION_TOLERANCE = Units.inchesToMeters(1);
+  public static final double DEADBAND = 0.1;
+  private static final double DRIVE_KP = 2;
+  private static final double DRIVE_KD = 0;
+  private static final double ANGLE_KP = 2;
+  private static final double ANGLE_KD = 0;
+  private static final double ANGLE_TOLERANCE = Units.degreesToRadians(2.5);
+  private static final double POSITION_TOLERANCE = 0.0125;
   private static final double FF_START_DELAY = 2.0; // Secs
   private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
   private static final TrapezoidProfile.Constraints ANGLE_CONSTRAINTS =
-      new TrapezoidProfile.Constraints(Units.degreesToRadians(540), Units.degreesToRadians(720));
+      new TrapezoidProfile.Constraints(8, 20);
   private static final TrapezoidProfile.Constraints DRIVE_CONSTRAINTS =
       new TrapezoidProfile.Constraints(4.73, 5);
 
@@ -112,84 +109,24 @@ public final class DriveCommands {
         drive);
   }
 
-  /**
-   * Field relative drive command using joystick for linear control and PID for angular control.
-   * Possible use cases include snapping to an angle, aiming at a vision target, or controlling
-   * absolute rotation with a joystick.
-   */
-  public static Command joystickDriveAtAngle(
-      Drive drive,
-      DoubleSupplier xSupplier,
-      DoubleSupplier ySupplier,
-      Supplier<Rotation2d> rotationSupplier) {
-
-    // Create PID controller
-    ProfiledPIDController angleController =
-        new ProfiledPIDController(
-            ANGLE_KP,
-            0.0,
-            ANGLE_KD,
-            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
-    angleController.enableContinuousInput(-Math.PI, Math.PI);
-
-    // Construct command
-    return Commands.run(
-            () -> {
-              // Get linear velocity
-              Translation2d linearVelocity =
-                  getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-
-              // Calculate angular speed
-              double omega =
-                  angleController.calculate(
-                      drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
-
-              // Convert to field relative speeds & send command
-              ChassisSpeeds speeds =
-                  new ChassisSpeeds(
-                      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                      omega);
-
-              boolean isFlipped =
-                  DriverStation.getAlliance().isPresent()
-                      && DriverStation.getAlliance().get() == Alliance.Red;
-              drive.runVelocity(
-                  ChassisSpeeds.fromFieldRelativeSpeeds(
-                      speeds,
-                      isFlipped
-                          ? drive.getRotation().plus(new Rotation2d(Math.PI))
-                          : drive.getRotation()));
-            },
-            drive)
-
-        // Reset PID controller when command starts
-        .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
-  }
-
   public static class JoystickApproachCommand extends Command {
     private final Drive drive;
     private final DoubleSupplier ySupplier;
     private final Supplier<Pose2d> targetSupplier;
 
-    Pose2d targetPose2d;
-    Pose2d currentPose2d;
-    Pose2d relativePose2d;
-    Rotation2d targetRotation2d;
+    private Pose2d targetPose2d;
+    private Pose2d relativePose2d;
+    private Rotation2d targetRotation2d;
 
     boolean running = false;
 
     static final double DEADBAND = 0.1;
 
-    ProfiledPIDController angleController =
-        new ProfiledPIDController(
-            ANGLE_KP,
-            0,
-            ANGLE_KD,
-            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+    private final ProfiledPIDController angleController =
+        new ProfiledPIDController(ANGLE_KP, 0, ANGLE_KD, ANGLE_CONSTRAINTS);
 
-    ProfiledPIDController alignController =
-        new ProfiledPIDController(ANGLE_KP, 0, ANGLE_KD, new TrapezoidProfile.Constraints(3.7, 4));
+    private final ProfiledPIDController alignController =
+        new ProfiledPIDController(DRIVE_KP, 0, DRIVE_KD, DRIVE_CONSTRAINTS);
 
     public JoystickApproachCommand(
         Drive drive, DoubleSupplier ySupplier, Supplier<Pose2d> targetSupplier) {
@@ -197,7 +134,7 @@ public final class DriveCommands {
       this.ySupplier = ySupplier;
       this.targetSupplier = targetSupplier;
 
-      angleController.setTolerance(POSITION_TOLERANCE);
+      alignController.setTolerance(POSITION_TOLERANCE);
       angleController.setTolerance(ANGLE_TOLERANCE);
 
       angleController.enableContinuousInput(-Math.PI, Math.PI);

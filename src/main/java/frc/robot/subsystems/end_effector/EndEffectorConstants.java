@@ -4,7 +4,7 @@ import com.ctre.phoenix6.CANBus;
 import frc.robot.Constants;
 
 public final class EndEffectorConstants {
-  public static final int kMotorID = 20, kExitBreakerID = 0, kEntranceBreakerID = 1;
+  public static final int kMotorID = 20, kExitBreakerID = 2, kEntranceBreakerID = 1;
   public static final CANBus kMotorBus = Constants.kRIOBus;
   public static final double kFastEjectSpeed = .9,
       kAutoEjectSpeed = 1,
