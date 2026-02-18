@@ -7,9 +7,6 @@
 
 package frc.robot;
 
-import static frc.robot.subsystems.vision.VisionConstants.CAMERA_NAMES;
-import static frc.robot.subsystems.vision.VisionConstants.ROBOT_TO_CAMERAS;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -25,30 +22,17 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.FieldConstants.ReefSide;
 import frc.robot.autopilot.AutopilotCommands;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.JoystickApproachCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.algae_arm.AlgaeArm;
-import frc.robot.subsystems.climber.Climber;
-import frc.robot.subsystems.climber.ClimberIOReal;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroIOPigeon2;
-import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOTalonFX;
-import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.climber.*;
+import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.elevator.*;
 import frc.robot.subsystems.elevator.Elevator.Setpoint;
-import frc.robot.subsystems.elevator.ElevatorIO;
-import frc.robot.subsystems.elevator.ElevatorIOSim;
-import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
-import frc.robot.subsystems.end_effector.BeamBreakIO;
-import frc.robot.subsystems.end_effector.EndEffector;
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionIOPhotonVision;
-import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import frc.robot.subsystems.end_effector.*;
 import frc.robot.util.PositionUtils;
 import frc.robot.util.io.talon.TalonFXIO;
 import java.util.Set;
@@ -67,8 +51,8 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
 
-  @SuppressWarnings("unused")
-  private final Vision vision;
+  // @SuppressWarnings("unused")
+  // private final Vision vision;
 
   private final EndEffector endEffector;
   private final Elevator elevator;
@@ -94,7 +78,7 @@ public class RobotContainer {
   private final Trigger coralMode = new Trigger(() -> controlMode == ControlMode.Coral);
   private final Trigger algaeMode = new Trigger(() -> controlMode == ControlMode.Algae);
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  /** The container for the robot. Contains subsystems, IO devices, and commands. */
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
@@ -106,11 +90,11 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
-        vision =
-            new Vision(
-                drive,
-                new VisionIOPhotonVision(CAMERA_NAMES[0], ROBOT_TO_CAMERAS[0]),
-                new VisionIOPhotonVision(CAMERA_NAMES[1], ROBOT_TO_CAMERAS[1]));
+        // vision =
+        //     new Vision(
+        //         drive,
+        //         new VisionIOPhotonVisionExt(0, drive::getPoseAtTime),
+        //         new VisionIOPhotonVisionExt(1, drive::getPoseAtTime));
         endEffector = EndEffector.createReal();
         elevator = new Elevator(new ElevatorIOTalonFX());
         algaeArm = AlgaeArm.createReal();
@@ -126,11 +110,13 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.FrontRight),
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
-        vision =
-            new Vision(
-                drive,
-                new VisionIOPhotonVisionSim(CAMERA_NAMES[0], ROBOT_TO_CAMERAS[0], drive::getPose),
-                new VisionIOPhotonVisionSim(CAMERA_NAMES[1], ROBOT_TO_CAMERAS[1], drive::getPose));
+        // vision =
+        //     new Vision(
+        //         drive,
+        //         new VisionIOPhotonVisionSim(CAMERA_NAMES[0], ROBOT_TO_CAMERAS[0],
+        // drive::getPose),
+        //         new VisionIOPhotonVisionSim(CAMERA_NAMES[1], ROBOT_TO_CAMERAS[1],
+        // drive::getPose));
 
         endEffector = EndEffector.createSim();
         elevator = new Elevator(new ElevatorIOSim());
@@ -150,7 +136,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        vision = new Vision(drive, inputs -> {}, inputs -> {});
+        // vision = new Vision(drive, inputs -> {}, inputs -> {});
         endEffector =
             new EndEffector(new TalonFXIO() {}, new BeamBreakIO() {}, new BeamBreakIO() {}, false);
         elevator = new Elevator(new ElevatorIO() {});
@@ -169,6 +155,7 @@ public class RobotContainer {
 
     // Only need to initialize mirrored paths because own side is included by buildAutoChooser
     autoChooser.addOption("Opps Side 4pc", new PathPlannerAuto("Own Side 4pc", true));
+    autoChooser.addOption("Middle H", new PathPlannerAuto("Middle G", true));
 
     // Only initialize dev autos while working with a devbot
     if (Constants.DEVBOT) {
@@ -258,32 +245,32 @@ public class RobotContainer {
     controller.y().and(algaeMode).whileTrue(superstructure.bargeShot()).onFalse(deferredStow);
 
     // Initialize coral mode auto align
-    controller
-        .leftBumper()
-        .and(coralMode)
-        .whileTrue(
-            joystickApproach(
-                () -> FieldConstants.getNearestReefBranch(drive.getPose(), ReefSide.LEFT)));
-    controller
-        .rightBumper()
-        .and(coralMode)
-        .whileTrue(
-            joystickApproach(
-                () -> FieldConstants.getNearestReefBranch(drive.getPose(), ReefSide.RIGHT)));
+    // controller
+    //     .leftBumper()
+    //     .and(coralMode)
+    //     .whileTrue(
+    //         joystickApproach(
+    //             () -> FieldConstants.getNearestReefBranch(drive.getPose(), ReefSide.LEFT)));
+    // controller
+    //     .rightBumper()
+    //     .and(coralMode)
+    //     .whileTrue(
+    //         joystickApproach(
+    //             () -> FieldConstants.getNearestReefBranch(drive.getPose(), ReefSide.RIGHT)));
 
     // Initialize algae mode auto align
-    controller
-        .leftBumper()
-        .and(algaeMode)
-        .whileTrue(joystickApproach(() -> FieldConstants.getNearestReefFace(drive.getPose())));
-    controller
-        .rightBumper()
-        .and(algaeMode)
-        .whileTrue(joystickApproach(() -> FieldConstants.getNearestReefFace(drive.getPose())));
-    controller
-        .a()
-        .and(algaeMode)
-        .whileTrue(AutopilotCommands.driveToBarge(drive, () -> -controller.getLeftX()));
+    // controller
+    //     .leftBumper()
+    //     .and(algaeMode)
+    //     .whileTrue(joystickApproach(() -> FieldConstants.getNearestReefFace(drive.getPose())));
+    // controller
+    //     .rightBumper()
+    //     .and(algaeMode)
+    //     .whileTrue(joystickApproach(() -> FieldConstants.getNearestReefFace(drive.getPose())));
+    // controller
+    //     .a()
+    //     .and(algaeMode)
+    //     .whileTrue(AutopilotCommands.driveToBarge(drive, () -> -controller.getLeftX()));
 
     // Initialize barge algae mode & processor scoring
     controller
@@ -293,7 +280,10 @@ public class RobotContainer {
         .onFalse(
             Commands.runOnce(() -> controlMode = ControlMode.Coral).alongWith(algaeArm.stow()));
 
-    controller.rightTrigger().and(algaeMode).whileTrue(endEffector.scoreProcessor());
+    controller
+        .rightTrigger()
+        .and(algaeMode)
+        .whileTrue(endEffector.scoreProcessor().alongWith(algaeArm.deploy()));
 
     // Initialize climbing commands
     controller.povDown().whileTrue(climber.deploy());
@@ -320,7 +310,7 @@ public class RobotContainer {
   }
 
   private Command joystickApproach(Supplier<Pose2d> approach) {
-    return new DriveCommands.JoystickApproachCommand(drive, () -> -controller.getLeftY(), approach);
+    return new JoystickApproachCommand(drive, () -> -controller.getLeftY(), approach);
   }
 
   /**

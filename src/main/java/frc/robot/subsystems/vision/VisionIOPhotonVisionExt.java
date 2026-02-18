@@ -5,6 +5,7 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.Timer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -18,6 +19,8 @@ import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 public final class VisionIOPhotonVisionExt implements VisionIO {
+  // Pose buffer of SwerveDrivePoseEstimator lasts for 1.5 seconds
+  private static final double LATENCY_CUTOFF = 1.5;
   protected final PhotonCamera camera;
   private final Transform3d robotToCamera;
   private final PhotonPoseEstimator poseEstimator;
@@ -52,11 +55,14 @@ public final class VisionIOPhotonVisionExt implements VisionIO {
     for (val update : camera.getAllUnreadResults()) {
       val timestamp = update.getTimestampSeconds();
 
+      // Skip any vision updates with latency >= 1.5 seconds.
+      if (Timer.getFPGATimestamp() - timestamp > LATENCY_CUTOFF) return;
+
       val robotPoseAtTime = robotPoseGetter.apply(timestamp);
       poseEstimator.setLastPose(robotPoseAtTime);
       poseEstimator.addHeadingData(timestamp, robotPoseAtTime.getRotation());
 
-      val result = poseEstimator.update(update, camMatrix, distCoeffs);
+      val result = poseEstimator.update(update, camMatrix, distCoeffs, CONSTRAINED_SOLVEPNP_PARAMS);
 
       result.ifPresentOrElse(
           this::handlePoseEstimation,
@@ -93,8 +99,8 @@ public final class VisionIOPhotonVisionExt implements VisionIO {
       tagsUsed.add(id);
 
       // INVARIANT: Because the PhotonPoseEstimator only sees the tags we give it (so
-      // APRILTAG_LAYOUT),
-      // we do not need to check if the tags used are present in the layout.
+      // APRILTAG_LAYOUT), we do not need to check if the tags used are present in the
+      // layout.
       ambiguity += target.getPoseAmbiguity();
       tagDistance += target.bestCameraToTarget.getTranslation().getNorm();
     }

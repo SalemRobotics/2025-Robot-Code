@@ -1,0 +1,37 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Middle to Branch G"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "score_coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Back Path from G"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "elevator_stow"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

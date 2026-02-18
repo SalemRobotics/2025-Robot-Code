@@ -8,8 +8,10 @@
 package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.Utils;
 import edu.wpi.first.util.ClassPreloader;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.util.Elastic;
@@ -117,13 +119,14 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     val rt = Runtime.getRuntime();
-
     val usedMem = (double) (rt.totalMemory() - rt.freeMemory());
 
     Logger.recordOutput("Robot/Utilized Memory %", usedMem / (double) rt.totalMemory());
+    Logger.recordOutput(
+        "Robot/CurrentToFPGATimeOffset", Timer.getFPGATimestamp() - Utils.getCurrentTimeSeconds());
     Logger.runEveryN(
-        // run every second
-        2500,
+        // run twice every minute
+        1500,
         () -> {
           if (usedMem >= 0.9 * Constants.TotalMemory) {
             // If memory utilization is too high, send an alert to increase allocated heap size in

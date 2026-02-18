@@ -21,7 +21,7 @@ public final class Superstructure {
   public Command bargeShot() {
     return Commands.parallel(
         elevator.setTarget(Setpoint.Barge),
-        Commands.waitSeconds(0.35).andThen(endEffector.scoreBarge(), algaeArm.stow()));
+        Commands.waitSeconds(0.15).andThen(endEffector.scoreBarge(), algaeArm.stow()));
   }
 
   public Command scoreCoral(boolean inAuto) {

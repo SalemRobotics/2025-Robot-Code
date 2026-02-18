@@ -1,0 +1,82 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.1,
+        "y": 4.003
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.844093271096148,
+        "y": 3.93840794986094
+      },
+      "isLocked": false,
+      "linkedName": "Center Barge"
+    },
+    {
+      "anchor": {
+        "x": 6.4,
+        "y": 3.87
+      },
+      "prevControl": {
+        "x": 6.026795917406956,
+        "y": 3.908027620257666
+      },
+      "nextControl": {
+        "x": 6.738875806428689,
+        "y": 3.8354702585463607
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.8,
+        "y": 3.870440340909091
+      },
+      "prevControl": {
+        "x": 6.249591809778119,
+        "y": 3.9170055453356905
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Branch G"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "elevator_l4",
+      "waypointRelativePos": 0.6,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevator_l4"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 2.0,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "reversed": false,
+  "folder": "Starting Paths",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "useDefaultConstraints": false
+}

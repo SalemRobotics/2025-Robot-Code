@@ -24,7 +24,9 @@ final class DriveToBargeCommand extends Command {
 
   @Override
   public void initialize() {
-    targetX = AllianceFlipUtil.applyX(FieldConstants.startingLineX - Units.inchesToMeters(13));
+    targetX = AllianceFlipUtil.applyX(FieldConstants.startingLineX - Units.inchesToMeters(12));
+    Logger.recordOutput("AutoAlign/DriveToBarge/TargetX", targetX);
+
     targetRotation = AllianceFlipUtil.apply(Rotation2d.kZero);
   }
 

@@ -21,6 +21,7 @@ public final class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
   public static final boolean DEVBOT = RobotBase.isSimulation() ? true : false;
+  public static final boolean TUNING_MODE = true;
 
   public static final double TotalMemory = 100 * 1024 * 1024;
 
@@ -32,6 +33,4 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
-
-  public static final double MAX_SYNC_WAIT = 0.015, MAX_INITIAL_SYNC_WAIT = 1;
 }

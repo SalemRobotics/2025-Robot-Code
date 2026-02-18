@@ -17,8 +17,10 @@ public class DriveToPoseCommand extends Command {
   private final String logKey;
 
   @Getter private Pose2d targetPose;
+  private double initialDistance;
   private Translation2d targetTranslation;
   private Rotation2d targetRotation;
+  private boolean running = false;
 
   public DriveToPoseCommand(String name, Drive drive, Supplier<Pose2d> poseSupplier) {
     setName(name);
@@ -39,6 +41,8 @@ public class DriveToPoseCommand extends Command {
     targetPose = poseSupplier.get();
     targetTranslation = targetPose.getTranslation();
     targetRotation = targetPose.getRotation();
+    initialDistance = drive.getPose().getTranslation().getDistance(targetTranslation);
+    running = true;
 
     Logger.recordOutput(logKey + "/Target", targetPose);
   }
@@ -64,5 +68,24 @@ public class DriveToPoseCommand extends Command {
     speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation());
 
     drive.runVelocity(speeds);
+  }
+
+  @Override
+  public void end(boolean interrupted) {
+    running = false;
+  }
+
+  public boolean isRunning() {
+    return running;
+  }
+
+  public boolean withinTolerance(double tolerance) {
+    return drive.getPose().getTranslation().getDistance(targetTranslation) <= tolerance;
+  }
+
+  public boolean madeProgress(double progress) {
+    double newDist = drive.getPose().getTranslation().getDistance(targetTranslation);
+
+    return (initialDistance - newDist) / initialDistance >= progress;
   }
 }

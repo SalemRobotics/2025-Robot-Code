@@ -22,9 +22,9 @@ public final class ElevatorConstants {
   }
 
   public static final class Exponential {
-    public static final AngularAcceleration kMaxAcceleration = RotationsPerSecondPerSecond.of(50);
+    public static final AngularAcceleration kMaxAcceleration = RotationsPerSecondPerSecond.of(25);
     public static final Velocity<AngularAccelerationUnit> kMaxJerk =
-        RotationsPerSecondPerSecond.per(Second).of(200);
+        RotationsPerSecondPerSecond.per(Second).of(100);
 
     public static final double kExpo_kV = 0.45;
     public static final double kExpo_kA = 0.15;
@@ -46,9 +46,9 @@ public final class ElevatorConstants {
   public static final Slot1Configs kStowGains =
       new Slot1Configs()
           .withGravityType(GravityTypeValue.Elevator_Static)
-          .withKP(25)
+          .withKP(50)
           .withKI(0)
-          .withKD(5)
+          .withKD(7.5)
           .withKV(2.33)
           .withKA(0.05)
           .withKG(0.8)

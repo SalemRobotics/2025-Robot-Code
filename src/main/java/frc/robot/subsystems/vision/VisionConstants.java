@@ -8,6 +8,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.util.Statics;
 import java.nio.file.Paths;
+import java.util.Optional;
+import org.photonvision.PhotonPoseEstimator.ConstrainedSolvepnpParams;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 public final class VisionConstants {
@@ -23,6 +25,8 @@ public final class VisionConstants {
   public static final PoseStrategy MULTI_TAG_POSE_STRATEGY =
       PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
   public static final PoseStrategy SINGLE_TAG_POSE_STRATEGY = PoseStrategy.PNP_DISTANCE_TRIG_SOLVE;
+  public static final Optional<ConstrainedSolvepnpParams> CONSTRAINED_SOLVEPNP_PARAMS =
+      Optional.of(new ConstrainedSolvepnpParams(false, 10));
 
   public static final String[] CAMERA_NAMES = new String[] {"Left", "Right"};
   public static final Transform3d[] ROBOT_TO_CAMERAS =
@@ -40,9 +44,9 @@ public final class VisionConstants {
       };
 
   public static final double maxAmbiguity = 0.3;
-  public static final double maxZError = 0.75;
-  public static final double linearStdDevBaseline = 0.03;
-  public static final double angularStdDevBaseline = 0.2;
+  public static final double maxZError = 0.5;
+  public static final double linearStdDevBaseline = Units.inchesToMeters(5);
+  public static final double angularStdDevBaseline = Units.degreesToRadians(10);
 
-  public static final double[] cameraStdDevFactors = new double[] {1.2, 1};
+  public static final double[] cameraStdDevFactors = new double[] {1.2, 1.2};
 }

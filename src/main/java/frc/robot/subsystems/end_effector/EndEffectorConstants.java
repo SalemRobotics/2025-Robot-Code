@@ -8,7 +8,7 @@ public final class EndEffectorConstants {
   public static final CANBus kMotorBus = Constants.kRIOBus;
   public static final double kFastEjectSpeed = .9,
       kAutoEjectSpeed = 1,
-      kSlowEjectSpeed = .25,
+      kSlowEjectSpeed = .2,
       kAlgaeBargeSpeed = 1,
       kAlgaeProcessorSpeed = 0.3,
       kIdleSpeed = .175,

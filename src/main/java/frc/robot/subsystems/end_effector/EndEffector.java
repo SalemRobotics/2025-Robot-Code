@@ -130,7 +130,7 @@ public class EndEffector extends SubsystemBase {
   }
 
   public Command autoJogCoral() {
-    return run(this::jogCoral).finallyDo(this::resetState);
+    return runEnd(this::jogCoral, this::resetState);
   }
 
   public Command autoIntake() {
@@ -149,8 +149,7 @@ public class EndEffector extends SubsystemBase {
 
   public Command autoScoreCoral(BooleanSupplier elevatorIsAtHeight) {
     return Commands.sequence(
-        // Commands.waitUntil(elevatorIsAtHeight),
-        // Commands.print("Elevator is at height"),
+        Commands.waitUntil(elevatorIsAtHeight),
         Commands.waitSeconds(0.25),
         runOnce(() -> motorIO.setDutyCycle(kAutoEjectSpeed)),
         Commands.race(Commands.waitSeconds(0.2), Commands.waitUntil(() -> !exitIO.isBroken())),
@@ -169,5 +168,21 @@ public class EndEffector extends SubsystemBase {
 
   public Command intakeAlgae() {
     return run(() -> motorIO.setDutyCycle(kIdleSpeed)).beforeStarting(this::resetState);
+  }
+
+  public boolean hasCoral() {
+    return entranceInputs.isBroken || exitInputs.isBroken;
+  }
+
+  public boolean entranceDetected() {
+    return entranceInputs.isBroken;
+  }
+
+  public boolean exitDetected() {
+    return exitInputs.isBroken;
+  }
+
+  public boolean coralInPosition() {
+    return coralInPosition;
   }
 }

@@ -7,12 +7,8 @@
 
 package frc.robot.commands;
 
-import static frc.robot.subsystems.drive.Drive.PP_CONSTRAINTS;
-
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -21,11 +17,10 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.autopilot.DriveToPoseCommand;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.AllianceFlipUtil;
 import java.text.DecimalFormat;
@@ -39,24 +34,24 @@ import org.littletonrobotics.junction.Logger;
 
 public final class DriveCommands {
   public static final double DEADBAND = 0.1;
-  private static final double DRIVE_KP = 2;
-  private static final double DRIVE_KD = 0;
-  private static final double ANGLE_KP = 2;
-  private static final double ANGLE_KD = 0;
-  private static final double ANGLE_TOLERANCE = Units.degreesToRadians(2.5);
-  private static final double POSITION_TOLERANCE = 0.0125;
+  static final double DRIVE_KP = 2;
+  static final double DRIVE_KD = 0;
+  static final double ANGLE_KP = 2;
+  static final double ANGLE_KD = 0;
+  static final double ANGLE_TOLERANCE = Units.degreesToRadians(2.5);
+  static final double POSITION_TOLERANCE = 0.0125;
+  static final TrapezoidProfile.Constraints ANGLE_CONSTRAINTS =
+      new TrapezoidProfile.Constraints(8, 20);
+  static final TrapezoidProfile.Constraints DRIVE_CONSTRAINTS =
+      new TrapezoidProfile.Constraints(4.73, 5);
   private static final double FF_START_DELAY = 2.0; // Secs
   private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
-  private static final TrapezoidProfile.Constraints ANGLE_CONSTRAINTS =
-      new TrapezoidProfile.Constraints(8, 20);
-  private static final TrapezoidProfile.Constraints DRIVE_CONSTRAINTS =
-      new TrapezoidProfile.Constraints(4.73, 5);
 
   private DriveCommands() {}
 
-  private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
+  static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
     // Apply deadband
     double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
     Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
@@ -91,135 +86,42 @@ public final class DriveCommands {
           omega = Math.copySign(omega * omega, omega);
 
           // Convert to field relative speeds & send command
-          ChassisSpeeds speeds =
+          val speeds =
               new ChassisSpeeds(
                   linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                   linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                   omega * drive.getMaxAngularSpeedRadPerSec());
-          boolean isFlipped =
-              DriverStation.getAlliance().isPresent()
-                  && DriverStation.getAlliance().get() == Alliance.Red;
           drive.runVelocity(
               ChassisSpeeds.fromFieldRelativeSpeeds(
                   speeds,
-                  isFlipped
+                  AllianceFlipUtil.shouldFlip()
                       ? drive.getRotation().plus(new Rotation2d(Math.PI))
                       : drive.getRotation()));
         },
         drive);
   }
 
-  public static class JoystickApproachCommand extends Command {
-    private final Drive drive;
-    private final DoubleSupplier ySupplier;
-    private final Supplier<Pose2d> targetSupplier;
-
-    private Pose2d targetPose2d;
-    private Pose2d relativePose2d;
-    private Rotation2d targetRotation2d;
-
-    boolean running = false;
-
-    static final double DEADBAND = 0.1;
-
-    private final ProfiledPIDController angleController =
-        new ProfiledPIDController(ANGLE_KP, 0, ANGLE_KD, ANGLE_CONSTRAINTS);
-
-    private final ProfiledPIDController alignController =
-        new ProfiledPIDController(DRIVE_KP, 0, DRIVE_KD, DRIVE_CONSTRAINTS);
-
-    public JoystickApproachCommand(
-        Drive drive, DoubleSupplier ySupplier, Supplier<Pose2d> targetSupplier) {
-      this.drive = drive;
-      this.ySupplier = ySupplier;
-      this.targetSupplier = targetSupplier;
-
-      alignController.setTolerance(POSITION_TOLERANCE);
-      angleController.setTolerance(ANGLE_TOLERANCE);
-
-      angleController.enableContinuousInput(-Math.PI, Math.PI);
-      alignController.setGoal(0);
-
-      addRequirements(drive);
-    }
-
-    // Called when the command is initially scheduled.
-    @Override
-    public void initialize() {
-      alignController.reset(0);
-      angleController.reset(drive.getPose().getRotation().getRadians());
-      targetPose2d = targetSupplier.get();
-
-      Logger.recordOutput("AutoAlign/Approach/Target", targetPose2d);
-    }
-
-    // Called every time the scheduler runs while the command is scheduled.
-    @Override
-    public void execute() {
-      running = true;
-      relativePose2d = drive.getPose().relativeTo(targetPose2d);
-      targetRotation2d = targetPose2d.getRotation();
-
-      // Calculate lateral linear velocity
-      Translation2d offsetVector =
-          new Translation2d(0, alignController.calculate(relativePose2d.getY()));
-
-      // Calculate total linear velocity
-      Translation2d linearVelocity =
-          getLinearVelocityFromJoysticks(-ySupplier.getAsDouble(), 0)
-              .times(drive.getMaxLinearSpeedMetersPerSec())
-              .plus(offsetVector)
-              .rotateBy(targetRotation2d);
-
-      // Calculate angular speed
-      double omega =
-          angleController.calculate(
-              drive.getRotation().getRadians(),
-              targetRotation2d.rotateBy(Rotation2d.k180deg).getRadians());
-
-      // Convert to field relative speeds & send command
-      ChassisSpeeds speeds = new ChassisSpeeds(linearVelocity.getX(), linearVelocity.getY(), omega);
-
-      drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
-    }
-
-    // Called once the command ends or is interrupted.
-    @Override
-    public void end(boolean interrupted) {
-      running = false;
-    }
-
-    // Returns true when withing a lateral tolerance
-    public boolean withinTolerance(double dist) {
-      return running ? Math.abs(relativePose2d.getY()) < dist : false;
-    }
-  }
-
   public static Command driveToAutoStart(Drive drive, Supplier<Command> commandSupplier) {
-    return drive
-        .defer(
-            () -> {
-              val autoCommand = commandSupplier.get();
+    return new DriveToPoseCommand(
+        "DriveToAuto",
+        drive,
+        () -> {
+          val cmd = commandSupplier.get();
+          if (cmd == null) return drive.getPose();
 
-              if (autoCommand instanceof PathPlannerAuto auto) {
-                val autoStart = auto.getStartingPose();
+          Logger.recordOutput(
+              "AutoAlign/DriveToAuto/AutoClassName", cmd.getClass().getSimpleName());
 
-                Logger.recordOutput("AutoAlign/DriveToAuto/Enabled", true);
-
-                Logger.recordOutput("AutoAlign/DriveToAuto/AutoStart", autoStart);
-
-                val startPose = AllianceFlipUtil.apply(auto.getStartingPose());
-
-                Logger.recordOutput("AutoAlign/DriveToAuto/Target", startPose);
-                return AutoBuilder.pathfindToPose(startPose, PP_CONSTRAINTS);
-              }
-
-              Logger.recordOutput("AutoAlign/DriveToAuto/Enabled", false);
-
-              return Commands.none();
-            })
-        .withName("Drive To Auto Start")
-        .finallyDo(() -> Logger.recordOutput("AutoAlign/DriveToAuto/Enabled", false));
+          if (cmd instanceof final PathPlannerAuto auto) {
+            Logger.recordOutput("AutoAlign/DriveToAuto/CmdIsAuto", true);
+            // Return the auto starting pose
+            return auto.getStartingPose();
+          } else {
+            Logger.recordOutput("AutoAlign/DriveToAuto/CmdIsAuto", false);
+            // Drive nowhere
+            return drive.getPose();
+          }
+        });
   }
 
   /**
