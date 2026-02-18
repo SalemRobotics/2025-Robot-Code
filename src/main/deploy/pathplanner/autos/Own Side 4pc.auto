@@ -1,0 +1,85 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Own Cage to Branch J"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "score_coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Branch J to Left CS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "coral_intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left CS to Branch K"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "score_coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Branch K to Left CS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "coral_intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left CS to Branch L"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "score_coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Branch L to Left CS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "coral_intake"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

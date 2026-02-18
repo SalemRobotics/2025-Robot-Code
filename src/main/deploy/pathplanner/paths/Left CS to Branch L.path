@@ -1,0 +1,115 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+<<<<<<< HEAD:2025-Robot-Code/src/main/deploy/pathplanner/paths/Coral2 to EL Path.path
+        "x": 1.402561475409836,
+        "y": 7.507428278688524
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.813524590163934,
+        "y": 6.862569672131146
+=======
+        "x": 1.45,
+        "y": 7.4
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.9735168585623293,
+        "y": 6.855508222945173
+>>>>>>> akit:src/main/deploy/pathplanner/paths/Left CS to Branch L.path
+      },
+      "isLocked": false,
+      "linkedName": "Left CS Outside"
+    },
+    {
+      "anchor": {
+        "x": 3.7,
+        "y": 5.09
+      },
+      "prevControl": {
+<<<<<<< HEAD:2025-Robot-Code/src/main/deploy/pathplanner/paths/Coral2 to EL Path.path
+        "x": 3.2606557377049183,
+        "y": 6.272694672131147
+=======
+        "x": 3.1382777720233292,
+        "y": 5.691401169532676
+>>>>>>> akit:src/main/deploy/pathplanner/paths/Left CS to Branch L.path
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Branch L"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [
+    {
+      "name": "Slow for Elevator",
+      "minWaypointRelativePos": 0.6,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 4.0,
+        "maxAcceleration": 2.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "coral_jog",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "coral_jog"
+        }
+      }
+    },
+    {
+<<<<<<< HEAD:2025-Robot-Code/src/main/deploy/pathplanner/paths/Coral2 to EL Path.path
+      "name": "elevatorl4",
+=======
+      "name": "elevator_l4",
+>>>>>>> akit:src/main/deploy/pathplanner/paths/Left CS to Branch L.path
+      "waypointRelativePos": 0.4,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevator_l4"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+<<<<<<< HEAD:2025-Robot-Code/src/main/deploy/pathplanner/paths/Coral2 to EL Path.path
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.5,
+=======
+    "maxVelocity": 4.73,
+    "maxAcceleration": 3.0,
+>>>>>>> akit:src/main/deploy/pathplanner/paths/Left CS to Branch L.path
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -59.99999999999999
+  },
+  "reversed": false,
+  "folder": "To Reef",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -54.0
+  },
+  "useDefaultConstraints": false
+}

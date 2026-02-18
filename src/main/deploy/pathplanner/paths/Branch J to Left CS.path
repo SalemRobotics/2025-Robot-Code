@@ -1,0 +1,109 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 4.965,
+        "y": 5.19
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 4.84825858778626,
+        "y": 5.525768129770992
+      },
+      "isLocked": false,
+      "linkedName": "Branch J"
+    },
+    {
+      "anchor": {
+        "x": 4.337642045454546,
+        "y": 6.024303977272727
+      },
+      "prevControl": {
+        "x": 5.017651888559972,
+        "y": 5.377055366251678
+      },
+      "nextControl": {
+        "x": 3.711164038856905,
+        "y": 6.620599786394851
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+<<<<<<< HEAD:2025-Robot-Code/src/main/deploy/pathplanner/paths/FL to Coral2 Path.path
+        "x": 1.402561475409836,
+        "y": 7.507428278688524
+      },
+      "prevControl": {
+        "x": 1.6242687141795413,
+        "y": 7.287159808577672
+=======
+        "x": 1.45,
+        "y": 7.4
+      },
+      "prevControl": {
+        "x": 1.61452459604976,
+        "y": 7.211767013266369
+>>>>>>> akit:src/main/deploy/pathplanner/paths/Branch J to Left CS.path
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Left CS Outside"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [
+    {
+      "name": "Elevator slow",
+      "minWaypointRelativePos": 0,
+      "maxWaypointRelativePos": 0.6,
+      "constraints": {
+        "maxVelocity": 4.73,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "elevator_stow",
+      "waypointRelativePos": 0.4,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevator_stow"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.73,
+<<<<<<< HEAD:2025-Robot-Code/src/main/deploy/pathplanner/paths/FL to Coral2 Path.path
+    "maxAcceleration": 4.0,
+=======
+    "maxAcceleration": 3.0,
+>>>>>>> akit:src/main/deploy/pathplanner/paths/Branch J to Left CS.path
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -54.0
+  },
+  "reversed": false,
+  "folder": "To Coral Station",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -119.99999999999999
+  },
+  "useDefaultConstraints": true
+}

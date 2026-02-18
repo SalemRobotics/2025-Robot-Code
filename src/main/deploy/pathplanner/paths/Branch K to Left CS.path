@@ -1,0 +1,79 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.99,
+        "y": 5.165
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.2338551522325014,
+        "y": 5.838405080091534
+      },
+      "isLocked": false,
+      "linkedName": "Branch K"
+    },
+    {
+      "anchor": {
+<<<<<<< HEAD:2025-Robot-Code/src/main/deploy/pathplanner/paths/DR to Coral1.path
+        "x": 1.3306352459016395,
+        "y": 0.5545594262295083
+      },
+      "prevControl": {
+        "x": 1.5646221302540928,
+        "y": 1.0197379079981235
+=======
+        "x": 1.45,
+        "y": 7.4
+      },
+      "prevControl": {
+        "x": 1.7577511668472265,
+        "y": 7.068527226356515
+>>>>>>> akit:src/main/deploy/pathplanner/paths/Branch K to Left CS.path
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Left CS Outside"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "elevator_stow",
+      "waypointRelativePos": 0.1,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "elevator_stow"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.73,
+<<<<<<< HEAD:2025-Robot-Code/src/main/deploy/pathplanner/paths/DR to Coral1.path
+    "maxAcceleration": 4.0,
+=======
+    "maxAcceleration": 3.0,
+>>>>>>> akit:src/main/deploy/pathplanner/paths/Branch K to Left CS.path
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -54.0
+  },
+  "reversed": false,
+  "folder": "To Coral Station",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -59.99999999999999
+  },
+  "useDefaultConstraints": true
+}
